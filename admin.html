@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sangeet - PC Master Admin Studio</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👑</text></svg>">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .admin-page-wrap {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .admin-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-surface);
+            padding: 18px 24px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+
+        .admin-title-area {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .admin-crown-badge {
+            font-size: 28px;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(234, 88, 12, 0.2));
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            padding: 8px 12px;
+            border-radius: 12px;
+        }
+
+        .admin-nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .admin-nav-tab {
+            padding: 10px 18px;
+            border-radius: var(--radius-md);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .admin-nav-tab:hover {
+            background: var(--bg-card);
+            color: #ffffff;
+            border-color: var(--border-hover);
+        }
+
+        .admin-nav-tab.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+        }
+
+        .admin-card {
+            background: var(--bg-surface);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .lang-subtab-bar {
+            display: flex;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 6px;
+            border-radius: var(--radius-md);
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .lang-subtab-btn {
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .lang-subtab-btn:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .lang-subtab-btn.active {
+            background: #7c3aed;
+            color: #ffffff;
+            border-color: #a78bfa;
+            box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4);
+        }
+
+        .banner-preview-card {
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.25), rgba(236, 72, 153, 0.2));
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            display: flex;
+            gap: 18px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .banner-preview-card img {
+            width: 90px;
+            height: 90px;
+            border-radius: 12px;
+            object-fit: cover;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+        }
+
+        .song-manage-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 10px 14px;
+            gap: 12px;
+        }
+
+        .song-manage-row:hover {
+            border-color: var(--border-hover);
+        }
+    </style>
+</head>
+
+<body class="theme-dark">
+
+    <div class="admin-page-wrap">
+
+        <!-- Top Master Header -->
+        <div class="admin-top-bar">
+            <div class="admin-title-area">
+                <div class="admin-crown-badge">👑</div>
+                <div>
+                    <h1 style="font-size: 22px; font-weight: 800; margin: 0; color: #ffffff; display: flex; align-items: center; gap: 8px;">
+                        Sangeet Master Admin Studio
+                        <span style="font-size: 11px; padding: 3px 8px; border-radius: 6px; background: #f59e0b; color: #000; font-weight: 800;">PC ONLY</span>
+                    </h1>
+                    <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
+                        Full Control Hub: Add music, customize 3 language banners, and manage library.
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <a href="index.html" target="_blank" class="btn-secondary" style="text-decoration: none;" title="Open clean Customer Music Player">
+                    <span>📱 Launch Customer App</span>
+                </a>
+                <a href="https://github.com/prg-git/sangeet-local" target="_blank" class="btn-secondary" style="text-decoration: none;">
+                    <span>📂 GitHub Repo</span>
+                </a>
+                <span id="serverStatusBadge" style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #10b981; font-weight: 700; background: rgba(16, 185, 129, 0.15); padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(16, 185, 129, 0.3);">
+                    <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></span>
+                    <span>Server Live (Port 8080)</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="admin-nav-tabs">
+            <button class="admin-nav-tab active" data-tab="tabBanners">
+                <span>🌟 3-Language Hero Banners</span>
+            </button>
+            <button class="admin-nav-tab" data-tab="tabAddMusic">
+                <span>🎵 Add Music & Covers</span>
+            </button>
+            <button class="admin-nav-tab" data-tab="tabManageSongs">
+                <span>🛠️ Manage Library (<span id="totalSongsBadge">0</span>)</span>
+            </button>
+            <button class="admin-nav-tab" data-tab="tabPublish">
+                <span>🚀 Sync & Publish to Mobile</span>
+            </button>
+        </div>
+
+        <!-- ================= SECTION 1: 3-LANGUAGE HERO BANNERS ================= -->
+        <div id="tabBanners" class="admin-card">
+            <div style="margin-bottom: 16px;">
+                <h2 style="font-size: 20px; font-weight: 700; margin: 0 0 6px 0;">Hero Banner Studio for Each Language</h2>
+                <p style="color: var(--text-muted); font-size: 13px; margin: 0;">
+                    Configure distinct custom banners for each regional category. When a mobile user taps a category pill (Koch Rajbongshi, Assamese, or Bodo), the corresponding custom banner and artwork will display dynamically!
+                </p>
+            </div>
+
+            <!-- Language Subtabs -->
+            <div class="lang-subtab-bar">
+                <button class="lang-subtab-btn active" data-lang="all">🟢 All Music Banner</button>
+                <button class="lang-subtab-btn" data-lang="koch_rajbongshi">🟡 Koch Rajbongshi Banner</button>
+                <button class="lang-subtab-btn" data-lang="assamese">🔵 Assamese Banner</button>
+                <button class="lang-subtab-btn" data-lang="bodo">🔴 Bodo Banner</button>
+            </div>
+
+            <!-- Live Banner Preview Card -->
+            <div class="form-label">Live Preview for Mobile Customer App:</div>
+            <div class="banner-preview-card" id="bannerPreviewBox">
+                <img id="bannerPreviewImg" src="icons/icon-192.png" alt="Banner Cover">
+                <div style="flex: 1; min-width: 0;">
+                    <span id="bannerPreviewTag" style="display: inline-block; padding: 2px 10px; background: rgba(16, 185, 129, 0.25); border-radius: 12px; font-size: 11px; font-weight: 700; color: var(--primary); margin-bottom: 6px;">
+                        🎵 Sangeet Local
+                    </span>
+                    <div id="bannerPreviewTitle" style="font-size: 18px; font-weight: 800; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        Select a song or enter custom title
+                    </div>
+                    <div id="bannerPreviewSubtitle" style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
+                        By Local Artist • Streaming Live
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inputs for Selected Language Banner -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label class="form-label">Featured Song (Plays when customer taps "▶ Play Now")</label>
+                    <select class="form-select" id="bannerSongSelect">
+                        <!-- Populated dynamically via admin.js -->
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Banner Name / Headline</label>
+                    <input type="text" class="form-input" id="bannerTitleInput" placeholder="e.g. Koch Rajbongshi Melodies">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Banner Badge / Tag</label>
+                    <input type="text" class="form-input" id="bannerTagInput" placeholder="e.g. 🎵 Koch Rajbongshi">
+                </div>
+
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label class="form-label">Banner Subtitle / Description</label>
+                    <input type="text" class="form-input" id="bannerSubtitleInput" placeholder="e.g. Traditional Kamtapuri Songs • Streaming Live">
+                </div>
+
+                <!-- Custom Banner Artwork -->
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label class="form-label">Banner Cover Artwork / Image</label>
+                    <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 8px; flex-wrap: wrap;">
+                        <button type="button" class="btn-primary" id="btnChooseBannerCover" style="padding: 8px 16px; font-size: 13px;">
+                            <span>🖼️ Upload Custom Image from PC</span>
+                        </button>
+                        <button type="button" class="btn-secondary" id="btnResetBannerCover" style="padding: 8px 16px; font-size: 13px;">
+                            <span>↺ Use Selected Song Cover</span>
+                        </button>
+                        <input type="file" id="bannerCoverFileInput" accept="image/*" style="display: none;">
+                    </div>
+                    <input type="url" class="form-input" id="bannerCoverUrlInput" placeholder="Or paste image web link (https://...)" style="font-size: 13px;">
+                </div>
+            </div>
+
+            <button type="button" class="btn-primary" id="btnSaveBanner" style="width: 100%; justify-content: center; padding: 14px; font-size: 16px; margin-top: 16px;">
+                <span>🌟 Save & Publish Banner for This Language</span>
+            </button>
+        </div>
+
+        <!-- ================= SECTION 2: ADD MUSIC & COVERS ================= -->
+        <div id="tabAddMusic" class="admin-card" style="display: none;">
+            <div style="margin-bottom: 18px;">
+                <h2 style="font-size: 20px; font-weight: 700; margin: 0 0 6px 0;">Add Music Studio</h2>
+                <p style="color: var(--text-muted); font-size: 13px; margin: 0;">
+                    Upload your songs directly from your PC with custom album cover artwork and language tags (<strong>Koch Rajbongshi</strong>, <strong>Assamese</strong>, or <strong>Bodo</strong>).
+                </p>
+            </div>
+
+            <form id="addMusicForm">
+                <!-- Audio File Picker -->
+                <div class="form-group">
+                    <label class="form-label">Audio Track File (MP3, WAV, FLAC, M4A) *</label>
+                    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                        <button type="button" class="btn-primary" id="btnBrowseAudio">
+                            <span>📂 Choose Audio File</span>
+                        </button>
+                        <span id="selectedAudioBadge" style="font-size: 13px; color: var(--text-muted);">No file selected</span>
+                        <input type="file" id="adminAudioFileInput" accept="audio/*" style="display: none;">
+                    </div>
+                </div>
+
+                <!-- Custom Cover Image Picker -->
+                <div class="form-group">
+                    <label class="form-label">Album Artwork / Cover Image</label>
+                    <div style="display: flex; gap: 16px; align-items: center; margin-bottom: 8px; flex-wrap: wrap;">
+                        <img id="addCoverPreview" src="icons/icon-192.png" alt="Cover Preview"
+                            style="width: 70px; height: 70px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-color);">
+                        <button type="button" class="btn-secondary" id="btnBrowseCover">
+                            <span>🖼️ Choose Cover from PC</span>
+                        </button>
+                        <button type="button" class="btn-secondary" id="btnRemoveCover" style="color: #ef4444;">
+                            <span>✕ Clear</span>
+                        </button>
+                        <input type="file" id="adminCoverFileInput" accept="image/*" style="display: none;">
+                    </div>
+                    <input type="url" class="form-input" id="adminCoverUrlInput" placeholder="Or paste image web URL (https://...)">
+                </div>
+
+                <!-- Metadata Inputs -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                    <div class="form-group">
+                        <label class="form-label">Song Title *</label>
+                        <input type="text" class="form-input" id="addSongTitle" placeholder="e.g. O Mur Apunar Desh" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Artist Name *</label>
+                        <input type="text" class="form-input" id="addSongArtist" placeholder="e.g. Bhupen Hazarika" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Album Name</label>
+                        <input type="text" class="form-input" id="addSongAlbum" placeholder="e.g. Folk Classics">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Year</label>
+                        <input type="text" class="form-input" id="addSongYear" placeholder="2024">
+                    </div>
+                </div>
+
+                <!-- Language / Category Selection -->
+                <div class="form-group">
+                    <label class="form-label">Regional Language / Category *</label>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;" id="addCategoryPills">
+                        <button type="button" class="category-pill-btn active" data-cat="Koch Rajbongshi">Koch Rajbongshi</button>
+                        <button type="button" class="category-pill-btn" data-cat="Assamese">Assamese</button>
+                        <button type="button" class="category-pill-btn" data-cat="Bodo">Bodo</button>
+                        <button type="button" class="category-pill-btn" data-cat="All Music">All Music</button>
+                    </div>
+                    <input type="text" class="form-input" id="addSongGenre" value="Koch Rajbongshi" placeholder="Category">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Lyrics (Optional)</label>
+                    <textarea class="form-input" id="addSongLyrics" rows="3" placeholder="Paste song lyrics here..."></textarea>
+                </div>
+
+                <button type="submit" class="btn-primary" id="btnSubmitAddMusic" style="width: 100%; justify-content: center; padding: 14px; font-size: 16px;">
+                    <span>+ Upload Song to Library</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- ================= SECTION 3: MANAGE SONGS ================= -->
+        <div id="tabManageSongs" class="admin-card" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+                <div>
+                    <h2 style="font-size: 20px; font-weight: 700; margin: 0 0 4px 0;">Library Management</h2>
+                    <p style="color: var(--text-muted); font-size: 13px; margin: 0;">Edit metadata, replace cover artwork, or remove songs permanently.</p>
+                </div>
+                <input type="text" class="form-input" id="searchSongsManage" placeholder="Search by title, artist, or language..." style="width: 280px;">
+            </div>
+
+            <div id="songsManageContainer" style="display: flex; flex-direction: column; gap: 10px;">
+                <!-- Populated dynamically via admin.js -->
+            </div>
+        </div>
+
+        <!-- ================= SECTION 4: PUBLISH & SYNC ================= -->
+        <div id="tabPublish" class="admin-card" style="display: none;">
+            <div style="margin-bottom: 20px;">
+                <h2 style="font-size: 20px; font-weight: 700; margin: 0 0 6px 0;">Publish to Public Mobile App</h2>
+                <p style="color: var(--text-muted); font-size: 13px; margin: 0;">
+                    Your PC Master Admin changes (songs, artwork, and 3-language banners) are saved locally on your computer. When you are ready to update the worldwide mobile app on GitHub Pages, use this section.
+                </p>
+            </div>
+
+            <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-md); padding: 16px; margin-bottom: 20px;">
+                <div style="font-weight: 700; color: #10b981; font-size: 15px; margin-bottom: 6px;">📱 Worldwide Public Mobile App Link:</div>
+                <a href="https://prg-git.github.io/sangeet-local/" target="_blank" style="font-size: 16px; font-weight: 700; color: #38bdf8; text-decoration: underline;">
+                    https://prg-git.github.io/sangeet-local/
+                </a>
+            </div>
+
+            <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 18px; line-height: 1.6; font-size: 14px;">
+                <h3 style="font-size: 16px; margin: 0 0 8px 0; color: #ffffff;">How to Publish Updates from PC:</h3>
+                <ol style="margin: 0 0 16px 20px; color: var(--text-muted);">
+                    <li>On your PC, open the project folder: <code>C:\Project\Latetst</code></li>
+                    <li>Double-click: <strong style="color: var(--primary);">upload-to-github.bat</strong></li>
+                    <li>Press <kbd>ENTER</kbd>. All updated songs and 3-language banners will be pushed to GitHub!</li>
+                    <li>Within 30–60 seconds, your mobile app at <a href="https://prg-git.github.io/sangeet-local/" target="_blank" style="color: #38bdf8;">prg-git.github.io/sangeet-local</a> will be updated for all listeners!</li>
+                </ol>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Edit Song Metadata Modal -->
+    <div class="modal-overlay" id="adminEditModal">
+        <div class="modal-content" style="max-width: 580px;">
+            <div class="modal-header">
+                <h2>✏️ Edit Track Metadata & Cover</h2>
+                <button class="modal-close-btn" id="btnCloseEditModal">✕</button>
+            </div>
+
+            <input type="hidden" id="editModalSongId">
+
+            <div class="form-group">
+                <label class="form-label">Album Artwork / Cover Image</label>
+                <div style="display: flex; gap: 14px; align-items: center; margin-bottom: 8px;">
+                    <img id="editModalCoverImg" src="icons/icon-192.png" alt="Cover" style="width: 70px; height: 70px; border-radius: 8px; object-fit: cover;">
+                    <button type="button" class="btn-secondary" id="btnEditChooseCover">🖼️ Change Image</button>
+                    <button type="button" class="btn-secondary" id="btnEditRemoveCover" style="color: #ef4444;">✕ Remove Cover</button>
+                    <input type="file" id="editModalCoverFileInput" accept="image/*" style="display: none;">
+                </div>
+                <input type="url" class="form-input" id="editModalCoverUrlInput" placeholder="Or web image URL (https://...)">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div class="form-group">
+                    <label class="form-label">Title</label>
+                    <input type="text" class="form-input" id="editModalTitle">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Artist</label>
+                    <input type="text" class="form-input" id="editModalArtist">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Album</label>
+                    <input type="text" class="form-input" id="editModalAlbum">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Year</label>
+                    <input type="text" class="form-input" id="editModalYear">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Category / Language</label>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;" id="editModalCategoryPills">
+                    <button type="button" class="category-pill-btn" data-cat="Koch Rajbongshi">Koch Rajbongshi</button>
+                    <button type="button" class="category-pill-btn" data-cat="Assamese">Assamese</button>
+                    <button type="button" class="category-pill-btn" data-cat="Bodo">Bodo</button>
+                    <button type="button" class="category-pill-btn" data-cat="All Music">All Music</button>
+                </div>
+                <input type="text" class="form-input" id="editModalGenre">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Lyrics</label>
+                <textarea class="form-input" id="editModalLyrics" rows="3"></textarea>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
+                <button type="button" class="btn-secondary" id="btnCancelEditModal">Cancel</button>
+                <button type="button" class="btn-primary" id="btnSaveEditModal">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="js/admin.js"></script>
+</body>
+
+</html>

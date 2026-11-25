@@ -1,0 +1,30 @@
+{
+  "all": {
+    "title": "Sangeet Local - Top Regional Hits",
+    "subtitle": "Koch Rajbongshi, Assamese & Bodo Collection • Streaming Live",
+    "tag": "🎵 Sangeet Local",
+    "coverUrl": "",
+    "songId": "song_1795530737675_998"
+  },
+  "koch_rajbongshi": {
+    "title": "Koch Rajbongshi Melodies",
+    "subtitle": "Authentic Kamtapuri & Rajbongshi Music",
+    "tag": "🎵 Koch Rajbongshi",
+    "coverUrl": "",
+    "songId": ""
+  },
+  "assamese": {
+    "title": "তুমি মোৰ আকাশ - Assamese Spotlight",
+    "subtitle": "Top Modern & Classic Assamese Songs",
+    "tag": "🎵 Assamese",
+    "coverUrl": "",
+    "songId": "song_1795530737675_998"
+  },
+  "bodo": {
+    "title": "Bodo Regional Beats",
+    "subtitle": "Traditional & Contemporary Bodo Music",
+    "tag": "🎵 Bodo",
+    "coverUrl": "",
+    "songId": ""
+  }
+}

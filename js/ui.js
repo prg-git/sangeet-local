@@ -11,6 +11,7 @@ class UIController {
         this.viewHistory = ["home"];
         this.historyIndex = 0;
         this.currentPlaylistId = null;
+        this.bannersData = null;
 
         // Visualizer animation frame
         this.animFrameId = null;
@@ -207,7 +208,10 @@ class UIController {
         });
 
         // Modal triggers
-        document.getElementById("btnOpenAddMusic").addEventListener("click", () => this.openModal(this.dom.addMusicModal));
+        const btnAddMusic = document.getElementById("btnOpenAddMusic");
+        if (btnAddMusic) {
+            btnAddMusic.addEventListener("click", () => this.openModal(this.dom.addMusicModal));
+        }
         document.getElementById("btnOpenEqualizer").addEventListener("click", () => this.openModal(this.dom.equalizerModal));
 
         // Mobile Connect modal trigger
@@ -845,6 +849,14 @@ class UIController {
     async switchView(viewName, params = {}) {
         this.currentView = viewName;
 
+        // Ensure 3-language banners are loaded
+        if (!this.bannersData) {
+            try {
+                const bRes = await fetch("data/banners.json?_t=" + Date.now(), { cache: "no-store" });
+                if (bRes.ok) this.bannersData = await bRes.json();
+            } catch (e) {}
+        }
+
         // Highlight sidebar & mobile bottom nav
         document.querySelectorAll(".nav-item[data-view], .mobile-nav-item[data-view]").forEach(item => {
             item.classList.toggle("active", item.getAttribute("data-view") === viewName);
@@ -919,7 +931,38 @@ class UIController {
             });
         }
 
-        const spotlight = songs[0] || null;
+        // Map selected language filter to corresponding custom hero banner
+        const langMap = {
+            "all": "all",
+            "koch rajbongshi": "koch_rajbongshi",
+            "assamese": "assamese",
+            "bodo": "bodo"
+        };
+        const currentLangKey = langMap[this.selectedFilter] || "all";
+        const currentBanner = (this.bannersData && this.bannersData[currentLangKey]) ? this.bannersData[currentLangKey] : null;
+
+        let spotlight = null;
+        if (currentBanner && currentBanner.songId) {
+            spotlight = songs.find(s => s.id === currentBanner.songId);
+        }
+        if (!spotlight && filteredSongs.length > 0) {
+            spotlight = filteredSongs[0];
+        }
+        if (!spotlight) {
+            spotlight = songs[0] || null;
+        }
+
+        const bannerTitle = (currentBanner && currentBanner.title) ? currentBanner.title : (spotlight ? spotlight.title : "Sangeet Local");
+        const bannerTag = (currentBanner && currentBanner.tag) ? currentBanner.tag : (spotlight && spotlight.genre ? `🎵 ${spotlight.genre}` : "🎵 Sangeet Local");
+        const bannerDesc = (currentBanner && currentBanner.subtitle)
+            ? currentBanner.subtitle
+            : (spotlight
+                ? `By ${spotlight.artist} • ${spotlight.album || 'Single'} • Regional Music`
+                : "Your personal regional music streaming player.");
+        const bannerCover = (currentBanner && currentBanner.coverUrl)
+            ? (currentBanner.coverUrl.startsWith("/") ? currentBanner.coverUrl.substring(1) : currentBanner.coverUrl)
+            : (spotlight ? this.getSongCoverUrl(spotlight) : "icons/icon-192.png");
+        const playSongId = spotlight ? spotlight.id : (filteredSongs[0] ? filteredSongs[0].id : (songs[0] ? songs[0].id : ""));
 
         let html = `
             <!-- Filter Pills (All Music, Koch Rajbongshi, Assamese, Bodo) -->
@@ -929,47 +972,25 @@ class UIController {
                 <button class="pill ${this.selectedFilter === 'assamese' ? 'active' : ''}" data-filter="assamese">Assamese</button>
                 <button class="pill ${this.selectedFilter === 'bodo' ? 'active' : ''}" data-filter="bodo">Bodo</button>
             </div>
-        `;
 
-        // Hero Spotlight Banner
-        if (spotlight) {
-            const spotCover = this.getSongCoverUrl(spotlight);
-            html += `
-                <div class="hero-banner">
-                    <div class="hero-content">
-                        <div class="hero-tag">🎵 Sangeet Local</div>
-                        <h2 class="hero-title">${this.escapeHtml(spotlight.title)}</h2>
-                        <p class="hero-desc">By ${this.escapeHtml(spotlight.artist)} • ${this.escapeHtml(spotlight.album || 'Single')} • Streaming live from PC</p>
-                        <div class="hero-actions">
-                            <button class="btn-primary" id="btnPlaySpotlight" data-song-id="${spotlight.id}">
-                                <span>▶ Play Now</span>
-                            </button>
-                            <button class="btn-secondary pc-only-btn" id="btnAddSongsHero">
-                                <span>+ Add More Music</span>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="hero-art-stack">
-                        <img src="${spotCover}" alt="Cover" class="hero-art-img">
+            <!-- Hero Spotlight Banner (Dynamically updates with each of the 3 languages!) -->
+            <div class="hero-banner">
+                <div class="hero-content">
+                    <div class="hero-tag">${this.escapeHtml(bannerTag)}</div>
+                    <h2 class="hero-title">${this.escapeHtml(bannerTitle)}</h2>
+                    <p class="hero-desc">${this.escapeHtml(bannerDesc)}</p>
+                    <div class="hero-actions">
+                        ${playSongId ? `
+                        <button class="btn-primary" id="btnPlaySpotlight" data-song-id="${playSongId}">
+                            <span>▶ Play Now</span>
+                        </button>` : ''}
                     </div>
                 </div>
-            `;
-        } else {
-            html += `
-                <div class="hero-banner">
-                    <div class="hero-content">
-                        <div class="hero-tag">🎵 Sangeet Local</div>
-                        <h2 class="hero-title">Sangeet Local</h2>
-                        <p class="hero-desc">Your personal music streaming player. All songs uploaded from your PC appear and play here instantly.</p>
-                        <div class="hero-actions">
-                            <button class="btn-primary pc-only-btn" id="btnAddSongsHero">
-                                <span>+ Add Music</span>
-                            </button>
-                        </div>
-                    </div>
+                <div class="hero-art-stack">
+                    <img src="${bannerCover}" alt="${this.escapeHtml(bannerTitle)}" class="hero-art-img" onerror="this.onerror=null; this.src='icons/icon-192.png';">
                 </div>
-            `;
-        }
+            </div>
+        `;
 
         // Trending Cards Row
         if (filteredSongs.length > 0) {
@@ -993,7 +1014,6 @@ class UIController {
                         <div class="card-artist" title="${this.escapeHtml(song.artist)}">${this.escapeHtml(song.artist)}</div>
                         <div class="card-meta">
                             <span>${this.escapeHtml(song.genre || 'Music')}</span>
-                            <button class="card-menu-btn" data-edit-id="${song.id}" title="Edit or Remove">⋮</button>
                         </div>
                     </div>
                 `;
@@ -1342,10 +1362,7 @@ class UIController {
                         <button class="row-btn ${song.isLiked ? 'liked' : ''}" data-like-id="${song.id}" title="Like">♥</button>
                         ${fromPlaylistId ? `
                             <button class="row-btn" data-remove-pl-id="${song.id}" title="Remove from Playlist" style="color: #ef4444;">✕</button>
-                        ` : `
-                            <button class="row-btn" data-delete-id="${song.id}" title="Remove Song" style="color: #ef4444;">🗑</button>
-                        `}
-                        <button class="row-btn" data-edit-id="${song.id}" title="Edit / Add to Playlist">⋮</button>
+                        ` : ''}
                     </td>
                 </tr>
             `;

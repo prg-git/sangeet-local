@@ -8,7 +8,7 @@ echo  This script will fix the folder structure by uploading:
 echo    - css/       (styles)
 echo    - js/        (audio player, database, UI)
 echo    - music/     (songs)
-echo    - data/      (library.json, playlists.json)
+echo    - data/      (library.json, banners.json, playlists.json)
 echo    - icons/     (app icons)
 echo    - .nojekyll  (GitHub Pages configuration)
 echo ===================================================================
