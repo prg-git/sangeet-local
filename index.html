@@ -124,6 +124,13 @@
                 </div>
 
                 <div class="header-actions">
+                    <!-- Master Admin PC Badge -->
+                    <span class="pc-admin-badge pc-only-btn" id="pcAdminHeaderBadge"
+                        style="display: inline-flex; align-items: center; gap: 4px; padding: 5px 12px; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #f59e0b; border-radius: var(--radius-full); font-size: 11px; font-weight: 800;">
+                        <span>👑</span>
+                        <span>PC Master Admin</span>
+                    </span>
+
                     <!-- Admin Panel Button (PC View Only) -->
                     <button class="admin-header-btn pc-only-btn" id="btnOpenAdminPanel"
                         title="Admin Panel (Change Banner, Add Songs, Manage Library)">
@@ -560,41 +567,76 @@
                 <button type="button" class="modal-tab-btn" id="adminTabBtnManage">🛠️ Manage Songs</button>
             </div>
 
-            <!-- TAB 1: Change Hero Banner -->
+            <!-- TAB 1: Change Hero Banner for Mobile View & PC -->
             <div id="adminTabBannerContent">
                 <div
-                    style="background: rgba(124, 58, 237, 0.1); border: 1px solid rgba(124, 58, 237, 0.3); border-radius: var(--radius-md); padding: 12px; margin-bottom: 16px;">
-                    <div style="font-weight: 700; color: #a78bfa; margin-bottom: 4px;">Featured Hero Banner</div>
-                    <div style="font-size: 13px; color: var(--text-muted);">Select any song to be prominently featured
-                        in the top hero banner on the Home screen across PC & Mobile.</div>
+                    style="background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(124, 58, 237, 0.35); border-radius: var(--radius-md); padding: 12px; margin-bottom: 16px;">
+                    <div style="font-weight: 700; color: #a78bfa; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                        <span>📱</span>
+                        <span>Public Mobile App Hero Banner Control</span>
+                    </div>
+                    <div style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">
+                        Customize the hero banner name, subtitle, and image that all public mobile listeners see at the top of the mobile app.
+                    </div>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Choose Song for Featured Banner</label>
+                    <label class="form-label">Featured Song to Play on "Play Now"</label>
                     <select class="form-select" id="adminBannerSongSelect">
                         <!-- Populated dynamically via ui.js -->
                     </select>
                 </div>
 
+                <div class="form-group">
+                    <label class="form-label">Hero Banner Name / Title</label>
+                    <input type="text" class="form-input" id="adminBannerCustomTitle" placeholder="Custom banner headline (e.g. Sangeet Local - Top Regional Hits)">
+                </div>
+
+                <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div>
+                        <label class="form-label">Banner Tag / Badge</label>
+                        <input type="text" class="form-input" id="adminBannerCustomTag" placeholder="e.g. 🎵 Sangeet Local" value="🎵 Sangeet Local">
+                    </div>
+                    <div>
+                        <label class="form-label">Banner Subtitle / Description</label>
+                        <input type="text" class="form-input" id="adminBannerCustomSubtitle" placeholder="e.g. By Local Artist • Streaming Live">
+                    </div>
+                </div>
+
+                <!-- Custom Banner Image Selector -->
+                <div class="form-group">
+                    <label class="form-label">Banner Image / Artwork</label>
+                    <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 8px; flex-wrap: wrap;">
+                        <button type="button" class="btn-secondary" id="btnAdminChooseBannerCover" style="padding: 6px 12px; font-size: 12px;">
+                            <span>🖼️ Upload Custom Image from PC</span>
+                        </button>
+                        <button type="button" class="btn-secondary" id="btnAdminResetBannerCover" style="padding: 6px 12px; font-size: 12px; color: var(--text-muted);">
+                            <span>↺ Use Selected Song Cover</span>
+                        </button>
+                        <input type="file" id="adminBannerCoverFileInput" accept="image/*" style="display: none;">
+                    </div>
+                    <input type="url" class="form-input" id="adminBannerCoverUrlInput" placeholder="Or paste image web link (https://...)" style="font-size: 12px;">
+                </div>
+
                 <!-- Live Banner Preview Card -->
-                <div class="form-label" style="margin-top: 14px;">Preview:</div>
+                <div class="form-label" style="margin-top: 14px;">Mobile App Live Banner Preview:</div>
                 <div id="adminBannerPreviewBox"
                     style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.25), rgba(236, 72, 153, 0.2)); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 14px; display: flex; gap: 14px; align-items: center; margin-bottom: 20px;">
                     <img id="adminBannerCoverImg" src="icons/icon-192.png" alt="Banner Cover"
-                        style="width: 70px; height: 70px; border-radius: 10px; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
+                        style="width: 76px; height: 76px; border-radius: 12px; object-fit: cover; box-shadow: 0 4px 14px rgba(0,0,0,0.5);">
                     <div style="flex: 1; min-width: 0;">
                         <span
                             style="display: inline-block; padding: 2px 8px; background: rgba(16, 185, 129, 0.2); border-radius: 12px; font-size: 10px; font-weight: 700; color: var(--primary); margin-bottom: 4px;"
-                            id="adminBannerTag">🎵 Featured Spotlight</span>
+                            id="adminBannerTag">🎵 Sangeet Local</span>
                         <div style="font-size: 16px; font-weight: 700; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
                             id="adminBannerTitle">Select a song above</div>
-                        <div style="font-size: 12px; color: var(--text-muted);" id="adminBannerArtist">Artist Name</div>
+                        <div style="font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="adminBannerArtist">Artist Name</div>
                     </div>
                 </div>
 
                 <button type="button" class="btn-primary" id="btnSaveHeroBanner"
                     style="width: 100%; justify-content: center; padding: 12px; font-size: 15px;">
-                    <span>🌟 Save & Set as Hero Banner</span>
+                    <span>🌟 Save & Publish Banner to Public Mobile App</span>
                 </button>
             </div>
 

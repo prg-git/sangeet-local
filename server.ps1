@@ -1,4 +1,4 @@
-# Sangeet Universal Music Server with Shared Library, Auto-Folder Scanner & Mobile Sync
+﻿# Sangeet Universal Music Server with Shared Library, Auto-Folder Scanner & Mobile Sync
 param(
     [int]$Port = 8080
 )
@@ -9,6 +9,7 @@ $CoversDir = Join-Path $MusicDir "covers"
 $DataDir = Join-Path $DocRoot "data"
 $LibraryFile = Join-Path $DataDir "library.json"
 $PlaylistsFile = Join-Path $DataDir "playlists.json"
+$BannerFile = Join-Path $DataDir "banner.json"
 
 # Ensure directories and database files exist
 if (-not (Test-Path $MusicDir)) { New-Item -ItemType Directory -Path $MusicDir -Force | Out-Null }
@@ -16,6 +17,7 @@ if (-not (Test-Path $CoversDir)) { New-Item -ItemType Directory -Path $CoversDir
 if (-not (Test-Path $DataDir)) { New-Item -ItemType Directory -Path $DataDir -Force | Out-Null }
 if (-not (Test-Path $LibraryFile)) { Set-Content -Path $LibraryFile -Value "[]" -Encoding UTF8 }
 if (-not (Test-Path $PlaylistsFile)) { Set-Content -Path $PlaylistsFile -Value "[]" -Encoding UTF8 }
+if (-not (Test-Path $BannerFile)) { Set-Content -Path $BannerFile -Value "{}" -Encoding UTF8 }
 
 # Detect Local Network IPv4 Address
 $LocalIP = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object { 
@@ -53,6 +55,17 @@ function Read-JsonFile($path) {
         return @($obj)
     } catch {
         return @()
+    }
+}
+
+function Read-JsonObject($path) {
+    try {
+        if (-not (Test-Path $path)) { return $null }
+        $content = [System.IO.File]::ReadAllText($path, [System.Text.Encoding]::UTF8)
+        if (-not $content -or $content.Trim() -eq "") { return $null }
+        return (ConvertFrom-Json $content)
+    } catch {
+        return $null
     }
 }
 
@@ -493,6 +506,72 @@ while ($true) {
         if ($Method -eq "GET" -and $Path -eq "/api/playlists") {
             $pls = Read-JsonFile $PlaylistsFile
             & $SendJson "200 OK" @{ playlists = $pls }
+            $Client.Close()
+            continue
+        }
+
+        # 7. GET /api/banner
+        if ($Method -eq "GET" -and $Path -eq "/api/banner") {
+            $banner = Read-JsonObject $BannerFile
+            if (-not $banner) {
+                $banner = @{
+                    title = "Sangeet Local"
+                    subtitle = "Personal Music Streaming Player"
+                    tag = "🎵 Sangeet Local"
+                    coverUrl = ""
+                    songId = ""
+                    updatedAt = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+                }
+            }
+            & $SendJson "200 OK" @{ banner = $banner }
+            $Client.Close()
+            continue
+        }
+
+        # 8. POST /api/banner (Update Hero Banner for Mobile & PC)
+        if ($Method -eq "POST" -and $Path -eq "/api/banner") {
+            $rawBody = & $ReadBodyBytes
+            $bodyStr = [System.Text.Encoding]::UTF8.GetString($rawBody)
+            $bannerData = ConvertFrom-Json $bodyStr
+
+            $coverUrl = $bannerData.coverUrl
+            if ($bannerData.coverBase64) {
+                try {
+                    $cleanB64 = $bannerData.coverBase64 -replace '^data:image\/[a-z]+;base64,', ''
+                    $coverBytes = [System.Convert]::FromBase64String($cleanB64)
+                    $coverFilename = "banner_cover_" + [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() + ".jpg"
+                    $coverFilePath = Join-Path $CoversDir $coverFilename
+                    [System.IO.File]::WriteAllBytes($coverFilePath, $coverBytes)
+                    $coverUrl = "/music/covers/$coverFilename"
+                    Write-Host "Saved custom hero banner cover: $coverFilename" -ForegroundColor Green
+                } catch {
+                    Write-Host "Failed to save banner cover: $_" -ForegroundColor Red
+                }
+            }
+
+            $newBanner = @{
+                title = if ($bannerData.title) { $bannerData.title } else { "Sangeet Local" }
+                subtitle = if ($bannerData.subtitle) { $bannerData.subtitle } else { "" }
+                tag = if ($bannerData.tag) { $bannerData.tag } else { "🎵 Sangeet Local" }
+                coverUrl = $coverUrl
+                songId = if ($bannerData.songId) { $bannerData.songId } else { "" }
+                updatedAt = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+            }
+
+            # Also update spotlight in library.json if songId provided
+            if ($newBanner.songId) {
+                $songs = @(Read-JsonFile $LibraryFile)
+                foreach ($s in $songs) {
+                    $s.isSpotlight = ($s.id -eq $newBanner.songId)
+                }
+                Save-JsonFile $LibraryFile $songs
+            }
+
+            $jsonStr = ConvertTo-Json -InputObject $newBanner -Depth 10
+            [System.IO.File]::WriteAllText($BannerFile, $jsonStr, [System.Text.Encoding]::UTF8)
+
+            Write-Host ("Published Hero Banner: " + $newBanner.title) -ForegroundColor Cyan
+            & $SendJson "200 OK" @{ success = $true; banner = $newBanner }
             $Client.Close()
             continue
         }

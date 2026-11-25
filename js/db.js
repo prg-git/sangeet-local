@@ -267,6 +267,99 @@ class MusicDB {
         return true;
     }
 
+    async getBanner() {
+        await this.init();
+
+        // 1. If connected to server (PC Admin), fetch fresh banner from API
+        if (this.isServerConnected) {
+            try {
+                const res = await fetch("/api/banner?_t=" + Date.now(), { cache: "no-store" });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.banner) {
+                        try {
+                            localStorage.setItem("sangeet_banner_data", JSON.stringify(data.banner));
+                        } catch (e) { }
+                        return data.banner;
+                    }
+                }
+            } catch (e) { }
+        }
+
+        // 2. If on GitHub Pages (Public Mobile View), fetch fresh data/banner.json
+        try {
+            const staticRes = await fetch("data/banner.json?_t=" + Date.now(), { cache: "no-store" });
+            if (staticRes.ok) {
+                const banner = await staticRes.json();
+                if (banner && (banner.title || banner.songId)) {
+                    try {
+                        localStorage.setItem("sangeet_banner_data", JSON.stringify(banner));
+                    } catch (e) { }
+                    return banner;
+                }
+            }
+        } catch (e) { }
+
+        // 3. Fallback to localStorage or default
+        try {
+            const cached = localStorage.getItem("sangeet_banner_data");
+            if (cached) {
+                return JSON.parse(cached);
+            }
+        } catch (e) { }
+
+        return {
+            title: "Sangeet Local",
+            subtitle: "Your personal music streaming player. All songs uploaded from PC appear here instantly.",
+            tag: "🎵 Sangeet Local",
+            coverUrl: "",
+            songId: ""
+        };
+    }
+
+    async saveBanner(bannerData, imageBlobOrBase64 = null) {
+        await this.init();
+
+        const payload = Object.assign({}, bannerData);
+        if (imageBlobOrBase64) {
+            if (typeof imageBlobOrBase64 === "string") {
+                payload.coverBase64 = imageBlobOrBase64.replace(/^data:image\/[a-z]+;base64,/, '');
+                payload.coverUrl = imageBlobOrBase64.startsWith("data:") ? imageBlobOrBase64 : `data:image/jpeg;base64,${payload.coverBase64}`;
+            } else {
+                const b64 = await this.blobToBase64(imageBlobOrBase64);
+                payload.coverBase64 = b64 ? b64.replace(/^data:image\/[a-z]+;base64,/, '') : null;
+                if (b64) payload.coverUrl = b64;
+            }
+        }
+
+        try {
+            localStorage.setItem("sangeet_banner_data", JSON.stringify(payload));
+        } catch (e) { }
+
+        if (this.isServerConnected) {
+            try {
+                const res = await fetch("/api/banner", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.banner) {
+                        try {
+                            localStorage.setItem("sangeet_banner_data", JSON.stringify(data.banner));
+                        } catch (e) { }
+                        return data.banner;
+                    }
+                }
+            } catch (e) {
+                console.warn("Server save banner error:", e);
+            }
+        }
+
+        return payload;
+    }
+
     async updateSong(song, coverBlobOrBase64 = null, removeCover = false) {
         await this.init();
 
@@ -349,6 +442,11 @@ class MusicDB {
         if (freshSongs && freshSongs.length > 0) {
             await this.cacheSongsToIndexedDB(freshSongs);
         }
+
+        // 4. Also sync latest hero banner configuration
+        try {
+            await this.getBanner();
+        } catch (e) { }
 
         return freshSongs;
     }

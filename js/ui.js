@@ -12,6 +12,23 @@ class UIController {
         this.historyIndex = 0;
         this.currentPlaylistId = null;
 
+        // Detect Master PC Admin vs Public Mobile Client Mode
+        const host = window.location.hostname;
+        this.isMasterAdmin = (
+            host === "localhost" ||
+            host === "127.0.0.1" ||
+            host === "" ||
+            window.location.protocol === "file:"
+        );
+
+        if (!this.isMasterAdmin) {
+            document.body.classList.add("public-client-mode");
+        }
+
+        // Custom banner image state
+        this.adminBannerCustomImageFile = null;
+        this.adminBannerCustomImageBase64 = null;
+
         // Visualizer animation frame
         this.animFrameId = null;
 
@@ -112,6 +129,14 @@ class UIController {
             adminBannerCoverImg: document.getElementById("adminBannerCoverImg"),
             adminBannerTitle: document.getElementById("adminBannerTitle"),
             adminBannerArtist: document.getElementById("adminBannerArtist"),
+            adminBannerTag: document.getElementById("adminBannerTag"),
+            adminBannerCustomTitle: document.getElementById("adminBannerCustomTitle"),
+            adminBannerCustomTag: document.getElementById("adminBannerCustomTag"),
+            adminBannerCustomSubtitle: document.getElementById("adminBannerCustomSubtitle"),
+            adminBannerCoverUrlInput: document.getElementById("adminBannerCoverUrlInput"),
+            adminBannerCoverFileInput: document.getElementById("adminBannerCoverFileInput"),
+            btnAdminChooseBannerCover: document.getElementById("btnAdminChooseBannerCover"),
+            btnAdminResetBannerCover: document.getElementById("btnAdminResetBannerCover"),
             btnSaveHeroBanner: document.getElementById("btnSaveHeroBanner"),
             adminManageSearchInput: document.getElementById("adminManageSearchInput"),
             adminManageSongsList: document.getElementById("adminManageSongsList"),
@@ -820,10 +845,71 @@ class UIController {
             }
         });
 
-        // Admin: Banner Song Select change
+        // Admin: Banner Studio Live Preview Events
         if (this.dom.adminBannerSongSelect) {
             this.dom.adminBannerSongSelect.addEventListener("change", () => {
                 this.updateAdminBannerPreview();
+            });
+        }
+        if (this.dom.adminBannerCustomTitle) {
+            this.dom.adminBannerCustomTitle.addEventListener("input", () => {
+                this.updateAdminBannerPreview();
+            });
+        }
+        if (this.dom.adminBannerCustomTag) {
+            this.dom.adminBannerCustomTag.addEventListener("input", () => {
+                this.updateAdminBannerPreview();
+            });
+        }
+        if (this.dom.adminBannerCustomSubtitle) {
+            this.dom.adminBannerCustomSubtitle.addEventListener("input", () => {
+                this.updateAdminBannerPreview();
+            });
+        }
+        if (this.dom.adminBannerCoverUrlInput) {
+            this.dom.adminBannerCoverUrlInput.addEventListener("input", () => {
+                this.adminBannerCustomImageFile = null;
+                this.adminBannerCustomImageBase64 = null;
+                this.updateAdminBannerPreview();
+            });
+        }
+
+        // Admin: Custom Banner Image Upload from PC
+        if (this.dom.btnAdminChooseBannerCover) {
+            this.dom.btnAdminChooseBannerCover.addEventListener("click", () => {
+                if (this.dom.adminBannerCoverFileInput) {
+                    this.dom.adminBannerCoverFileInput.click();
+                }
+            });
+        }
+        if (this.dom.adminBannerCoverFileInput) {
+            this.dom.adminBannerCoverFileInput.addEventListener("change", (e) => {
+                const file = e.target.files && e.target.files[0];
+                if (file) {
+                    this.adminBannerCustomImageFile = file;
+                    const reader = new FileReader();
+                    reader.onload = (re) => {
+                        this.adminBannerCustomImageBase64 = re.target.result;
+                        if (this.dom.adminBannerCoverUrlInput) {
+                            this.dom.adminBannerCoverUrlInput.value = "";
+                        }
+                        this.updateAdminBannerPreview();
+                        this.showToast("Custom banner image loaded!");
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        // Admin: Reset Banner Cover to Selected Song's Artwork
+        if (this.dom.btnAdminResetBannerCover) {
+            this.dom.btnAdminResetBannerCover.addEventListener("click", () => {
+                this.adminBannerCustomImageFile = null;
+                this.adminBannerCustomImageBase64 = null;
+                if (this.dom.adminBannerCoverFileInput) this.dom.adminBannerCoverFileInput.value = "";
+                if (this.dom.adminBannerCoverUrlInput) this.dom.adminBannerCoverUrlInput.value = "";
+                this.updateAdminBannerPreview();
+                this.showToast("Banner image reset to song artwork.");
             });
         }
 
@@ -1084,9 +1170,11 @@ class UIController {
         const playlists = await window.musicDB.getAllPlaylists();
 
         switch (viewName) {
-            case "home":
-                this.renderHomeView(allSongs, playlists);
+            case "home": {
+                const banner = await window.musicDB.getBanner();
+                this.renderHomeView(allSongs, playlists, banner);
                 break;
+            }
             case "library":
                 this.renderLibraryView(allSongs);
                 break;
@@ -1102,8 +1190,10 @@ class UIController {
             case "about":
                 this.renderAboutView();
                 break;
-            default:
-                this.renderHomeView(allSongs, playlists);
+            default: {
+                const banner = await window.musicDB.getBanner();
+                this.renderHomeView(allSongs, playlists, banner);
+            }
         }
 
         // Scroll back to top
@@ -1116,7 +1206,7 @@ class UIController {
 
     // --- 1. HOME VIEW ---
 
-    renderHomeView(songs, playlists) {
+    renderHomeView(songs, playlists, banner = null) {
         const container = this.dom.viewContainer;
 
         // Filter songs based on category chip (All Music, Koch Rajbongshi, Assamese, Bodo)
@@ -1148,13 +1238,30 @@ class UIController {
             });
         }
 
+        // Determine featured song for the Hero Banner
         let spotlight = null;
-        if (this.currentSpotlightId) {
+        if (banner && banner.songId) {
+            spotlight = songs.find(s => s.id === banner.songId);
+        }
+        if (!spotlight && this.currentSpotlightId) {
             spotlight = songs.find(s => s.id === this.currentSpotlightId);
         }
         if (!spotlight) {
             spotlight = songs.find(s => s.isSpotlight) || songs[0] || null;
         }
+
+        // Custom Hero Banner Title, Subtitle, Tag, and Artwork configured by PC Admin
+        const bannerTitle = (banner && banner.title) ? banner.title : (spotlight ? spotlight.title : "Sangeet Local");
+        const bannerTag = (banner && banner.tag) ? banner.tag : (spotlight && spotlight.genre ? `🎵 ${spotlight.genre}` : "🎵 Sangeet Local");
+        const bannerDesc = (banner && banner.subtitle)
+            ? banner.subtitle
+            : (spotlight
+                ? `By ${spotlight.artist} • ${spotlight.album || 'Single'} • Streaming live from PC`
+                : "Your personal music streaming player. All songs uploaded from your PC appear and play here instantly.");
+        const bannerCover = (banner && banner.coverUrl)
+            ? banner.coverUrl
+            : (spotlight ? this.getSongCoverUrl(spotlight) : "icons/icon-192.png");
+        const playSongId = spotlight ? spotlight.id : (songs[0] ? songs[0].id : "");
 
         let html = `
             <!-- Filter Pills (All Music, Koch Rajbongshi, Assamese, Bodo) -->
@@ -1164,50 +1271,31 @@ class UIController {
                 <button class="pill ${this.selectedFilter === 'assamese' ? 'active' : ''}" data-filter="assamese">Assamese</button>
                 <button class="pill ${this.selectedFilter === 'bodo' ? 'active' : ''}" data-filter="bodo">Bodo</button>
             </div>
-        `;
 
-        // Hero Spotlight Banner
-        if (spotlight) {
-            const spotCover = this.getSongCoverUrl(spotlight);
-            html += `
-                <div class="hero-banner">
-                    <div class="hero-content">
-                        <div class="hero-tag">🎵 Sangeet Local</div>
-                        <h2 class="hero-title">${this.escapeHtml(spotlight.title)}</h2>
-                        <p class="hero-desc">By ${this.escapeHtml(spotlight.artist)} • ${this.escapeHtml(spotlight.album || 'Single')} • Streaming live from PC</p>
-                        <div class="hero-actions">
-                            <button class="btn-primary" id="btnPlaySpotlight" data-song-id="${spotlight.id}">
-                                <span>▶ Play Now</span>
-                            </button>
-                            <button class="btn-secondary pc-only-btn" id="btnChangeHeroBanner" title="Change Hero Banner Featured Song">
-                                <span>⚙️ Change Banner</span>
-                            </button>
-                            <button class="btn-secondary pc-only-btn" id="btnAddSongsHero">
-                                <span>+ Add Music</span>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="hero-art-stack">
-                        <img src="${spotCover}" alt="Cover" class="hero-art-img">
+            <!-- Master Hero Spotlight Banner (Controlled by PC Admin) -->
+            <div class="hero-banner">
+                <div class="hero-content">
+                    <div class="hero-tag">${this.escapeHtml(bannerTag)}</div>
+                    <h2 class="hero-title">${this.escapeHtml(bannerTitle)}</h2>
+                    <p class="hero-desc">${this.escapeHtml(bannerDesc)}</p>
+                    <div class="hero-actions">
+                        ${playSongId ? `
+                        <button class="btn-primary" id="btnPlaySpotlight" data-song-id="${playSongId}">
+                            <span>▶ Play Now</span>
+                        </button>` : ''}
+                        <button class="btn-secondary pc-only-btn" id="btnChangeHeroBanner" title="Customize Hero Banner in PC Studio">
+                            <span>⚙️ Customize Banner</span>
+                        </button>
+                        <button class="btn-secondary pc-only-btn" id="btnAddSongsHero">
+                            <span>+ Add Music</span>
+                        </button>
                     </div>
                 </div>
-            `;
-        } else {
-            html += `
-                <div class="hero-banner">
-                    <div class="hero-content">
-                        <div class="hero-tag">🎵 Sangeet Local</div>
-                        <h2 class="hero-title">Sangeet Local</h2>
-                        <p class="hero-desc">Your personal music streaming player. All songs uploaded from your PC appear and play here instantly.</p>
-                        <div class="hero-actions">
-                            <button class="btn-primary pc-only-btn" id="btnAddSongsHero">
-                                <span>+ Add Music</span>
-                            </button>
-                        </div>
-                    </div>
+                <div class="hero-art-stack">
+                    <img src="${bannerCover}" alt="${this.escapeHtml(bannerTitle)}" class="hero-art-img" onerror="this.onerror=null; this.src='icons/icon-192.png';">
                 </div>
-            `;
-        }
+            </div>
+        `;
 
         // Trending Cards Row
         if (filteredSongs.length > 0) {
@@ -1231,7 +1319,7 @@ class UIController {
                         <div class="card-artist" title="${this.escapeHtml(song.artist)}">${this.escapeHtml(song.artist)}</div>
                         <div class="card-meta">
                             <span>${this.escapeHtml(song.genre || 'Music')}</span>
-                            <button class="card-menu-btn" data-edit-id="${song.id}" title="Edit or Remove">⋮</button>
+                            <button class="card-menu-btn pc-only-btn" data-edit-id="${song.id}" title="Edit or Remove">⋮</button>
                         </div>
                     </div>
                 `;
@@ -1581,9 +1669,9 @@ class UIController {
                         ${fromPlaylistId ? `
                             <button class="row-btn" data-remove-pl-id="${song.id}" title="Remove from Playlist" style="color: #ef4444;">✕</button>
                         ` : `
-                            <button class="row-btn" data-delete-id="${song.id}" title="Remove Song" style="color: #ef4444;">🗑</button>
+                            <button class="row-btn pc-only-btn" data-delete-id="${song.id}" title="Remove Song" style="color: #ef4444;">🗑</button>
                         `}
-                        <button class="row-btn" data-edit-id="${song.id}" title="Edit / Add to Playlist">⋮</button>
+                        <button class="row-btn pc-only-btn" data-edit-id="${song.id}" title="Edit / Add to Playlist">⋮</button>
                     </td>
                 </tr>
             `;
@@ -1756,6 +1844,10 @@ class UIController {
     // --- EDIT METADATA MODAL ---
 
     async openEditMetadataModal(songId) {
+        if (!this.isMasterAdmin) {
+            this.showToast("Editing songs is only available in PC Master Admin Studio.", "warning");
+            return;
+        }
         const song = await window.musicDB.getSong(songId);
         if (!song) return;
 
@@ -1805,9 +1897,13 @@ class UIController {
         this.openModal(this.dom.editSongModal);
     }
 
-    // --- ADMIN PANEL (PC & MOBILE) ---
+    // --- ADMIN PANEL (PC MASTER STUDIO) ---
 
     async openAdminPanel(tab = "banner") {
+        if (!this.isMasterAdmin) {
+            this.showToast("Admin Studio is only available in PC Master Admin Studio (http://localhost:8080).", "warning");
+            return;
+        }
         if (!this.dom.adminPanelModal) return;
 
         const bannerTabBtn = document.getElementById("adminTabBtnBanner");
@@ -1831,7 +1927,7 @@ class UIController {
             const isServer = window.musicDB.isServerConnected;
             statusEl.innerHTML = `
                 <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${isServer ? '#10b981' : '#38bdf8'};"></span>
-                <span>${isServer ? 'Connected to PC Server' : 'Cloud / Mobile Mode (GitHub Sync)'}</span>
+                <span>${isServer ? 'Connected to PC Server (Master Admin Active)' : 'Offline / Standalone Studio'}</span>
             `;
         }
 
@@ -1848,6 +1944,8 @@ class UIController {
         if (!this.dom.adminBannerSongSelect) return;
 
         const songs = await window.musicDB.getAllSongs();
+        const banner = await window.musicDB.getBanner();
+
         if (songs.length === 0) {
             this.dom.adminBannerSongSelect.innerHTML = `<option value="">No songs in library yet</option>`;
             if (this.dom.adminBannerTitle) this.dom.adminBannerTitle.textContent = "No songs found";
@@ -1855,9 +1953,12 @@ class UIController {
             return;
         }
 
-        // Determine which song is currently featured
+        // Determine which song is featured
         let currentSpotlight = null;
-        if (this.currentSpotlightId) {
+        if (banner && banner.songId) {
+            currentSpotlight = songs.find(s => s.id === banner.songId);
+        }
+        if (!currentSpotlight && this.currentSpotlightId) {
             currentSpotlight = songs.find(s => s.id === this.currentSpotlightId);
         }
         if (!currentSpotlight) {
@@ -1872,43 +1973,106 @@ class UIController {
         });
 
         this.dom.adminBannerSongSelect.innerHTML = optionsHtml;
-        this.updateAdminBannerPreview();
+
+        // Pre-fill custom banner title, subtitle, and tag
+        if (this.dom.adminBannerCustomTitle) {
+            this.dom.adminBannerCustomTitle.value = (banner && banner.title) ? banner.title : "";
+        }
+        if (this.dom.adminBannerCustomTag) {
+            this.dom.adminBannerCustomTag.value = (banner && banner.tag) ? banner.tag : "🎵 Sangeet Local";
+        }
+        if (this.dom.adminBannerCustomSubtitle) {
+            this.dom.adminBannerCustomSubtitle.value = (banner && banner.subtitle) ? banner.subtitle : "";
+        }
+        if (this.dom.adminBannerCoverUrlInput) {
+            this.dom.adminBannerCoverUrlInput.value = (banner && banner.coverUrl && !banner.coverUrl.startsWith("data:")) ? banner.coverUrl : "";
+        }
+
+        this.adminBannerCustomImageFile = null;
+        this.adminBannerCustomImageBase64 = null;
+        if (this.dom.adminBannerCoverFileInput) this.dom.adminBannerCoverFileInput.value = "";
+
+        this.updateAdminBannerPreview(banner);
     }
 
-    async updateAdminBannerPreview() {
-        if (!this.dom.adminBannerSongSelect) return;
-        const selectedId = this.dom.adminBannerSongSelect.value;
-        if (!selectedId) return;
-
+    async updateAdminBannerPreview(existingBanner = null) {
         const songs = await window.musicDB.getAllSongs();
+        const selectedId = this.dom.adminBannerSongSelect ? this.dom.adminBannerSongSelect.value : "";
         const song = songs.find(s => s.id === selectedId);
-        if (!song) return;
 
-        if (this.dom.adminBannerTitle) this.dom.adminBannerTitle.textContent = song.title;
-        if (this.dom.adminBannerArtist) this.dom.adminBannerArtist.textContent = `${song.artist} • ${song.album || 'Single'}`;
-        if (this.dom.adminBannerCoverImg) this.dom.adminBannerCoverImg.src = this.getSongCoverUrl(song);
+        const customTitle = this.dom.adminBannerCustomTitle ? this.dom.adminBannerCustomTitle.value.trim() : "";
+        const displayTitle = customTitle || (song ? song.title : "Select a song above");
+        if (this.dom.adminBannerTitle) this.dom.adminBannerTitle.textContent = displayTitle;
 
-        const bannerTag = document.getElementById("adminBannerTag");
-        if (bannerTag) {
-            bannerTag.textContent = `🎵 ${song.genre || 'Featured Spotlight'}`;
+        const customSubtitle = this.dom.adminBannerCustomSubtitle ? this.dom.adminBannerCustomSubtitle.value.trim() : "";
+        const displaySubtitle = customSubtitle || (song ? `${song.artist} • ${song.album || 'Single'}` : "Artist Name");
+        if (this.dom.adminBannerArtist) this.dom.adminBannerArtist.textContent = displaySubtitle;
+
+        const customTag = this.dom.adminBannerCustomTag ? this.dom.adminBannerCustomTag.value.trim() : "";
+        const displayTag = customTag || (song ? `🎵 ${song.genre || 'Featured'}` : "🎵 Sangeet Local");
+        if (this.dom.adminBannerTag) this.dom.adminBannerTag.textContent = displayTag;
+
+        let coverSrc = "icons/icon-192.png";
+        if (this.adminBannerCustomImageBase64) {
+            coverSrc = this.adminBannerCustomImageBase64;
+        } else if (this.dom.adminBannerCoverUrlInput && this.dom.adminBannerCoverUrlInput.value.trim()) {
+            coverSrc = this.dom.adminBannerCoverUrlInput.value.trim();
+        } else if (existingBanner && existingBanner.coverUrl) {
+            coverSrc = existingBanner.coverUrl;
+        } else if (song) {
+            coverSrc = this.getSongCoverUrl(song);
+        }
+
+        if (this.dom.adminBannerCoverImg) {
+            this.dom.adminBannerCoverImg.src = coverSrc;
         }
     }
 
     async saveHeroBanner() {
         if (!this.dom.adminBannerSongSelect) return;
         const selectedId = this.dom.adminBannerSongSelect.value;
-        if (!selectedId) {
-            this.showToast("Please choose a song for the hero banner!", "danger");
-            return;
+
+        const songs = await window.musicDB.getAllSongs();
+        const song = songs.find(s => s.id === selectedId);
+
+        const customTitle = this.dom.adminBannerCustomTitle ? this.dom.adminBannerCustomTitle.value.trim() : "";
+        const customSubtitle = this.dom.adminBannerCustomSubtitle ? this.dom.adminBannerCustomSubtitle.value.trim() : "";
+        const customTag = this.dom.adminBannerCustomTag ? this.dom.adminBannerCustomTag.value.trim() : "🎵 Sangeet Local";
+        const customCoverUrl = this.dom.adminBannerCoverUrlInput ? this.dom.adminBannerCoverUrlInput.value.trim() : "";
+
+        const title = customTitle || (song ? song.title : "Sangeet Local");
+        const subtitle = customSubtitle || (song ? `By ${song.artist} • ${song.album || 'Single'} • Streaming live from PC` : "Your personal music streaming player.");
+        const tag = customTag || "🎵 Sangeet Local";
+
+        let coverUrl = customCoverUrl;
+        if (!coverUrl && !this.adminBannerCustomImageBase64 && !this.adminBannerCustomImageFile) {
+            coverUrl = song ? this.getSongCoverUrl(song) : "icons/icon-192.png";
         }
 
-        const song = await window.musicDB.getSong(selectedId);
-        await window.musicDB.setSpotlight(selectedId);
-        this.currentSpotlightId = selectedId;
+        const bannerData = {
+            title,
+            subtitle,
+            tag,
+            coverUrl,
+            songId: selectedId || ""
+        };
 
-        this.showToast(`🌟 Hero Banner updated to: "${song ? song.title : 'Selected Track'}"!`);
-        this.closeModal(this.dom.adminPanelModal);
-        await this.refreshCurrentView();
+        const imagePayload = this.adminBannerCustomImageBase64 || this.adminBannerCustomImageFile || null;
+
+        try {
+            await window.musicDB.saveBanner(bannerData, imagePayload);
+            if (selectedId) {
+                await window.musicDB.setSpotlight(selectedId);
+                this.currentSpotlightId = selectedId;
+            }
+
+            this.showToast(`🌟 Hero Banner "${title}" saved & published for public mobile app!`);
+            this.closeModal(this.dom.adminPanelModal);
+            await this.refreshCurrentView();
+        } catch (err) {
+            console.error("Failed to save hero banner:", err);
+            this.showToast(`Failed to save banner: ${err.message}`, "danger");
+        }
     }
 
     async renderAdminManageSongs(query = "") {
@@ -2319,6 +2483,10 @@ class UIController {
 
     openModal(modal) {
         if (!modal) return;
+        if (!this.isMasterAdmin && (modal === this.dom.adminPanelModal || modal === this.dom.addMusicModal || modal === this.dom.editSongModal)) {
+            this.showToast("Admin and music upload controls are only available on PC Studio (http://localhost:8080).", "warning");
+            return;
+        }
         modal.classList.add("active");
     }
 
