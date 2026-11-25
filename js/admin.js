@@ -14,9 +14,16 @@ class AdminStudio {
         this.selectedCoverFile = null;
         this.selectedCoverBase64 = null;
 
-        // Banner cover state
+        // Banner cover & background state
         this.bannerCustomImageFile = null;
         this.bannerCustomImageBase64 = null;
+        this.bannerCoverRemoved = false;
+        this.bannerCustomBgFile = null;
+        this.bannerCustomBgBase64 = null;
+        this.bannerBgRemoved = false;
+
+        // Direct cover change state
+        this.directCoverSongId = null;
 
         // Edit modal state
         this.editCoverFile = null;
@@ -43,11 +50,20 @@ class AdminStudio {
             bannerTitleInput: document.getElementById("bannerTitleInput"),
             bannerTagInput: document.getElementById("bannerTagInput"),
             bannerSubtitleInput: document.getElementById("bannerSubtitleInput"),
+            bannerBgStatusBadge: document.getElementById("bannerBgStatusBadge"),
+            btnChooseBannerBg: document.getElementById("btnChooseBannerBg"),
+            btnRemoveBannerBg: document.getElementById("btnRemoveBannerBg"),
+            bannerBgFileInput: document.getElementById("bannerBgFileInput"),
+            bannerBgUrlInput: document.getElementById("bannerBgUrlInput"),
             bannerCoverUrlInput: document.getElementById("bannerCoverUrlInput"),
             bannerCoverFileInput: document.getElementById("bannerCoverFileInput"),
             btnChooseBannerCover: document.getElementById("btnChooseBannerCover"),
             btnResetBannerCover: document.getElementById("btnResetBannerCover"),
+            btnRemoveBannerCover: document.getElementById("btnRemoveBannerCover"),
             btnSaveBanner: document.getElementById("btnSaveBanner"),
+
+            // Direct image chooser for library
+            adminDirectCoverFileInput: document.getElementById("adminDirectCoverFileInput"),
 
             // Add Music Tab
             addMusicForm: document.getElementById("addMusicForm"),
@@ -117,14 +133,47 @@ class AdminStudio {
         });
 
         // Banner live preview inputs
-        [this.dom.bannerTitleInput, this.dom.bannerTagInput, this.dom.bannerSubtitleInput, this.dom.bannerCoverUrlInput].forEach(inp => {
+        [this.dom.bannerTitleInput, this.dom.bannerTagInput, this.dom.bannerSubtitleInput, this.dom.bannerCoverUrlInput, this.dom.bannerBgUrlInput].forEach(inp => {
             if (inp) inp.addEventListener("input", () => this.updateBannerPreview());
         });
         if (this.dom.bannerSongSelect) {
             this.dom.bannerSongSelect.addEventListener("change", () => this.updateBannerPreview());
         }
 
-        // Banner Image Pickers
+        // --- HERO BANNER BACKGROUND IMAGE EVENTS ---
+        if (this.dom.btnChooseBannerBg) {
+            this.dom.btnChooseBannerBg.addEventListener("click", () => this.dom.bannerBgFileInput.click());
+        }
+        if (this.dom.bannerBgFileInput) {
+            this.dom.bannerBgFileInput.addEventListener("change", (e) => {
+                const file = e.target.files && e.target.files[0];
+                if (file) {
+                    this.bannerCustomBgFile = file;
+                    this.bannerBgRemoved = false;
+                    const reader = new FileReader();
+                    reader.onload = (re) => {
+                        this.bannerCustomBgBase64 = re.target.result;
+                        if (this.dom.bannerBgUrlInput) this.dom.bannerBgUrlInput.value = "";
+                        this.updateBannerPreview();
+                        this.showToast("Background image loaded!");
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+        if (this.dom.btnRemoveBannerBg) {
+            this.dom.btnRemoveBannerBg.addEventListener("click", () => {
+                this.bannerCustomBgFile = null;
+                this.bannerCustomBgBase64 = null;
+                this.bannerBgRemoved = true;
+                if (this.dom.bannerBgFileInput) this.dom.bannerBgFileInput.value = "";
+                if (this.dom.bannerBgUrlInput) this.dom.bannerBgUrlInput.value = "";
+                this.updateBannerPreview();
+                this.showToast("Background image removed (using default gradient).");
+            });
+        }
+
+        // --- HERO BANNER ARTWORK IMAGE EVENTS ---
         if (this.dom.btnChooseBannerCover) {
             this.dom.btnChooseBannerCover.addEventListener("click", () => this.dom.bannerCoverFileInput.click());
         }
@@ -133,12 +182,13 @@ class AdminStudio {
                 const file = e.target.files && e.target.files[0];
                 if (file) {
                     this.bannerCustomImageFile = file;
+                    this.bannerCoverRemoved = false;
                     const reader = new FileReader();
                     reader.onload = (re) => {
                         this.bannerCustomImageBase64 = re.target.result;
                         if (this.dom.bannerCoverUrlInput) this.dom.bannerCoverUrlInput.value = "";
                         this.updateBannerPreview();
-                        this.showToast("Banner image loaded!");
+                        this.showToast("Banner artwork loaded!");
                     };
                     reader.readAsDataURL(file);
                 }
@@ -148,14 +198,59 @@ class AdminStudio {
             this.dom.btnResetBannerCover.addEventListener("click", () => {
                 this.bannerCustomImageFile = null;
                 this.bannerCustomImageBase64 = null;
+                this.bannerCoverRemoved = false;
                 if (this.dom.bannerCoverFileInput) this.dom.bannerCoverFileInput.value = "";
                 if (this.dom.bannerCoverUrlInput) this.dom.bannerCoverUrlInput.value = "";
                 this.updateBannerPreview();
                 this.showToast("Banner cover reset to song artwork.");
             });
         }
+        if (this.dom.btnRemoveBannerCover) {
+            this.dom.btnRemoveBannerCover.addEventListener("click", () => {
+                this.bannerCustomImageFile = null;
+                this.bannerCustomImageBase64 = null;
+                this.bannerCoverRemoved = true;
+                if (this.dom.bannerCoverFileInput) this.dom.bannerCoverFileInput.value = "";
+                if (this.dom.bannerCoverUrlInput) this.dom.bannerCoverUrlInput.value = "";
+                this.updateBannerPreview();
+                this.showToast("Banner artwork removed.");
+            });
+        }
         if (this.dom.btnSaveBanner) {
             this.dom.btnSaveBanner.addEventListener("click", () => this.saveCurrentBanner());
+        }
+
+        // --- DIRECT COVER IMAGE CHANGER FOR LIBRARY ROWS ---
+        if (this.dom.adminDirectCoverFileInput) {
+            this.dom.adminDirectCoverFileInput.addEventListener("change", async (e) => {
+                const file = e.target.files && e.target.files[0];
+                if (file && this.directCoverSongId) {
+                    const songId = this.directCoverSongId;
+                    const song = this.songsList.find(s => s.id === songId);
+                    const title = song ? song.title : "track";
+                    this.showToast(`Uploading cover image for "${title}"...`);
+                    const reader = new FileReader();
+                    reader.onload = async (ev) => {
+                        const b64 = ev.target.result;
+                        try {
+                            const res = await fetch("/api/songs/update", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ id: songId, coverBase64: b64 })
+                            });
+                            if (res.ok) {
+                                this.showToast(`Cover image updated for "${title}"!`);
+                                await this.loadData();
+                            } else {
+                                this.showToast("Failed to update cover on server.", "danger");
+                            }
+                        } catch (err) {
+                            this.showToast("Error updating cover: " + err.message, "danger");
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
         }
 
         // Add Music Audio & Cover Pickers
@@ -356,10 +451,19 @@ class AdminStudio {
         if (this.dom.bannerCoverUrlInput) {
             this.dom.bannerCoverUrlInput.value = (banner.coverUrl && !banner.coverUrl.startsWith("data:")) ? banner.coverUrl : "";
         }
+        if (this.dom.bannerBgUrlInput) {
+            this.dom.bannerBgUrlInput.value = (banner.bgUrl && !banner.bgUrl.startsWith("data:")) ? banner.bgUrl : "";
+        }
 
         this.bannerCustomImageFile = null;
         this.bannerCustomImageBase64 = null;
+        this.bannerCoverRemoved = false;
         if (this.dom.bannerCoverFileInput) this.dom.bannerCoverFileInput.value = "";
+
+        this.bannerCustomBgFile = null;
+        this.bannerCustomBgBase64 = null;
+        this.bannerBgRemoved = false;
+        if (this.dom.bannerBgFileInput) this.dom.bannerBgFileInput.value = "";
 
         this.updateBannerPreview();
     }
@@ -380,17 +484,52 @@ class AdminStudio {
         const sub = customSub || (song ? `By ${song.artist} • ${song.album || 'Single'} • Streaming Live` : "Regional Music Spotlight");
         if (this.dom.bannerPreviewSubtitle) this.dom.bannerPreviewSubtitle.textContent = sub;
 
+        // Foreground Artwork Image
         let coverSrc = "icons/icon-192.png";
-        if (this.bannerCustomImageBase64) {
+        if (this.bannerCoverRemoved) {
+            coverSrc = "icons/icon-192.png";
+        } else if (this.bannerCustomImageBase64) {
             coverSrc = this.bannerCustomImageBase64;
         } else if (this.dom.bannerCoverUrlInput && this.dom.bannerCoverUrlInput.value.trim()) {
             coverSrc = this.dom.bannerCoverUrlInput.value.trim();
         } else if (song && song.coverUrl) {
             coverSrc = song.coverUrl.startsWith("/") ? song.coverUrl.substring(1) : song.coverUrl;
         }
-
         if (this.dom.bannerPreviewImg) {
             this.dom.bannerPreviewImg.src = coverSrc;
+        }
+
+        // Background Wallpaper Image
+        let bgSrc = "";
+        if (this.bannerBgRemoved) {
+            bgSrc = "";
+        } else if (this.bannerCustomBgBase64) {
+            bgSrc = this.bannerCustomBgBase64;
+        } else if (this.dom.bannerBgUrlInput && this.dom.bannerBgUrlInput.value.trim()) {
+            bgSrc = this.dom.bannerBgUrlInput.value.trim();
+        } else {
+            const banner = (this.bannersData && this.bannersData[this.currentLang]) || {};
+            if (banner.bgUrl) {
+                bgSrc = banner.bgUrl.startsWith("/") ? banner.bgUrl.substring(1) : banner.bgUrl;
+            }
+        }
+
+        if (this.dom.bannerPreviewBox) {
+            if (bgSrc) {
+                this.dom.bannerPreviewBox.style.background = `linear-gradient(135deg, rgba(11, 15, 23, 0.8) 0%, rgba(15, 23, 42, 0.88) 100%), url('${bgSrc}') center/cover no-repeat`;
+                if (this.dom.bannerBgStatusBadge) {
+                    this.dom.bannerBgStatusBadge.textContent = "Custom Background Active";
+                    this.dom.bannerBgStatusBadge.style.color = "#38bdf8";
+                    this.dom.bannerBgStatusBadge.style.background = "rgba(56, 189, 248, 0.2)";
+                }
+            } else {
+                this.dom.bannerPreviewBox.style.background = `linear-gradient(135deg, rgba(124, 58, 237, 0.25), rgba(236, 72, 153, 0.2))`;
+                if (this.dom.bannerBgStatusBadge) {
+                    this.dom.bannerBgStatusBadge.textContent = "Default Gradient";
+                    this.dom.bannerBgStatusBadge.style.color = "#10b981";
+                    this.dom.bannerBgStatusBadge.style.background = "rgba(16, 185, 129, 0.2)";
+                }
+            }
         }
     }
 
@@ -403,6 +542,7 @@ class AdminStudio {
         const customSub = this.dom.bannerSubtitleInput ? this.dom.bannerSubtitleInput.value.trim() : "";
         const customTag = this.dom.bannerTagInput ? this.dom.bannerTagInput.value.trim() : "";
         const coverUrlInput = this.dom.bannerCoverUrlInput ? this.dom.bannerCoverUrlInput.value.trim() : "";
+        const bgUrlInput = this.dom.bannerBgUrlInput ? this.dom.bannerBgUrlInput.value.trim() : "";
 
         const title = customTitle || (song ? song.title : "Sangeet Local");
         const subtitle = customSub || (song ? `By ${song.artist} • ${song.album || 'Single'}` : "");
@@ -416,7 +556,11 @@ class AdminStudio {
             tag,
             songId: selectedId,
             coverUrl,
-            coverBase64: this.bannerCustomImageBase64 || null
+            coverBase64: this.bannerCustomImageBase64 || null,
+            removeCover: this.bannerCoverRemoved,
+            bgUrl: bgUrlInput || (this.bannerBgRemoved ? "" : null),
+            bgBase64: this.bannerCustomBgBase64 || null,
+            removeBg: this.bannerBgRemoved
         };
 
         try {
@@ -429,7 +573,7 @@ class AdminStudio {
             if (res.ok) {
                 const data = await res.json();
                 this.bannersData = data.banners || this.bannersData;
-                this.showToast(`🌟 Saved & Published banner for [${lang}]!`);
+                this.showToast(`🌟 Saved & Published banner with background for [${lang}]!`);
             } else {
                 this.showToast("Failed to save banner on server.", "danger");
             }
@@ -552,9 +696,12 @@ class AdminStudio {
                     <span style="font-size: 11px; padding: 2px 8px; border-radius: 10px; background: rgba(124, 58, 237, 0.2); color: #c084fc; font-weight: 600;">
                         ${this.escapeHtml(song.genre || 'Music')}
                     </span>
-                    <div style="display: flex; gap: 8px;">
-                        <button type="button" class="btn-secondary" data-edit-id="${song.id}" style="padding: 6px 12px; font-size: 12px;">
-                            ✏️ Edit
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button type="button" class="btn-secondary" data-change-image-id="${song.id}" style="padding: 6px 12px; font-size: 12px;" title="Directly change album cover image from PC">
+                            🖼️ Change Image
+                        </button>
+                        <button type="button" class="btn-secondary" data-edit-id="${song.id}" style="padding: 6px 12px; font-size: 12px;" title="Edit song metadata and cover">
+                            ✏️ Edit Details
                         </button>
                         <button type="button" class="btn-secondary" data-delete-id="${song.id}" style="padding: 6px 12px; font-size: 12px; color: #ef4444; border-color: rgba(239, 68, 68, 0.4);" title="Delete track">
                             🗑 Delete
@@ -566,7 +713,17 @@ class AdminStudio {
 
         container.innerHTML = html;
 
-        // Bind Edit and Delete clicks
+        // Bind Change Image, Edit, and Delete clicks
+        container.querySelectorAll("[data-change-image-id]").forEach(btn => {
+            btn.addEventListener("click", () => {
+                this.directCoverSongId = btn.getAttribute("data-change-image-id");
+                if (this.dom.adminDirectCoverFileInput) {
+                    this.dom.adminDirectCoverFileInput.value = "";
+                    this.dom.adminDirectCoverFileInput.click();
+                }
+            });
+        });
+
         container.querySelectorAll("[data-edit-id]").forEach(btn => {
             btn.addEventListener("click", () => {
                 const id = btn.getAttribute("data-edit-id");

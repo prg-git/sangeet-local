@@ -976,6 +976,12 @@ class UIController {
         const bannerCover = (currentBanner && currentBanner.coverUrl)
             ? (currentBanner.coverUrl.startsWith("/") ? currentBanner.coverUrl.substring(1) : currentBanner.coverUrl)
             : (spotlight ? this.getSongCoverUrl(spotlight) : "icons/icon-192.png");
+        const bannerBg = (currentBanner && currentBanner.bgUrl)
+            ? (currentBanner.bgUrl.startsWith("/") ? currentBanner.bgUrl.substring(1) : currentBanner.bgUrl)
+            : "";
+        const bannerBgStyle = bannerBg
+            ? `style="background: linear-gradient(135deg, rgba(11, 15, 23, 0.82) 0%, rgba(15, 23, 42, 0.88) 100%), url('${this.escapeHtml(bannerBg)}') center/cover no-repeat;"`
+            : "";
         const playSongId = spotlight ? spotlight.id : (filteredSongs[0] ? filteredSongs[0].id : (songs[0] ? songs[0].id : ""));
 
         let html = `
@@ -988,7 +994,7 @@ class UIController {
             </div>
 
             <!-- Hero Spotlight Banner (Dynamically updates with each of the 3 languages!) -->
-            <div class="hero-banner">
+            <div class="hero-banner" ${bannerBgStyle}>
                 <div class="hero-content">
                     <div class="hero-tag">${this.escapeHtml(bannerTag)}</div>
                     <h2 class="hero-title">${this.escapeHtml(bannerTitle)}</h2>

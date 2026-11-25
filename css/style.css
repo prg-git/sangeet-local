@@ -579,6 +579,8 @@ body.theme-violet .main-view {
     position: relative;
     overflow: hidden;
     box-shadow: var(--card-shadow);
+    background-size: cover !important;
+    background-position: center !important;
 }
 body.theme-white .hero-banner {
     background: linear-gradient(135deg, rgba(5, 150, 105, 0.12) 0%, #ffffff 100%);

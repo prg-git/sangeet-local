@@ -1,4 +1,4 @@
-# Sangeet Universal Music Server with Shared Library, Auto-Folder Scanner & Mobile Sync
+﻿# Sangeet Universal Music Server with Shared Library, Auto-Folder Scanner & Mobile Sync
 param(
     [int]$Port = 8080
 )
@@ -499,10 +499,10 @@ while ($true) {
             $banners = Read-JsonObject $BannersFile
             if (-not $banners) {
                 $banners = @{
-                    all = @{ title = "Sangeet Local"; subtitle = "Regional Hits"; tag = "🎵 Sangeet Local"; coverUrl = ""; songId = "" }
-                    koch_rajbongshi = @{ title = "Koch Rajbongshi Melodies"; subtitle = "Traditional Songs"; tag = "🎵 Koch Rajbongshi"; coverUrl = ""; songId = "" }
-                    assamese = @{ title = "Assamese Superhits"; subtitle = "Classic & Modern Hits"; tag = "🎵 Assamese"; coverUrl = ""; songId = "" }
-                    bodo = @{ title = "Bodo Regional Beats"; subtitle = "Regional Beats"; tag = "🎵 Bodo"; coverUrl = ""; songId = "" }
+                    all = @{ title = "Sangeet Local"; subtitle = "Regional Hits"; tag = "🎵 Sangeet Local"; coverUrl = ""; bgUrl = ""; songId = "" }
+                    koch_rajbongshi = @{ title = "Koch Rajbongshi Melodies"; subtitle = "Traditional Songs"; tag = "🎵 Koch Rajbongshi"; coverUrl = ""; bgUrl = ""; songId = "" }
+                    assamese = @{ title = "Assamese Superhits"; subtitle = "Classic & Modern Hits"; tag = "🎵 Assamese"; coverUrl = ""; bgUrl = ""; songId = "" }
+                    bodo = @{ title = "Bodo Regional Beats"; subtitle = "Regional Beats"; tag = "🎵 Bodo"; coverUrl = ""; bgUrl = ""; songId = "" }
                 }
             }
             & $SendJson "200 OK" @{ banners = $banners }
@@ -518,8 +518,12 @@ while ($true) {
 
             $lang = if ($payload.language) { $payload.language } else { "all" }
             $coverUrl = if ($payload.coverUrl) { $payload.coverUrl } else { "" }
+            $bgUrl = if ($payload.bgUrl) { $payload.bgUrl } else { "" }
 
-            if ($payload.coverBase64) {
+            # Artwork cover image
+            if ($payload.removeCover -eq $true) {
+                $coverUrl = ""
+            } elseif ($payload.coverBase64) {
                 try {
                     $cleanB64 = $payload.coverBase64 -replace '^data:image\/[a-z]+;base64,', ''
                     $coverBytes = [System.Convert]::FromBase64String($cleanB64)
@@ -533,6 +537,23 @@ while ($true) {
                 }
             }
 
+            # Background wallpaper image
+            if ($payload.removeBg -eq $true) {
+                $bgUrl = ""
+            } elseif ($payload.bgBase64) {
+                try {
+                    $cleanBgB64 = $payload.bgBase64 -replace '^data:image\/[a-z]+;base64,', ''
+                    $bgBytes = [System.Convert]::FromBase64String($cleanBgB64)
+                    $bgFilename = "banner_bg_${lang}_" + [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() + ".jpg"
+                    $bgFilePath = Join-Path $CoversDir $bgFilename
+                    [System.IO.File]::WriteAllBytes($bgFilePath, $bgBytes)
+                    $bgUrl = "/music/covers/$bgFilename"
+                    Write-Host "Saved banner background for ${lang}: $bgFilename" -ForegroundColor Green
+                } catch {
+                    Write-Host "Failed to save banner background: $_" -ForegroundColor Red
+                }
+            }
+
             $currentBanners = Read-JsonObject $BannersFile
             if (-not $currentBanners) { $currentBanners = [PSCustomObject]@{} }
 
@@ -541,6 +562,7 @@ while ($true) {
                 subtitle = if ($payload.subtitle) { $payload.subtitle } else { "" }
                 tag = if ($payload.tag) { $payload.tag } else { "🎵 Sangeet Local" }
                 coverUrl = $coverUrl
+                bgUrl = $bgUrl
                 songId = if ($payload.songId) { $payload.songId } else { "" }
                 updatedAt = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
             }

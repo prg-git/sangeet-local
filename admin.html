@@ -125,19 +125,66 @@
             background: linear-gradient(135deg, rgba(124, 58, 237, 0.25), rgba(236, 72, 153, 0.2));
             border: 1px solid var(--border-color);
             border-radius: var(--radius-lg);
-            padding: 20px;
+            padding: 24px;
             display: flex;
-            gap: 18px;
+            gap: 20px;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+            background-size: cover !important;
+            background-position: center !important;
+            min-height: 140px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            transition: all 0.3s ease;
+        }
+
+        .banner-preview-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(11, 15, 23, 0.78) 0%, rgba(15, 23, 42, 0.85) 100%);
+            pointer-events: none;
+            border-radius: var(--radius-lg);
+        }
+
+        .banner-preview-card > * {
+            position: relative;
+            z-index: 2;
         }
 
         .banner-preview-card img {
-            width: 90px;
-            height: 90px;
+            width: 95px;
+            height: 95px;
             border-radius: 12px;
             object-fit: cover;
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            flex-shrink: 0;
+        }
+
+        .banner-section-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .banner-section-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .banner-section-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
         }
 
         .song-manage-row {
@@ -241,7 +288,7 @@
             </div>
 
             <!-- Inputs for Selected Language Banner -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
                 <div class="form-group" style="grid-column: 1 / -1;">
                     <label class="form-label">Featured Song (Plays when customer taps "▶ Play Now")</label>
                     <select class="form-select" id="bannerSongSelect">
@@ -250,7 +297,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Banner Name / Headline</label>
+                    <label class="form-label">Banner Headline / Title</label>
                     <input type="text" class="form-input" id="bannerTitleInput" placeholder="e.g. Koch Rajbongshi Melodies">
                 </div>
 
@@ -263,20 +310,55 @@
                     <label class="form-label">Banner Subtitle / Description</label>
                     <input type="text" class="form-input" id="bannerSubtitleInput" placeholder="e.g. Traditional Kamtapuri Songs • Streaming Live">
                 </div>
+            </div>
 
-                <!-- Custom Banner Artwork -->
-                <div class="form-group" style="grid-column: 1 / -1;">
-                    <label class="form-label">Banner Cover Artwork / Image</label>
-                    <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 8px; flex-wrap: wrap;">
-                        <button type="button" class="btn-primary" id="btnChooseBannerCover" style="padding: 8px 16px; font-size: 13px;">
-                            <span>🖼️ Upload Custom Image from PC</span>
-                        </button>
-                        <button type="button" class="btn-secondary" id="btnResetBannerCover" style="padding: 8px 16px; font-size: 13px;">
-                            <span>↺ Use Selected Song Cover</span>
-                        </button>
-                        <input type="file" id="bannerCoverFileInput" accept="image/*" style="display: none;">
-                    </div>
-                    <input type="url" class="form-input" id="bannerCoverUrlInput" placeholder="Or paste image web link (https://...)" style="font-size: 13px;">
+            <!-- OPTION 1: HERO BANNER BACKGROUND IMAGE (WALLPAPER / BACKDROP) -->
+            <div class="banner-section-box">
+                <div class="banner-section-title">
+                    <span>🌄</span>
+                    <span>Hero Banner Background (Wallpaper / Backdrop)</span>
+                    <span id="bannerBgStatusBadge" style="font-size: 11px; padding: 2px 8px; border-radius: 10px; background: rgba(16, 185, 129, 0.2); color: #10b981; font-weight: 700;">Default Gradient</span>
+                </div>
+                <div class="banner-section-sub">
+                    Add a wide scenic background image or wallpaper behind the entire hero banner card on both mobile and PC.
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px;">
+                    <button type="button" class="btn-primary" id="btnChooseBannerBg" style="padding: 8px 16px; font-size: 13px;">
+                        <span>🌄 Choose Background from PC</span>
+                    </button>
+                    <button type="button" class="btn-secondary" id="btnRemoveBannerBg" style="padding: 8px 16px; font-size: 13px; color: #ef4444; border-color: rgba(239, 68, 68, 0.4);">
+                        <span>✕ Clear Background</span>
+                    </button>
+                    <input type="file" id="bannerBgFileInput" accept="image/*" style="display: none;">
+                </div>
+                <div>
+                    <input type="url" class="form-input" id="bannerBgUrlInput" placeholder="Or paste background image web link (https://...)" style="font-size: 13px;">
+                </div>
+            </div>
+
+            <!-- OPTION 2: HERO BANNER ARTWORK / COVER IMAGE -->
+            <div class="banner-section-box">
+                <div class="banner-section-title">
+                    <span>🖼️</span>
+                    <span>Hero Banner Artwork / Cover Image</span>
+                </div>
+                <div class="banner-section-sub">
+                    The square artwork displayed on the hero banner card next to the title and play button.
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px;">
+                    <button type="button" class="btn-primary" id="btnChooseBannerCover" style="padding: 8px 16px; font-size: 13px;">
+                        <span>🖼️ Upload Artwork from PC</span>
+                    </button>
+                    <button type="button" class="btn-secondary" id="btnResetBannerCover" style="padding: 8px 16px; font-size: 13px;">
+                        <span>↺ Use Selected Song Cover</span>
+                    </button>
+                    <button type="button" class="btn-secondary" id="btnRemoveBannerCover" style="padding: 8px 16px; font-size: 13px; color: #ef4444; border-color: rgba(239, 68, 68, 0.4);">
+                        <span>✕ Clear Artwork</span>
+                    </button>
+                    <input type="file" id="bannerCoverFileInput" accept="image/*" style="display: none;">
+                </div>
+                <div>
+                    <input type="url" class="form-input" id="bannerCoverUrlInput" placeholder="Or paste artwork web link (https://...)" style="font-size: 13px;">
                 </div>
             </div>
 
@@ -380,6 +462,7 @@
                 <input type="text" class="form-input" id="searchSongsManage" placeholder="Search by title, artist, or language..." style="width: 280px;">
             </div>
 
+            <input type="file" id="adminDirectCoverFileInput" accept="image/*" style="display: none;">
             <div id="songsManageContainer" style="display: flex; flex-direction: column; gap: 10px;">
                 <!-- Populated dynamically via admin.js -->
             </div>
