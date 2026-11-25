@@ -1728,27 +1728,21 @@ body.theme-violet .songs-table tr.playing {
         white-space: nowrap;
     }
 
-    /* HIDE ONLY DEV/PC-SPECIFIC BUTTONS ON MOBILE, KEEP ADD & ADMIN ACCESSIBLE */
+    /* HIDE ALL PC ADMIN & EDIT CONTROLS ON MOBILE (Mobile View is Pure Clean Music Player) */
     #btnToggleMobilePreview,
     #btnMobileConnect,
-    #btnOpenEqualizer {
+    #btnOpenEqualizer,
+    #btnOpenAdminPanel,
+    #btnOpenAddMusic,
+    #mobileNavAdmin,
+    .pc-only-btn,
+    .admin-header-btn,
+    .card-menu-btn,
+    [data-edit-id],
+    [data-delete-id],
+    [data-remove-pl-id],
+    #btnChangeHeroBanner {
         display: none !important;
-    }
-
-    #btnOpenAddMusic {
-        display: inline-flex !important;
-        align-items: center;
-        gap: 4px;
-        padding: 5px 10px !important;
-        font-size: 11px !important;
-        border-radius: var(--radius-full);
-    }
-
-    .admin-header-btn {
-        display: inline-flex !important;
-        padding: 5px 10px !important;
-        font-size: 11px !important;
-        gap: 4px !important;
     }
 
     .nav-history-btns {
@@ -1821,13 +1815,13 @@ body.theme-violet .songs-table tr.playing {
     }
 
     .col-actions {
-        width: 95px !important;
-        white-space: nowrap;
+        width: 44px !important;
+        text-align: right;
     }
 
     .row-btn {
-        padding: 6px 5px !important;
-        font-size: 15px !important;
+        padding: 8px !important;
+        font-size: 18px !important;
     }
 
     /* ==============================================================
@@ -2165,16 +2159,18 @@ body.simulated-mobile-mode .mobile-brand-name {
 }
 body.simulated-mobile-mode #btnToggleMobilePreview,
 body.simulated-mobile-mode #btnMobileConnect,
-body.simulated-mobile-mode #btnOpenEqualizer {
+body.simulated-mobile-mode #btnOpenEqualizer,
+body.simulated-mobile-mode #btnOpenAdminPanel,
+body.simulated-mobile-mode #btnOpenAddMusic,
+body.simulated-mobile-mode #mobileNavAdmin,
+body.simulated-mobile-mode .pc-only-btn,
+body.simulated-mobile-mode .admin-header-btn,
+body.simulated-mobile-mode .card-menu-btn,
+body.simulated-mobile-mode [data-edit-id],
+body.simulated-mobile-mode [data-delete-id],
+body.simulated-mobile-mode [data-remove-pl-id],
+body.simulated-mobile-mode #btnChangeHeroBanner {
     display: none !important;
-}
-body.simulated-mobile-mode #btnOpenAddMusic {
-    display: inline-flex !important;
-    align-items: center;
-    gap: 4px;
-    padding: 5px 10px !important;
-    font-size: 11px !important;
-    border-radius: var(--radius-full);
 }
 
 /* ==========================================================================

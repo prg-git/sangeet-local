@@ -190,6 +190,19 @@ class UIController {
             });
         }
 
+        // Auto-sync for Mobile View: automatically check for PC admin updates
+        window.addEventListener("visibilitychange", () => {
+            if (!document.hidden) {
+                this.autoSyncFromPC();
+            }
+        });
+        window.addEventListener("focus", () => {
+            this.autoSyncFromPC();
+        });
+        setInterval(() => {
+            this.autoSyncFromPC();
+        }, 40000);
+
         // Back / Forward
         document.getElementById("btnNavBack").addEventListener("click", () => this.navigateHistory(-1));
         document.getElementById("btnNavForward").addEventListener("click", () => this.navigateHistory(1));
@@ -1166,10 +1179,10 @@ class UIController {
                             <button class="btn-primary" id="btnPlaySpotlight" data-song-id="${spotlight.id}">
                                 <span>▶ Play Now</span>
                             </button>
-                            <button class="btn-secondary" id="btnChangeHeroBanner" title="Change Hero Banner Featured Song">
+                            <button class="btn-secondary pc-only-btn" id="btnChangeHeroBanner" title="Change Hero Banner Featured Song">
                                 <span>⚙️ Change Banner</span>
                             </button>
-                            <button class="btn-secondary" id="btnAddSongsHero">
+                            <button class="btn-secondary pc-only-btn" id="btnAddSongsHero">
                                 <span>+ Add Music</span>
                             </button>
                         </div>
@@ -1187,7 +1200,7 @@ class UIController {
                         <h2 class="hero-title">Sangeet Local</h2>
                         <p class="hero-desc">Your personal music streaming player. All songs uploaded from your PC appear and play here instantly.</p>
                         <div class="hero-actions">
-                            <button class="btn-primary" id="btnAddSongsHero">
+                            <button class="btn-primary pc-only-btn" id="btnAddSongsHero">
                                 <span>+ Add Music</span>
                             </button>
                         </div>
@@ -1279,10 +1292,10 @@ class UIController {
                     <button class="btn-secondary" id="btnShuffleAllLibrary">
                         <span>🔀 Shuffle</span>
                     </button>
-                    <button class="btn-secondary" id="btnOpenAddMusicLib">
+                    <button class="btn-secondary pc-only-btn" id="btnOpenAddMusicLib">
                         <span>+ Add Songs</span>
                     </button>
-                    <button class="btn-secondary" id="btnBatchDelete" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.4);" title="Delete All Songs">
+                    <button class="btn-secondary pc-only-btn" id="btnBatchDelete" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.4);" title="Delete All Songs">
                         <span>🗑 Clear All</span>
                     </button>
                 </div>
@@ -1993,6 +2006,24 @@ class UIController {
                 }
             });
         });
+    }
+
+    async autoSyncFromPC() {
+        try {
+            const beforeSongs = await window.musicDB.getLocalIndexedDBSongs();
+            const fresh = await window.musicDB.syncFreshLibrary();
+            if (Array.isArray(fresh) && fresh.length > 0) {
+                const spotlightSong = fresh.find(s => s.isSpotlight);
+                const spotlightId = spotlightSong ? spotlightSong.id : (fresh[0] ? fresh[0].id : null);
+                if (spotlightId !== this.currentSpotlightId || fresh.length !== beforeSongs.length) {
+                    this.currentSpotlightId = spotlightId;
+                    await this.updateCounters();
+                    await this.refreshCurrentView();
+                }
+            }
+        } catch (e) {
+            // Silently ignore background sync failures
+        }
     }
 
     // --- QUEUE DRAWER ---
