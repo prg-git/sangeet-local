@@ -239,13 +239,18 @@ class AdminStudio {
                                 body: JSON.stringify({ id: songId, coverBase64: b64 })
                             });
                             if (res.ok) {
+                                const data = await res.json();
+                                if (data && data.song && song) {
+                                    song.coverUrl = data.song.coverUrl;
+                                    song.updatedAt = data.song.updatedAt;
+                                }
                                 this.showToast(`Cover image updated for "${title}"!`);
                                 await this.loadData();
                             } else {
                                 this.showToast("Failed to update cover on server.", "danger");
                             }
                         } catch (err) {
-                            this.showToast("Error updating cover: " + err.message, "danger");
+                            this.showToast("Server error: please ensure 'start-master-admin.bat' is running. (" + err.message + ")", "danger");
                         }
                     };
                     reader.readAsDataURL(file);
@@ -680,11 +685,15 @@ class AdminStudio {
             let coverSrc = "icons/icon-192.png";
             if (song.coverUrl) {
                 coverSrc = song.coverUrl.startsWith("/") ? song.coverUrl.substring(1) : song.coverUrl;
+                if (!coverSrc.startsWith("data:") && !coverSrc.startsWith("http")) {
+                    const sep = coverSrc.includes("?") ? "&" : "?";
+                    coverSrc = `${coverSrc}${sep}_t=${song.updatedAt || Date.now()}`;
+                }
             }
 
             html += `
                 <div class="song-manage-row">
-                    <img src="${coverSrc}" alt="Art" style="width: 48px; height: 48px; border-radius: 6px; object-fit: cover;">
+                    <img src="${coverSrc}" alt="Art" style="width: 48px; height: 48px; border-radius: 6px; object-fit: cover;" onerror="this.onerror=null; this.src='icons/icon-192.png';">
                     <div style="flex: 1; min-width: 0;">
                         <div style="font-weight: 700; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                             ${this.escapeHtml(song.title)}
@@ -758,6 +767,10 @@ class AdminStudio {
         let coverSrc = "icons/icon-192.png";
         if (song.coverUrl) {
             coverSrc = song.coverUrl.startsWith("/") ? song.coverUrl.substring(1) : song.coverUrl;
+            if (!coverSrc.startsWith("data:") && !coverSrc.startsWith("http")) {
+                const sep = coverSrc.includes("?") ? "&" : "?";
+                coverSrc = `${coverSrc}${sep}_t=${Date.now()}`;
+            }
             this.dom.editModalCoverUrlInput.value = (song.coverUrl.startsWith("http")) ? song.coverUrl : "";
         } else {
             this.dom.editModalCoverUrlInput.value = "";
@@ -813,7 +826,7 @@ class AdminStudio {
                 this.showToast("Failed to update song on server.", "danger");
             }
         } catch (err) {
-            this.showToast(`Error: ${err.message}`, "danger");
+            this.showToast("Server error: please ensure 'start-master-admin.bat' is running. (" + err.message + ")", "danger");
         }
     }
 

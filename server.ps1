@@ -247,6 +247,8 @@ while ($true) {
             $sw.WriteLine("HTTP/1.1 $statusCode")
             $sw.WriteLine("Content-Type: application/json; charset=utf-8")
             $sw.WriteLine("Content-Length: " + $jsonBytes.Length)
+            $sw.WriteLine("Cache-Control: no-store, no-cache, must-revalidate")
+            $sw.WriteLine("Pragma: no-cache")
             $sw.WriteLine("Access-Control-Allow-Origin: *")
             $sw.WriteLine("Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS")
             $sw.WriteLine("Access-Control-Allow-Headers: *")
@@ -336,12 +338,17 @@ while ($true) {
             $coverUrl = $null
             if ($coverBase64) {
                 try {
-                    $coverBytes = [System.Convert]::FromBase64String($coverBase64)
-                    $coverFilename = "${songId}_cover.png"
+                    $cleanB64 = ($coverBase64 -replace '^data:image\/[^;]+;base64,', '').Trim() -replace '\s', ''
+                    $coverBytes = [System.Convert]::FromBase64String($cleanB64)
+                    if (-not (Test-Path $CoversDir)) { New-Item -ItemType Directory -Path $CoversDir -Force | Out-Null }
+                    $coverFilename = "${songId}_cover_" + [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() + ".jpg"
                     $coverFilePath = Join-Path $CoversDir $coverFilename
                     [System.IO.File]::WriteAllBytes($coverFilePath, $coverBytes)
                     $coverUrl = "/music/covers/$coverFilename"
-                } catch {}
+                    Write-Host "Saved upload cover art: $coverFilename" -ForegroundColor Green
+                } catch {
+                    Write-Host "Failed to save upload cover art: $_" -ForegroundColor Red
+                }
             }
 
             $encodedAudioUrl = "/music/" + [System.Uri]::EscapeDataString($savedFilename)
@@ -458,21 +465,33 @@ while ($true) {
                                 if (Test-Path $oldCoverPath) { Remove-Item -Path $oldCoverPath -Force -ErrorAction SilentlyContinue }
                             }
                             $s.coverUrl = $null
+                            $s | Add-Member -NotePropertyName "updatedAt" -NotePropertyValue ([DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()) -Force
                             Write-Host "Removed cover art for song: $($s.title)" -ForegroundColor Yellow
                         } elseif ($updateData.coverBase64) {
                             try {
-                                $cleanB64 = $updateData.coverBase64 -replace '^data:image\/[a-z]+;base64,', ''
+                                $cleanB64 = ($updateData.coverBase64 -replace '^data:image\/[^;]+;base64,', '').Trim() -replace '\s', ''
                                 $coverBytes = [System.Convert]::FromBase64String($cleanB64)
-                                $coverFilename = "$($s.id)_cover_" + [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() + ".jpg"
+
+                                # Remove old local cover if exists
+                                if ($s.coverUrl -and $s.coverUrl.StartsWith("/music/covers/")) {
+                                    $oldCoverPath = Join-Path $DocRoot ($s.coverUrl.TrimStart("/").Replace('/', '\'))
+                                    if (Test-Path $oldCoverPath) { Remove-Item -Path $oldCoverPath -Force -ErrorAction SilentlyContinue }
+                                }
+
+                                if (-not (Test-Path $CoversDir)) { New-Item -ItemType Directory -Path $CoversDir -Force | Out-Null }
+                                $timestamp = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+                                $coverFilename = "$($s.id)_cover_${timestamp}.jpg"
                                 $coverFilePath = Join-Path $CoversDir $coverFilename
                                 [System.IO.File]::WriteAllBytes($coverFilePath, $coverBytes)
                                 $s.coverUrl = "/music/covers/$coverFilename"
-                                Write-Host "Updated cover art for song: $($s.title)" -ForegroundColor Green
+                                $s | Add-Member -NotePropertyName "updatedAt" -NotePropertyValue $timestamp -Force
+                                Write-Host "Updated cover art for song: $($s.title) -> $coverFilename" -ForegroundColor Green
                             } catch {
                                 Write-Host "Failed to save cover art: $_" -ForegroundColor Red
                             }
                         } elseif ($updateData.coverUrl -ne $null) {
                             $s.coverUrl = $updateData.coverUrl
+                            $s | Add-Member -NotePropertyName "updatedAt" -NotePropertyValue ([DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()) -Force
                         }
 
                         $updatedSong = $s
@@ -525,8 +544,9 @@ while ($true) {
                 $coverUrl = ""
             } elseif ($payload.coverBase64) {
                 try {
-                    $cleanB64 = $payload.coverBase64 -replace '^data:image\/[a-z]+;base64,', ''
+                    $cleanB64 = ($payload.coverBase64 -replace '^data:image\/[^;]+;base64,', '').Trim() -replace '\s', ''
                     $coverBytes = [System.Convert]::FromBase64String($cleanB64)
+                    if (-not (Test-Path $CoversDir)) { New-Item -ItemType Directory -Path $CoversDir -Force | Out-Null }
                     $coverFilename = "banner_${lang}_" + [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() + ".jpg"
                     $coverFilePath = Join-Path $CoversDir $coverFilename
                     [System.IO.File]::WriteAllBytes($coverFilePath, $coverBytes)
@@ -542,8 +562,9 @@ while ($true) {
                 $bgUrl = ""
             } elseif ($payload.bgBase64) {
                 try {
-                    $cleanBgB64 = $payload.bgBase64 -replace '^data:image\/[a-z]+;base64,', ''
+                    $cleanBgB64 = ($payload.bgBase64 -replace '^data:image\/[^;]+;base64,', '').Trim() -replace '\s', ''
                     $bgBytes = [System.Convert]::FromBase64String($cleanBgB64)
+                    if (-not (Test-Path $CoversDir)) { New-Item -ItemType Directory -Path $CoversDir -Force | Out-Null }
                     $bgFilename = "banner_bg_${lang}_" + [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() + ".jpg"
                     $bgFilePath = Join-Path $CoversDir $bgFilename
                     [System.IO.File]::WriteAllBytes($bgFilePath, $bgBytes)
@@ -626,6 +647,9 @@ while ($true) {
                 $Writer.WriteLine("Content-Length: $TotalLength")
                 $Writer.WriteLine("Accept-Ranges: bytes")
                 $Writer.WriteLine("Access-Control-Allow-Origin: *")
+                if ($Ext -eq ".json" -or $FilePath -match 'covers') {
+                    $Writer.WriteLine("Cache-Control: no-cache, must-revalidate")
+                }
                 $Writer.WriteLine("Connection: close")
                 $Writer.WriteLine()
                 $Writer.Flush()

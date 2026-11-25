@@ -73,15 +73,10 @@ class MusicDB {
             }
         }
 
-        // Fallback to IndexedDB
-        const localSongs = await this.getLocalIndexedDBSongs();
-        if (localSongs && localSongs.length > 0) {
-            return localSongs;
-        }
-
-        // If IndexedDB is empty (e.g. GitHub Pages / static hosting), load pre-bundled library.json
+        // Network-First for static hosting (GitHub Pages / remote web host):
+        // Always try to fetch fresh data/library.json with cache-busting so cover/metadata updates show immediately!
         try {
-            const staticRes = await fetch("data/library.json");
+            const staticRes = await fetch("data/library.json?_t=" + Date.now(), { cache: "no-store" });
             if (staticRes.ok) {
                 const bundledSongs = await staticRes.json();
                 if (Array.isArray(bundledSongs) && bundledSongs.length > 0) {
@@ -90,7 +85,13 @@ class MusicDB {
                 }
             }
         } catch (e) {
-            console.warn("Static library.json fetch failed:", e);
+            console.warn("Static library.json fetch failed, falling back to local cache:", e);
+        }
+
+        // Fallback to IndexedDB (e.g. offline)
+        const localSongs = await this.getLocalIndexedDBSongs();
+        if (localSongs && localSongs.length > 0) {
+            return localSongs;
         }
 
         return [];
@@ -226,10 +227,10 @@ class MusicDB {
             payload.coverUrl = null;
         } else if (coverBlobOrBase64) {
             if (typeof coverBlobOrBase64 === "string") {
-                payload.coverBase64 = coverBlobOrBase64.replace(/^data:image\/[a-z]+;base64,/, '');
+                payload.coverBase64 = coverBlobOrBase64.replace(/^data:image\/[^;]+;base64,/, '');
             } else {
                 const b64 = await this.blobToBase64(coverBlobOrBase64);
-                payload.coverBase64 = b64 ? b64.replace(/^data:image\/[a-z]+;base64,/, '') : null;
+                payload.coverBase64 = b64 ? b64.replace(/^data:image\/[^;]+;base64,/, '') : null;
             }
         }
 

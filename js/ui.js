@@ -973,12 +973,20 @@ class UIController {
             : (spotlight
                 ? `By ${spotlight.artist} • ${spotlight.album || 'Single'} • Regional Music`
                 : "Your personal regional music streaming player.");
-        const bannerCover = (currentBanner && currentBanner.coverUrl)
+        let bannerCover = (currentBanner && currentBanner.coverUrl)
             ? (currentBanner.coverUrl.startsWith("/") ? currentBanner.coverUrl.substring(1) : currentBanner.coverUrl)
             : (spotlight ? this.getSongCoverUrl(spotlight) : "icons/icon-192.png");
-        const bannerBg = (currentBanner && currentBanner.bgUrl)
+        if (bannerCover && !bannerCover.startsWith("data:") && !bannerCover.startsWith("http") && !bannerCover.startsWith("icons/")) {
+            const sep = bannerCover.includes("?") ? "&" : "?";
+            bannerCover = `${bannerCover}${sep}_t=${(currentBanner && currentBanner.updatedAt) || Date.now()}`;
+        }
+        let bannerBg = (currentBanner && currentBanner.bgUrl)
             ? (currentBanner.bgUrl.startsWith("/") ? currentBanner.bgUrl.substring(1) : currentBanner.bgUrl)
             : "";
+        if (bannerBg && !bannerBg.startsWith("data:") && !bannerBg.startsWith("http")) {
+            const sep = bannerBg.includes("?") ? "&" : "?";
+            bannerBg = `${bannerBg}${sep}_t=${(currentBanner && currentBanner.updatedAt) || Date.now()}`;
+        }
         const bannerBgStyle = bannerBg
             ? `style="background: linear-gradient(135deg, rgba(11, 15, 23, 0.82) 0%, rgba(15, 23, 42, 0.88) 100%), url('${this.escapeHtml(bannerBg)}') center/cover no-repeat;"`
             : "";
