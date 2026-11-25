@@ -776,21 +776,17 @@ body.theme-violet .hero-banner {
 
 /* Action button inside card */
 .card-menu-btn {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: var(--text-main);
+    background: none;
+    border: none;
+    color: var(--text-dim);
     cursor: pointer;
-    padding: 3px 8px;
-    border-radius: var(--radius-full);
-    font-size: 13px;
-    font-weight: 700;
+    padding: 4px;
+    border-radius: 4px;
     transition: var(--transition);
 }
-.card-menu-btn:hover,
-.card-menu-btn:active {
-    color: #ffffff;
-    background: var(--primary);
-    border-color: var(--primary);
+.card-menu-btn:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 /* ==========================================================================
@@ -1364,57 +1360,6 @@ body.theme-violet .songs-table tr.playing {
     margin-bottom: 16px;
 }
 
-/* Admin Header Button */
-.admin-header-btn {
-    display: inline-flex !important;
-    align-items: center;
-    gap: 6px;
-    background: linear-gradient(135deg, #7c3aed, #ec4899);
-    border: none;
-    color: #ffffff !important;
-    font-weight: 700;
-    font-size: 13px;
-    padding: 7px 15px;
-    border-radius: var(--radius-full);
-    cursor: pointer;
-    box-shadow: 0 2px 10px rgba(124, 58, 237, 0.4);
-    transition: var(--transition);
-    flex-shrink: 0;
-}
-.admin-header-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(124, 58, 237, 0.6);
-}
-
-/* Category Pill Buttons in Add / Edit modals */
-.category-pill-selector {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 8px;
-}
-.category-pill-btn {
-    padding: 6px 14px;
-    border-radius: var(--radius-full);
-    border: 1px solid var(--border-color);
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--text-muted);
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: var(--transition);
-}
-.category-pill-btn:hover {
-    border-color: var(--primary);
-    color: var(--text-main);
-}
-.category-pill-btn.active {
-    background: var(--primary);
-    color: #ffffff;
-    border-color: var(--primary);
-    box-shadow: 0 2px 8px var(--primary-glow);
-}
-
 /* Form Groups */
 .form-group {
     margin-bottom: 16px;
@@ -1728,20 +1673,12 @@ body.theme-violet .songs-table tr.playing {
         white-space: nowrap;
     }
 
-    /* HIDE ALL PC ADMIN & EDIT CONTROLS ON MOBILE (Mobile View is Pure Clean Music Player) */
+    /* HIDE PC ADMIN CONTROLS & EQ ON MOBILE */
     #btnToggleMobilePreview,
     #btnMobileConnect,
-    #btnOpenEqualizer,
-    #btnOpenAdminPanel,
     #btnOpenAddMusic,
-    #mobileNavAdmin,
-    .pc-only-btn,
-    .admin-header-btn,
-    .card-menu-btn,
-    [data-edit-id],
-    [data-delete-id],
-    [data-remove-pl-id],
-    #btnChangeHeroBanner {
+    #btnOpenEqualizer,
+    .pc-only-btn {
         display: none !important;
     }
 
@@ -1798,30 +1735,15 @@ body.theme-violet .songs-table tr.playing {
         -webkit-tap-highlight-color: rgba(16, 185, 129, 0.2);
     }
 
-    /* Mobile song rows: hide #, album, genre, and duration so title, artist, and actions have full width */
-    .songs-table th.col-num,
-    .songs-table td.col-num,
     .songs-table th.col-album,
     .songs-table td.col-album,
     .songs-table th:nth-child(5),
-    .songs-table td:nth-child(5),
-    .songs-table th.col-duration,
-    .songs-table td.col-duration {
-        display: none !important;
+    .songs-table td:nth-child(5) {
+        display: none;
     }
 
     .songs-table td {
-        padding: 10px 6px;
-    }
-
-    .col-actions {
-        width: 44px !important;
-        text-align: right;
-    }
-
-    .row-btn {
-        padding: 8px !important;
-        font-size: 18px !important;
+        padding: 10px 8px;
     }
 
     /* ==============================================================
@@ -2159,17 +2081,9 @@ body.simulated-mobile-mode .mobile-brand-name {
 }
 body.simulated-mobile-mode #btnToggleMobilePreview,
 body.simulated-mobile-mode #btnMobileConnect,
-body.simulated-mobile-mode #btnOpenEqualizer,
-body.simulated-mobile-mode #btnOpenAdminPanel,
 body.simulated-mobile-mode #btnOpenAddMusic,
-body.simulated-mobile-mode #mobileNavAdmin,
-body.simulated-mobile-mode .pc-only-btn,
-body.simulated-mobile-mode .admin-header-btn,
-body.simulated-mobile-mode .card-menu-btn,
-body.simulated-mobile-mode [data-edit-id],
-body.simulated-mobile-mode [data-delete-id],
-body.simulated-mobile-mode [data-remove-pl-id],
-body.simulated-mobile-mode #btnChangeHeroBanner {
+body.simulated-mobile-mode #btnOpenEqualizer,
+body.simulated-mobile-mode .pc-only-btn {
     display: none !important;
 }
 
@@ -2291,42 +2205,5 @@ body.theme-violet .about-hero-card {
     font-size: 12px;
     color: var(--text-dim);
     padding: 16px 0;
-}
-
-/* ==========================================================================
-   PUBLIC CLIENT MODE (For GitHub Pages and Mobile Phones - Zero Edit Controls)
-   ========================================================================== */
-body.public-client-mode .admin-header-btn,
-body.public-client-mode #btnOpenAdminPanel,
-body.public-client-mode #btnOpenAddMusic,
-body.public-client-mode #btnToggleMobilePreview,
-body.public-client-mode #btnMobileConnect,
-body.public-client-mode #btnChangeHeroBanner,
-body.public-client-mode #btnAddSongsHero,
-body.public-client-mode #btnOpenAddMusicLib,
-body.public-client-mode #btnBatchDelete,
-body.public-client-mode .card-menu-btn,
-body.public-client-mode [data-edit-id],
-body.public-client-mode [data-delete-id],
-body.public-client-mode [data-remove-pl-id],
-body.public-client-mode .pc-admin-badge,
-body.public-client-mode #adminPanelModal,
-body.public-client-mode #editSongModal,
-body.public-client-mode #addMusicModal {
-    display: none !important;
-}
-
-body.public-client-mode .col-actions {
-    width: 44px !important;
-    text-align: right;
-}
-
-.pc-admin-badge {
-    box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
-    animation: adminPulse 3s infinite ease-in-out;
-}
-@keyframes adminPulse {
-    0%, 100% { opacity: 0.9; }
-    50% { opacity: 1; transform: scale(1.02); }
 }
 
