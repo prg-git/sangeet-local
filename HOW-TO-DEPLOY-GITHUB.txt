@@ -1,0 +1,55 @@
+===================================================================
+      HOW TO DEPLOY SANGEET LOCAL TO GITHUB (FREE 24/7 HOSTING)
+===================================================================
+
+GitHub Pages allows you to host Sangeet Local 100% FREE forever on
+Google/GitHub global servers, accessible on Mobile Data (4G/5G) from
+any phone anywhere in the world without keeping your PC on!
+
+-------------------------------------------------------------------
+EASIEST METHOD: Upload in Web Browser (No software or Git required)
+-------------------------------------------------------------------
+
+Step 1: Create a Repository on GitHub
+1. Open your browser and go to: https://github.com
+2. Sign in to your GitHub account (or create a free account).
+3. Click the "+" icon at top-right and select "New repository".
+4. Repository name: sangeet   (or sangeet-local)
+5. Select "Public".
+6. Click "Create repository".
+
+Step 2: Upload Your Files
+1. On the new repository page, click the link:
+   "uploading an existing file"
+2. Open your PC folder:
+   c:\Project\Latetst
+3. Drag and drop these essential files/folders into GitHub:
+   - index.html
+   - manifest.json
+   - sw.js
+   - css/
+   - js/
+   - data/
+   - music/
+   - icons/
+4. Click the green "Commit changes" button at the bottom.
+
+Step 3: Turn on GitHub Pages (1-Click)
+1. In your GitHub repository, click on "Settings" (top tab).
+2. On the left sidebar menu, click "Pages".
+3. Under "Build and deployment" -> "Branch":
+   - Select: main (or master)
+   - Folder: / (root)
+   - Click "Save".
+4. Wait 30-60 seconds and refresh the page.
+5. GitHub will show your live worldwide HTTPS address:
+   👉 https://<your-username>.github.io/sangeet/
+
+-------------------------------------------------------------------
+HOW TO USE IT ON YOUR MOBILE PHONE (Mobile Data / Wi-Fi)
+-------------------------------------------------------------------
+1. Open your GitHub Pages link on your mobile phone browser (Chrome).
+2. All your songs play smoothly on 4G / 5G / Wi-Fi!
+3. Tap the Chrome 3-dots menu -> Tap "Install app" or "Add to Home screen"
+   to turn it into an installed Android App with its own icon!
+===================================================================

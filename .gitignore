@@ -1,0 +1,16 @@
+# Binary tools and temp logs
+tools/
+tools/*
+
+
+# Android build outputs
+android-apk-project/.gradle/
+android-apk-project/build/
+android-apk-project/*/build/
+android-apk-project/.idea/
+android-apk-project/*.iml
+
+# OS and IDE files
+.DS_Store
+Thumbs.db
+.vscode/

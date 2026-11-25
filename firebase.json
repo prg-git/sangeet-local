@@ -1,0 +1,31 @@
+{
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      ".firebaserc",
+      "**/.*",
+      "android-apk-project/**",
+      "tools/**",
+      "*.bat",
+      "*.ps1",
+      "*.txt"
+    ],
+    "headers": [
+      {
+        "source": "**/*.@(mp3|wav|ogg|flac|m4a)",
+        "headers": [
+          {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+          },
+          {
+            "key": "Accept-Ranges",
+            "value": "bytes"
+          }
+        ]
+      }
+    ],
+    "cleanUrls": true
+  }
+}
