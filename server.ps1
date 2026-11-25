@@ -1,4 +1,4 @@
-# Sangeet Universal Music Server with Shared Library, Auto-Folder Scanner & Mobile Sync
+﻿# Sangeet Universal Music Server with Shared Library, Auto-Folder Scanner & Mobile Sync
 param(
     [int]$Port = 8080
 )
@@ -315,7 +315,7 @@ while ($true) {
             $coverBase64 = if ($Headers.ContainsKey("x-cover-base64")) { $Headers["x-cover-base64"] } else { $null }
 
             $songId = "song_" + [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() + "_" + (Get-Random -Minimum 1000 -Maximum 9999)
-            $savedFilename = $rawFilename.Replace("/", "_").Replace("\", "_")
+            $savedFilename = $rawFilename.Replace('/', '_').Replace('\', '_')
             $audioFilePath = Join-Path $MusicDir $savedFilename
 
             [System.IO.File]::WriteAllBytes($audioFilePath, $rawBody)
@@ -371,13 +371,13 @@ while ($true) {
                 if ($toDelete) {
                     if ($toDelete.audioUrl) {
                         $decodedAudioUrl = [System.Uri]::UnescapeDataString($toDelete.audioUrl)
-                        $audioRel = $decodedAudioUrl.TrimStart("/").Replace("/", "\")
+                        $audioRel = $decodedAudioUrl.TrimStart("/").Replace('/', '\')
                         $phyPath = Join-Path $DocRoot $audioRel
                         if (Test-Path $phyPath) { Remove-Item -Path $phyPath -Force -ErrorAction SilentlyContinue }
                     }
                     if ($toDelete.coverUrl) {
                         $decodedCovUrl = [System.Uri]::UnescapeDataString($toDelete.coverUrl)
-                        $coverRel = $decodedCovUrl.TrimStart("/").Replace("/", "\")
+                        $coverRel = $decodedCovUrl.TrimStart("/").Replace('/', '\')
                         $covPath = Join-Path $DocRoot $coverRel
                         if (Test-Path $covPath) { Remove-Item -Path $covPath -Force -ErrorAction SilentlyContinue }
                     }
@@ -441,7 +441,7 @@ while ($true) {
                         # Cover image updates / removal
                         if ($updateData.removeCover -eq $true) {
                             if ($s.coverUrl -and $s.coverUrl.StartsWith("/music/covers/")) {
-                                $oldCoverPath = Join-Path $DocRoot ($s.coverUrl.TrimStart("/").Replace("/", "\"))
+                                $oldCoverPath = Join-Path $DocRoot ($s.coverUrl.TrimStart("/").Replace('/', '\'))
                                 if (Test-Path $oldCoverPath) { Remove-Item -Path $oldCoverPath -Force -ErrorAction SilentlyContinue }
                             }
                             $s.coverUrl = $null
@@ -491,7 +491,7 @@ while ($true) {
 
         # CRITICAL FOR MOBILE: Decode URL percent-encoding (for Assamese/Bengali Unicode names)
         $DecodedPath = [System.Uri]::UnescapeDataString($Path)
-        $RelPath = $DecodedPath.TrimStart("/").Replace("/", "\")
+        $RelPath = $DecodedPath.TrimStart("/").Replace('/', '\')
         $FilePath = Join-Path $DocRoot $RelPath
 
         if (Test-Path $FilePath -PathType Leaf) {
