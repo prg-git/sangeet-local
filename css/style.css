@@ -2207,3 +2207,40 @@ body.theme-violet .about-hero-card {
     padding: 16px 0;
 }
 
+/* ==========================================================================
+   PUBLIC CLIENT MODE (For GitHub Pages and Mobile Phones - Zero Edit Controls)
+   ========================================================================== */
+body.public-client-mode .admin-header-btn,
+body.public-client-mode #btnOpenAdminPanel,
+body.public-client-mode #btnOpenAddMusic,
+body.public-client-mode #btnToggleMobilePreview,
+body.public-client-mode #btnMobileConnect,
+body.public-client-mode #btnChangeHeroBanner,
+body.public-client-mode #btnAddSongsHero,
+body.public-client-mode #btnOpenAddMusicLib,
+body.public-client-mode #btnBatchDelete,
+body.public-client-mode .card-menu-btn,
+body.public-client-mode [data-edit-id],
+body.public-client-mode [data-delete-id],
+body.public-client-mode [data-remove-pl-id],
+body.public-client-mode .pc-admin-badge,
+body.public-client-mode #adminPanelModal,
+body.public-client-mode #editSongModal,
+body.public-client-mode #addMusicModal {
+    display: none !important;
+}
+
+body.public-client-mode .col-actions {
+    width: 44px !important;
+    text-align: right;
+}
+
+.pc-admin-badge {
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
+    animation: adminPulse 3s infinite ease-in-out;
+}
+@keyframes adminPulse {
+    0%, 100% { opacity: 0.9; }
+    50% { opacity: 1; transform: scale(1.02); }
+}
+
