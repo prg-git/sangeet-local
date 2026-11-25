@@ -1035,7 +1035,7 @@ class UIController {
                 html += `
                     <div class="song-card" data-song-id="${song.id}">
                         <div class="card-art-wrap">
-                            <img src="${cover}" alt="${this.escapeHtml(song.title)}" class="card-art">
+                            <img src="${cover}" alt="${this.escapeHtml(song.title)}" class="card-art" onerror="this.onerror=null; this.src='icons/icon-192.png';">
                             <div class="card-play-overlay" data-play-id="${song.id}">▶</div>
                         </div>
                         <div class="card-title" title="${this.escapeHtml(song.title)}">${this.escapeHtml(song.title)}</div>
@@ -1365,7 +1365,7 @@ class UIController {
                         ` : (idx + 1)}
                     </td>
                     <td class="col-art">
-                        <img src="${coverUrl}" alt="Art" class="row-art">
+                        <img src="${coverUrl}" alt="Art" class="row-art" onerror="this.onerror=null; this.src='icons/icon-192.png';">
                     </td>
                     <td class="col-title">
                         <div class="song-title-text">${this.escapeHtml(song.title)}</div>
@@ -1812,10 +1812,15 @@ class UIController {
             return URL.createObjectURL(song.coverBlob);
         }
         if (song.coverUrl) {
-            if (song.coverUrl.startsWith("/") && !song.coverUrl.startsWith("//")) {
-                return song.coverUrl.substring(1);
+            let url = song.coverUrl;
+            if (url.startsWith("/") && !url.startsWith("//")) {
+                url = url.substring(1);
             }
-            return song.coverUrl;
+            if (!url.startsWith("data:") && !url.startsWith("http")) {
+                const sep = url.includes("?") ? "&" : "?";
+                return `${url}${sep}_t=${song.updatedAt || song.dateAdded || Date.now()}`;
+            }
+            return url;
         }
         // Default clean gradient placeholder
         return `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><rect width='100%' height='100%' fill='%231e293b'/><text x='50%' y='55%' font-size='42' fill='%2310b981' text-anchor='middle' dominant-baseline='middle'>♫</text></svg>`;
