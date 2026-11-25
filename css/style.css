@@ -1673,12 +1673,25 @@ body.theme-violet .songs-table tr.playing {
         white-space: nowrap;
     }
 
-    /* HIDE PC ADMIN CONTROLS & EQ ON MOBILE */
+    /* HIDE PC ADMIN CONTROLS & ALL EDITING ON MOBILE */
     #btnToggleMobilePreview,
     #btnMobileConnect,
     #btnOpenAddMusic,
     #btnOpenEqualizer,
-    .pc-only-btn {
+    .pc-only-btn,
+    .admin-badge,
+    .pc-admin-badge,
+    .admin-header-btn,
+    #adminModal,
+    #adminPanelModal,
+    #addMusicModal,
+    #editSongModal,
+    #btnOpenAddMusicLib,
+    #btnBatchDelete,
+    #btnEmptyAdd,
+    [data-edit-id],
+    [data-delete-id],
+    .card-menu-btn {
         display: none !important;
     }
 
@@ -2083,7 +2096,20 @@ body.simulated-mobile-mode #btnToggleMobilePreview,
 body.simulated-mobile-mode #btnMobileConnect,
 body.simulated-mobile-mode #btnOpenAddMusic,
 body.simulated-mobile-mode #btnOpenEqualizer,
-body.simulated-mobile-mode .pc-only-btn {
+body.simulated-mobile-mode .pc-only-btn,
+body.simulated-mobile-mode .admin-badge,
+body.simulated-mobile-mode .pc-admin-badge,
+body.simulated-mobile-mode .admin-header-btn,
+body.simulated-mobile-mode #adminModal,
+body.simulated-mobile-mode #adminPanelModal,
+body.simulated-mobile-mode #addMusicModal,
+body.simulated-mobile-mode #editSongModal,
+body.simulated-mobile-mode #btnOpenAddMusicLib,
+body.simulated-mobile-mode #btnBatchDelete,
+body.simulated-mobile-mode #btnEmptyAdd,
+body.simulated-mobile-mode [data-edit-id],
+body.simulated-mobile-mode [data-delete-id],
+body.simulated-mobile-mode .card-menu-btn {
     display: none !important;
 }
 

@@ -339,80 +339,90 @@ class UIController {
             this.openFullscreenPlayer();
         });
 
-        // File upload actions
-        this.dom.btnBrowseFiles.addEventListener("click", () => this.dom.fileInput.click());
-        this.dom.btnBrowseFolder.addEventListener("click", () => this.dom.folderInput.click());
-        this.dom.fileInput.addEventListener("change", (e) => this.handleFilesSelected(e.target.files));
-        this.dom.folderInput.addEventListener("change", (e) => this.handleFilesSelected(e.target.files));
+        // File upload actions (if present)
+        if (this.dom.btnBrowseFiles && this.dom.fileInput) {
+            this.dom.btnBrowseFiles.addEventListener("click", () => this.dom.fileInput.click());
+            this.dom.fileInput.addEventListener("change", (e) => this.handleFilesSelected(e.target.files));
+        }
+        if (this.dom.btnBrowseFolder && this.dom.folderInput) {
+            this.dom.btnBrowseFolder.addEventListener("click", () => this.dom.folderInput.click());
+            this.dom.folderInput.addEventListener("change", (e) => this.handleFilesSelected(e.target.files));
+        }
 
         // Drag and drop events
-        ["dragenter", "dragover", "dragleave", "drop"].forEach(eventName => {
-            this.dom.fileDropzone.addEventListener(eventName, (e) => {
-                e.preventDefault();
-                e.stopPropagation();
+        if (this.dom.fileDropzone) {
+            ["dragenter", "dragover", "dragleave", "drop"].forEach(eventName => {
+                this.dom.fileDropzone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
+                document.body.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
             });
-            document.body.addEventListener(eventName, (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-            });
-        });
 
-        ["dragenter", "dragover"].forEach(eventName => {
-            this.dom.fileDropzone.addEventListener(eventName, () => {
-                this.dom.fileDropzone.classList.add("dragover");
+            ["dragenter", "dragover"].forEach(eventName => {
+                this.dom.fileDropzone.addEventListener(eventName, () => {
+                    this.dom.fileDropzone.classList.add("dragover");
+                });
             });
-        });
 
-        ["dragleave", "drop"].forEach(eventName => {
-            this.dom.fileDropzone.addEventListener(eventName, () => {
-                this.dom.fileDropzone.classList.remove("dragover");
+            ["dragleave", "drop"].forEach(eventName => {
+                this.dom.fileDropzone.addEventListener(eventName, () => {
+                    this.dom.fileDropzone.classList.remove("dragover");
+                });
             });
-        });
 
-        this.dom.fileDropzone.addEventListener("drop", (e) => {
-            const files = e.dataTransfer.files;
-            if (files && files.length > 0) {
-                this.handleFilesSelected(files);
-            }
-        });
+            this.dom.fileDropzone.addEventListener("drop", (e) => {
+                const files = e.dataTransfer.files;
+                if (files && files.length > 0) {
+                    this.handleFilesSelected(files);
+                }
+            });
+        }
 
         // Drop anywhere on the window automatically opens modal and imports
         document.body.addEventListener("drop", (e) => {
-            if (e.target !== this.dom.fileDropzone && !this.dom.fileDropzone.contains(e.target)) {
+            if (this.dom.fileDropzone && e.target !== this.dom.fileDropzone && !this.dom.fileDropzone.contains(e.target)) {
                 const files = e.dataTransfer.files;
                 if (files && files.length > 0 && files[0].type.startsWith("audio/")) {
-                    this.openModal(this.dom.addMusicModal);
-                    this.handleFilesSelected(files);
+                    if (this.dom.addMusicModal) {
+                        this.openModal(this.dom.addMusicModal);
+                        this.handleFilesSelected(files);
+                    }
                 }
             }
         });
 
         // Add Stream URL
-        this.dom.btnAddStreamUrl.addEventListener("click", async () => {
-            const url = this.dom.streamUrlInput.value.trim();
-            if (!url) return;
+        if (this.dom.btnAddStreamUrl && this.dom.streamUrlInput) {
+            this.dom.btnAddStreamUrl.addEventListener("click", async () => {
+                const url = this.dom.streamUrlInput.value.trim();
+                if (!url) return;
 
-            const urlParts = url.split("/").pop().split("?")[0];
-            const title = decodeURIComponent(urlParts.replace(/\.[^/.]+$/, "")) || "Web Stream Audio";
+                const urlParts = url.split("/").pop().split("?")[0];
+                const title = decodeURIComponent(urlParts.replace(/\.[^/.]+$/, "")) || "Web Stream Audio";
 
-            const songData = {
-                title,
-                artist: "Online Stream",
-                album: "Web Music",
-                genre: "Online",
-                audioUrl: url,
-                duration: 0,
-                isLiked: false,
-                dateAdded: Date.now()
-            };
+                const songData = {
+                    title,
+                    artist: "Online Stream",
+                    album: "Web Music",
+                    genre: "Online",
+                    audioUrl: url,
+                    duration: 0,
+                    isLiked: false,
+                    dateAdded: Date.now()
+                };
 
-            await window.musicDB.addSong(songData, null, null);
-            this.dom.streamUrlInput.value = "";
-            this.showToast(`Added: ${title}`);
-            this.closeModal(this.dom.addMusicModal);
-            this.refreshCurrentView();
-            this.updateCounters();
-        });
+                await window.musicDB.addSong(songData, null, null);
+                this.dom.streamUrlInput.value = "";
+                this.showToast(`Added: ${title}`);
+                if (this.dom.addMusicModal) this.closeModal(this.dom.addMusicModal);
+                this.refreshCurrentView();
+                this.updateCounters();
+            });
+        }
 
         // Create Playlist button
         document.getElementById("btnCreatePlaylist").addEventListener("click", async () => {
@@ -426,48 +436,50 @@ class UIController {
         });
 
         // Save Metadata & Album Cover Art
-        this.dom.btnSaveMetadata.addEventListener("click", async () => {
-            const id = this.dom.editSongId.value;
-            const song = await window.musicDB.getSong(id);
-            if (song) {
-                song.title = this.dom.editTitle.value.trim() || song.title;
-                song.artist = this.dom.editArtist.value.trim() || song.artist;
-                song.album = this.dom.editAlbum.value.trim() || song.album;
-                song.genre = this.dom.editGenre.value.trim() || song.genre;
-                song.year = this.dom.editYear.value.trim() || song.year;
-                song.lyrics = this.dom.editLyrics.value.trim();
+        if (this.dom.btnSaveMetadata && this.dom.editSongId) {
+            this.dom.btnSaveMetadata.addEventListener("click", async () => {
+                const id = this.dom.editSongId.value;
+                const song = await window.musicDB.getSong(id);
+                if (song) {
+                    song.title = this.dom.editTitle.value.trim() || song.title;
+                    song.artist = this.dom.editArtist.value.trim() || song.artist;
+                    song.album = this.dom.editAlbum.value.trim() || song.album;
+                    song.genre = this.dom.editGenre.value.trim() || song.genre;
+                    song.year = this.dom.editYear.value.trim() || song.year;
+                    song.lyrics = this.dom.editLyrics.value.trim();
 
-                const coverUrlVal = this.dom.editCoverUrlInput ? this.dom.editCoverUrlInput.value.trim() : "";
-                if (this.editCoverRemoved) {
-                    song.coverUrl = null;
-                    song.coverBlob = null;
-                    await window.musicDB.updateSong(song, null, true);
-                } else if (this.editCoverBase64) {
-                    await window.musicDB.updateSong(song, this.editCoverBase64, false);
-                } else if (coverUrlVal) {
-                    song.coverUrl = coverUrlVal;
-                    song.coverBlob = null;
-                    await window.musicDB.updateSong(song, null, false);
-                } else {
-                    await window.musicDB.updateSong(song, null, false);
-                }
+                    const coverUrlVal = this.dom.editCoverUrlInput ? this.dom.editCoverUrlInput.value.trim() : "";
+                    if (this.editCoverRemoved) {
+                        song.coverUrl = null;
+                        song.coverBlob = null;
+                        await window.musicDB.updateSong(song, null, true);
+                    } else if (this.editCoverBase64) {
+                        await window.musicDB.updateSong(song, this.editCoverBase64, false);
+                    } else if (coverUrlVal) {
+                        song.coverUrl = coverUrlVal;
+                        song.coverBlob = null;
+                        await window.musicDB.updateSong(song, null, false);
+                    } else {
+                        await window.musicDB.updateSong(song, null, false);
+                    }
 
-                this.closeModal(this.dom.editSongModal);
-                this.showToast("Song details & album cover updated!");
-                await this.refreshCurrentView();
+                    if (this.dom.editSongModal) this.closeModal(this.dom.editSongModal);
+                    this.showToast("Song details & album cover updated!");
+                    await this.refreshCurrentView();
 
-                // If currently playing, update player
-                if (window.audioEngine.currentSong && window.audioEngine.currentSong.id === id) {
-                    const updated = await window.musicDB.getSong(id);
-                    if (updated) {
-                        window.audioEngine.currentSong = updated;
-                        this.dom.playerSongTitle.textContent = updated.title;
-                        this.dom.playerSongArtist.textContent = updated.artist;
-                        this.dom.playerCoverImg.src = this.getSongCoverUrl(updated);
+                    // If currently playing, update player
+                    if (window.audioEngine.currentSong && window.audioEngine.currentSong.id === id) {
+                        const updated = await window.musicDB.getSong(id);
+                        if (updated) {
+                            window.audioEngine.currentSong = updated;
+                            this.dom.playerSongTitle.textContent = updated.title;
+                            this.dom.playerSongArtist.textContent = updated.artist;
+                            this.dom.playerCoverImg.src = this.getSongCoverUrl(updated);
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
 
         // Edit Cover Image Chooser
         if (this.dom.btnChooseEditCover && this.dom.editCoverFileInput) {
@@ -639,13 +651,15 @@ class UIController {
         }
 
         // Delete from edit modal
-        this.dom.btnDeleteCurrentSongModal.addEventListener("click", async () => {
-            const id = this.dom.editSongId.value;
-            if (confirm("Are you sure you want to permanently delete this song from your library?")) {
-                await this.deleteSong(id);
-                this.closeModal(this.dom.editSongModal);
-            }
-        });
+        if (this.dom.btnDeleteCurrentSongModal && this.dom.editSongId) {
+            this.dom.btnDeleteCurrentSongModal.addEventListener("click", async () => {
+                const id = this.dom.editSongId.value;
+                if (confirm("Are you sure you want to permanently delete this song from your library?")) {
+                    await this.deleteSong(id);
+                    if (this.dom.editSongModal) this.closeModal(this.dom.editSongModal);
+                }
+            });
+        }
 
         // Equalizer Preset selection
         this.dom.eqPresetSelect.addEventListener("change", (e) => {
@@ -1037,10 +1051,7 @@ class UIController {
                 <div class="empty-state">
                     <div class="empty-icon">🎵</div>
                     <h3>No Songs Found</h3>
-                    <p>There are no songs in this category yet. You can add songs from your PC!</p>
-                    <button class="btn-primary pc-only-btn" style="margin: 0 auto;" id="btnEmptyAdd">
-                        <span>+ Add Music</span>
-                    </button>
+                    <p>There are no songs in this category yet.</p>
                 </div>
             `;
         }
@@ -1074,12 +1085,6 @@ class UIController {
                     <button class="btn-secondary" id="btnShuffleAllLibrary">
                         <span>🔀 Shuffle</span>
                     </button>
-                    <button class="btn-secondary pc-only-btn" id="btnOpenAddMusicLib">
-                        <span>+ Add Songs</span>
-                    </button>
-                    <button class="btn-secondary pc-only-btn" id="btnBatchDelete" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.4);" title="Delete All Songs">
-                        <span>🗑 Clear All</span>
-                    </button>
                 </div>
             </div>
         `;
@@ -1095,10 +1100,7 @@ class UIController {
                 <div class="empty-state">
                     <div class="empty-icon">📂</div>
                     <h3>Your Library is Empty</h3>
-                    <p>Drag and drop any audio files (MP3, WAV, FLAC, M4A) or click "+ Add Music" to build your offline collection.</p>
-                    <button class="btn-primary" style="margin: 0 auto;" id="btnEmptyAdd">
-                        <span>+ Add Music</span>
-                    </button>
+                    <p>Songs added by the administrator will appear here.</p>
                 </div>
             `;
         }
@@ -1282,7 +1284,7 @@ class UIController {
                 <div class="empty-state">
                     <div class="empty-icon">➕</div>
                     <h3>This Playlist is Empty</h3>
-                    <p>Go to your library and click the three dots (⋮) on any song to add it to this playlist.</p>
+                    <p>Add songs to this playlist from your library or player.</p>
                 </div>
             `;
         }
