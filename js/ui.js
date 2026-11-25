@@ -142,45 +142,60 @@ class UIController {
             });
         });
 
-        // Toggle Simulated Mobile Phone View
-        const btnToggleMobile = document.getElementById("btnToggleMobilePreview");
-        if (btnToggleMobile) {
-            btnToggleMobile.addEventListener("click", () => {
-                const isMobile = document.body.classList.toggle("simulated-mobile-mode");
-                btnToggleMobile.innerHTML = isMobile ? "<span>🖥️ Desktop View</span>" : "<span>📱 Phone View</span>";
-                btnToggleMobile.style.color = isMobile ? "#10b981" : "#a78bfa";
-                btnToggleMobile.style.borderColor = isMobile ? "#10b981" : "#8b5cf6";
-                this.showToast(isMobile ? "Phone Preview Active" : "Desktop View Restored");
+        // Desktop Blocker Handlers
+        const btnLaunchMobileFrame = document.getElementById("btnLaunchMobileFrame");
+        if (btnLaunchMobileFrame) {
+            btnLaunchMobileFrame.addEventListener("click", () => {
+                document.body.classList.add("in-mobile-frame");
+                this.showToast("📲 Mobile Phone Simulator Frame Activated");
             });
-
-            // Check URL param ?mobile=1
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get("mobile") === "1" || urlParams.get("mobile") === "true" || urlParams.get("phone") === "1") {
-                document.body.classList.add("simulated-mobile-mode");
-                btnToggleMobile.innerHTML = "<span>🖥️ Desktop View</span>";
-                btnToggleMobile.style.color = "#10b981";
-                btnToggleMobile.style.borderColor = "#10b981";
-            }
         }
 
-        // Exit Phone Preview Button
-        const btnExitPhone = document.getElementById("btnExitPhonePreview");
-        if (btnExitPhone) {
-            btnExitPhone.addEventListener("click", () => {
-                document.body.classList.remove("simulated-mobile-mode");
-                const btnToggleMobile = document.getElementById("btnToggleMobilePreview");
-                if (btnToggleMobile) {
-                    btnToggleMobile.innerHTML = "<span>📱 Phone View</span>";
-                    btnToggleMobile.style.color = "#a78bfa";
-                    btnToggleMobile.style.borderColor = "#8b5cf6";
+        const btnExitMobileFrame = document.getElementById("btnExitMobileFrame");
+        if (btnExitMobileFrame) {
+            btnExitMobileFrame.addEventListener("click", () => {
+                document.body.classList.remove("in-mobile-frame");
+                this.showToast("Exited Phone Simulator");
+            });
+        }
+
+        const btnCopyBlockerUrl = document.getElementById("btnCopyBlockerUrl");
+        if (btnCopyBlockerUrl) {
+            btnCopyBlockerUrl.addEventListener("click", () => {
+                const urlInput = document.getElementById("blockerMobileUrlInput");
+                const url = urlInput ? urlInput.value : window.location.href;
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(url).then(() => {
+                        this.showToast("Mobile link copied! Open on your phone.");
+                    }).catch(() => {
+                        this.showToast("Link: " + url);
+                    });
+                } else {
+                    this.showToast("Link: " + url);
                 }
-                this.showToast("Exited Phone View");
             });
         }
 
-        // Back / Forward
-        document.getElementById("btnNavBack").addEventListener("click", () => this.navigateHistory(-1));
-        document.getElementById("btnNavForward").addEventListener("click", () => this.navigateHistory(1));
+        // Dynamically initialize blocker QR Code & Link with current page location
+        const blockerQrImg = document.getElementById("blockerQrCodeImg");
+        const blockerUrlInput = document.getElementById("blockerMobileUrlInput");
+        const appUrl = (window.location.protocol.startsWith("http")) ? window.location.href : "https://prg-git.github.io/sangeet-local/";
+        if (blockerUrlInput) blockerUrlInput.value = appUrl;
+        if (blockerQrImg) {
+            blockerQrImg.src = "https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=" + encodeURIComponent(appUrl);
+        }
+
+        // Check URL param ?mobile=1 or ?phone=1 or #mobile to auto-launch simulator frame on PC
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get("mobile") === "1" || urlParams.get("phone") === "1" || window.location.hash === "#mobile") {
+            document.body.classList.add("in-mobile-frame");
+        }
+
+        // Back / Forward (Safely null-checked)
+        const btnNavBack = document.getElementById("btnNavBack");
+        if (btnNavBack) btnNavBack.addEventListener("click", () => this.navigateHistory(-1));
+        const btnNavForward = document.getElementById("btnNavForward");
+        if (btnNavForward) btnNavForward.addEventListener("click", () => this.navigateHistory(1));
 
         // Global Search
         this.dom.globalSearchInput.addEventListener("input", (e) => {
@@ -425,15 +440,18 @@ class UIController {
         }
 
         // Create Playlist button
-        document.getElementById("btnCreatePlaylist").addEventListener("click", async () => {
-            const name = prompt("Enter playlist name:", "My Favorite Tracks");
-            if (name && name.trim()) {
-                const pl = await window.musicDB.createPlaylist(name.trim());
-                this.showToast(`Playlist "${pl.name}" created!`);
-                await this.loadPlaylists();
-                this.switchView("playlist", { playlistId: pl.id });
-            }
-        });
+        const btnCreatePl = document.getElementById("btnCreatePlaylist");
+        if (btnCreatePl) {
+            btnCreatePl.addEventListener("click", async () => {
+                const name = prompt("Enter playlist name:", "My Favorite Tracks");
+                if (name && name.trim()) {
+                    const pl = await window.musicDB.createPlaylist(name.trim());
+                    this.showToast(`Playlist "${pl.name}" created!`);
+                    await this.loadPlaylists();
+                    this.switchView("playlist", { playlistId: pl.id });
+                }
+            });
+        }
 
         // Save Metadata & Album Cover Art
         if (this.dom.btnSaveMetadata && this.dom.editSongId) {
@@ -1523,6 +1541,7 @@ class UIController {
     async loadPlaylists() {
         const playlists = await window.musicDB.getAllPlaylists();
         const list = this.dom.playlistsList;
+        if (!list) return;
         list.innerHTML = "";
 
         playlists.forEach(pl => {
@@ -1828,10 +1847,10 @@ class UIController {
 
     async updateCounters() {
         const songs = await window.musicDB.getAllSongs();
-        this.dom.librarySongCount.textContent = songs.length;
+        if (this.dom.librarySongCount) this.dom.librarySongCount.textContent = songs.length;
 
         const liked = songs.filter(s => !!s.isLiked);
-        this.dom.likedSongCount.textContent = liked.length;
+        if (this.dom.likedSongCount) this.dom.likedSongCount.textContent = liked.length;
 
         // Estimate IndexedDB storage
         let totalBytes = 0;
@@ -1839,11 +1858,11 @@ class UIController {
             totalBytes += (s.fileSize || 0);
         });
         const mb = (totalBytes / (1024 * 1024)).toFixed(1);
-        this.dom.storageUsedText.textContent = mb + " MB";
+        if (this.dom.storageUsedText) this.dom.storageUsedText.textContent = mb + " MB";
 
         // Up to 500MB visual meter
         const meterPercent = Math.min(100, Math.round((totalBytes / (500 * 1024 * 1024)) * 100));
-        this.dom.storageProgressBar.style.width = Math.max(5, meterPercent) + "%";
+        if (this.dom.storageProgressBar) this.dom.storageProgressBar.style.width = Math.max(5, meterPercent) + "%";
     }
 
     highlightPlayingRow(playingSongId) {

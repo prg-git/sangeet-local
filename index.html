@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sangeet Local - Regional Music Player</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎵</text></svg>">
-    <link rel="stylesheet" href="css/style.css?v=2.5">
+    <link rel="stylesheet" href="css/style.css?v=3.0">
     <link rel="manifest" href="manifest.json">
     <script>
         // Force refresh service worker caches immediately
@@ -21,88 +21,20 @@
 <body class="theme-dark">
 
     <!-- Floating button to exit simulated phone view on PC -->
-    <button class="exit-mobile-preview-btn" id="btnExitPhonePreview">✕ Exit Phone View</button>
+    <button class="exit-frame-btn" id="btnExitMobileFrame">✕ Close Phone Simulator</button>
 
     <!-- Top App & Main Content Container -->
     <div class="app-layout">
 
-        <!-- ================= SIDEBAR ================= -->
-        <aside class="sidebar">
-            <div class="brand">
-                <div class="brand-icon">🎵</div>
-                <div class="brand-text">
-                    <h1 style="display: flex; align-items: center; gap: 8px;">SANGEET</h1>
-                    <span>Regional Music Player</span>
-                </div>
-            </div>
-
-            <!-- Navigation Menu -->
-            <div class="nav-section">
-                <div class="nav-title">Menu</div>
-                <ul class="nav-list">
-                    <li class="nav-item active" data-view="home">
-                        <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-                        <span>Home</span>
-                    </li>
-                    <li class="nav-item" data-view="search">
-                        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-                        <span>Search & Explore</span>
-                    </li>
-                    <li class="nav-item" data-view="library">
-                        <svg viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg>
-                        <span>My Library</span>
-                        <span class="badge-count" id="librarySongCount">0</span>
-                    </li>
-                    <li class="nav-item" data-view="liked">
-                        <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                        <span>Liked Songs</span>
-                        <span class="badge-count" id="likedSongCount">0</span>
-                    </li>
-                    <li class="nav-item" data-view="about">
-                        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-                        <span>About Creator</span>
-                    </li>
-                </ul>
-            </div>
-
-            <!-- Playlists Section -->
-            <div class="nav-section" style="flex: 1; display: flex; flex-direction: column;">
-                <div class="playlist-header-btn">
-                    <span class="nav-title" style="padding: 0;">Playlists</span>
-                    <button class="btn-icon-tiny" id="btnCreatePlaylist" title="Create Playlist">+</button>
-                </div>
-                <ul class="nav-list" id="playlistsList" style="overflow-y: auto; max-height: 200px;">
-                    <!-- Dynamically populated playlists -->
-                </ul>
-            </div>
-
-            <!-- Browser Storage Indicator -->
-            <div class="storage-badge">
-                <div style="display: flex; justify-content: space-between; font-weight: 600;">
-                    <span>Offline Storage</span>
-                    <span id="storageUsedText">0 MB</span>
-                </div>
-                <div class="storage-progress">
-                    <div class="storage-progress-bar" id="storageProgressBar"></div>
-                </div>
-                <span>Permanent IndexedDB cache</span>
-            </div>
-        </aside>
-
         <!-- ================= MAIN VIEW ================= -->
         <main class="main-view">
 
-            <!-- Top Header -->
+            <!-- Mobile Top Header -->
             <header class="top-nav">
-                <!-- Mobile Only Brand Name: Sangeet Local -->
+                <!-- Mobile Brand Name: Sangeet Local -->
                 <div class="mobile-only-brand">
                     <span style="font-size: 20px;">🎵</span>
                     <span class="mobile-brand-name">Sangeet Local</span>
-                </div>
-
-                <div class="nav-history-btns">
-                    <button class="btn-circle" id="btnNavBack" title="Back">‹</button>
-                    <button class="btn-circle" id="btnNavForward" title="Forward">›</button>
                 </div>
 
                 <div class="search-container">
@@ -112,15 +44,6 @@
                 </div>
 
                 <div class="header-actions">
-                    <button class="btn-secondary" id="btnToggleMobilePreview" title="Toggle Phone / Mobile View" style="border-color: #8b5cf6; color: #a78bfa;">
-                        <span>📱 Phone View</span>
-                    </button>
-
-                    <button class="btn-secondary" id="btnMobileConnect" title="Open on Mobile Phone" style="border-color: var(--primary); color: var(--primary);">
-                        <span>🔗 QR Code</span>
-                    </button>
-
-
                     <button class="btn-secondary" id="btnOpenEqualizer" title="5-Band Equalizer">
                         <span>🎚️ EQ</span>
                     </button>
@@ -377,16 +300,62 @@
         </div>
     </div>
 
+    <!-- ================= DESKTOP PC BLOCKER OVERLAY ================= -->
+    <!-- Displayed ONLY on Desktop PC screens (> 768px). Blocks desktop view since GitHub App is exclusively mobile view! -->
+    <div id="desktopBlocker" class="desktop-blocker">
+        <div class="blocker-card">
+            <div class="blocker-header">
+                <div class="blocker-icon-wrap">
+                    <span style="font-size: 34px;">📱</span>
+                </div>
+                <span class="blocker-badge">MOBILE VIEW ONLY</span>
+            </div>
+
+            <h2 class="blocker-title">Desktop View Not Supported</h2>
+            <p class="blocker-subtitle">
+                <strong>Sangeet Local</strong> is exclusively designed for mobile phones. PC & Desktop browser view is not supported on this mobile app.
+            </p>
+
+            <!-- QR Code Box -->
+            <div class="blocker-qr-card">
+                <div class="blocker-qr-wrap">
+                    <img id="blockerQrCodeImg" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https%3A%2F%2Fprg-git.github.io%2Fsangeet-local%2F" alt="Scan QR Code to open on mobile" class="blocker-qr-img">
+                </div>
+                <div class="blocker-qr-text">
+                    📷 <strong>Scan with your mobile camera</strong> to listen on your phone.
+                </div>
+            </div>
+
+            <!-- Direct Link Copy -->
+            <div class="blocker-url-row">
+                <input type="text" id="blockerMobileUrlInput" class="blocker-url-input" value="https://prg-git.github.io/sangeet-local/" readonly>
+                <button type="button" class="btn-primary" id="btnCopyBlockerUrl" style="white-space: nowrap;">Copy Link</button>
+            </div>
+
+            <div class="blocker-divider">
+                <span>Testing on PC?</span>
+            </div>
+
+            <button type="button" class="blocker-btn-simulator" id="btnLaunchMobileFrame">
+                <span>📲 Preview in Mobile Smartphone Frame</span>
+            </button>
+
+            <div class="blocker-hint">
+                💡 <strong>Browser DevTools:</strong> Press <kbd>F12</kbd> & click the <strong>📱 Device Mode</strong> icon (<kbd>Ctrl+Shift+M</kbd>) in Chrome / Edge to switch directly to mobile view.
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notification Container -->
     <div class="toast-container" id="toastContainer"></div>
 
     <!-- Scripts -->
-    <script src="js/db.js?v=2.5"></script>
-    <script src="js/id3.js?v=2.5"></script>
-    <script src="js/synth.js?v=2.5"></script>
-    <script src="js/audio.js?v=2.5"></script>
-    <script src="js/ui.js?v=2.5"></script>
-    <script src="js/app.js?v=2.5"></script>
+    <script src="js/db.js?v=3.0"></script>
+    <script src="js/id3.js?v=3.0"></script>
+    <script src="js/synth.js?v=3.0"></script>
+    <script src="js/audio.js?v=3.0"></script>
+    <script src="js/ui.js?v=3.0"></script>
+    <script src="js/app.js?v=3.0"></script>
 
 </body>
 </html>

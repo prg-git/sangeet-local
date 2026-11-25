@@ -247,8 +247,15 @@ body {
     display: none !important;
 }
 
+.sidebar {
+    display: none !important;
+}
+
 .mobile-only-brand {
-    display: none;
+    display: flex !important;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
 }
 
 .nav-section {
@@ -1957,31 +1964,235 @@ body.theme-violet .songs-table tr.playing {
 }
 
 /* ==========================================================================
-   SIMULATED MOBILE PHONE MODE (Allows testing mobile view directly on PC)
+   DESKTOP PC BLOCKER & MOBILE-ONLY ENFORCEMENT
+   Blocks desktop view on GitHub deploy since this web app is exclusively mobile!
    ========================================================================== */
-body.simulated-mobile-mode {
-    background: #050810;
+
+/* 1. Desktop Blocker Overlay (shown on PC screens > 768px by default) */
+.desktop-blocker {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(circle at 50% 25%, #0f172a 0%, #020617 95%);
+    z-index: 99999;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px 0;
+    padding: 20px;
+    box-sizing: border-box;
+    backdrop-filter: blur(20px);
 }
 
-body.simulated-mobile-mode .app-layout {
-    width: 390px !important;
-    height: 740px !important;
-    border-radius: 36px 36px 0 0;
-    box-shadow: 0 0 0 10px #1e293b, 0 20px 60px rgba(0,0,0,0.9);
-    overflow: hidden;
-    position: relative;
-    border-bottom: none;
+@media (max-width: 768px) {
+    .desktop-blocker {
+        display: none !important;
+    }
+    .exit-frame-btn {
+        display: none !important;
+    }
 }
 
-body.simulated-mobile-mode .sidebar {
+body.in-mobile-frame .desktop-blocker {
     display: none !important;
 }
 
-body.simulated-mobile-mode .mobile-bottom-nav {
+.blocker-card {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.98) 100%);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    border-radius: 28px;
+    padding: 32px 28px;
+    max-width: 440px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.85), 0 0 40px rgba(16, 185, 129, 0.15);
+    color: #ffffff;
+    box-sizing: border-box;
+}
+
+.blocker-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.blocker-icon-wrap {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(139, 92, 246, 0.25));
+    border: 1px solid rgba(16, 185, 129, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
+}
+
+.blocker-badge {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    padding: 4px 14px;
+    border-radius: 999px;
+    background: rgba(239, 68, 68, 0.18);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.blocker-title {
+    font-size: 22px;
+    font-weight: 800;
+    margin: 8px 0 6px 0;
+    color: #ffffff;
+}
+
+.blocker-subtitle {
+    font-size: 13px;
+    color: var(--text-muted, #94a3b8);
+    line-height: 1.5;
+    margin-bottom: 18px;
+}
+
+.blocker-qr-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.blocker-qr-wrap {
+    background: #ffffff;
+    display: inline-block;
+    padding: 8px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.blocker-qr-img {
+    width: 140px;
+    height: 140px;
+    display: block;
+    border-radius: 6px;
+}
+
+.blocker-qr-text {
+    font-size: 12px;
+    color: #cbd5e1;
+    margin-top: 10px;
+    line-height: 1.4;
+}
+
+.blocker-url-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.blocker-url-input {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    padding: 9px 12px;
+    color: #10b981;
+    font-family: monospace;
+    font-size: 12px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+
+.blocker-divider {
+    position: relative;
+    text-align: center;
+    margin: 16px 0;
+}
+
+.blocker-divider::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.blocker-divider span {
+    position: relative;
+    background: #1e293b;
+    padding: 0 12px;
+    font-size: 11px;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.blocker-btn-simulator {
+    width: 100%;
+    background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+    color: #ffffff;
+    border: none;
+    padding: 12px 18px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+    transition: transform 0.2s, opacity 0.2s;
+    margin-bottom: 14px;
+}
+
+.blocker-btn-simulator:hover {
+    transform: translateY(-1px);
+    opacity: 0.95;
+}
+
+.blocker-hint {
+    font-size: 11px;
+    color: #64748b;
+    line-height: 1.5;
+}
+
+.blocker-hint kbd {
+    background: rgba(255, 255, 255, 0.12);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    color: #e2e8f0;
+}
+
+/* 2. Simulated Smartphone Frame Mode (when user clicks preview on PC) */
+body.in-mobile-frame {
+    background: radial-gradient(circle at 50% 30%, #1e1b4b 0%, #030712 100%) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 100vh !important;
+    padding: 20px 0 !important;
+    overflow-y: auto !important;
+}
+
+body.in-mobile-frame .app-layout {
+    width: 390px !important;
+    max-width: 390px !important;
+    height: 760px !important;
+    max-height: 92vh !important;
+    border-radius: 42px !important;
+    border: 12px solid #1e293b !important;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.12), 0 30px 100px rgba(0, 0, 0, 0.95) !important;
+    overflow: hidden !important;
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    border-bottom: none !important;
+}
+
+body.in-mobile-frame .mobile-bottom-nav {
     display: flex !important;
     position: absolute !important;
     bottom: 98px !important;
@@ -1991,120 +2202,44 @@ body.simulated-mobile-mode .mobile-bottom-nav {
     z-index: 90 !important;
 }
 
-body.simulated-mobile-mode .music-player-bar {
+body.in-mobile-frame .music-player-bar {
     display: grid !important;
-    grid-template-columns: 1fr auto !important;
-    grid-template-rows: auto auto !important;
     position: absolute !important;
     bottom: 0 !important;
     width: 390px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
-    border-radius: 0 0 36px 36px !important;
-    box-shadow: 0 0 0 10px #1e293b, 0 20px 60px rgba(0,0,0,0.9);
+    border-radius: 0 0 34px 34px !important;
     height: 98px !important;
-    padding: 8px 14px !important;
     z-index: 100 !important;
+    box-shadow: 0 0 0 10px #1e293b, 0 20px 60px rgba(0,0,0,0.9);
 }
 
-body.simulated-mobile-mode .player-center {
-    display: contents !important;
-}
-
-body.simulated-mobile-mode .player-controls {
-    grid-column: 2 / 3 !important;
-    grid-row: 1 / 2 !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 8px !important;
-}
-
-body.simulated-mobile-mode .player-progress-row {
-    grid-column: 1 / 3 !important;
-    grid-row: 2 / 3 !important;
-    display: flex !important;
-}
-
-body.simulated-mobile-mode .player-right {
-    display: none !important;
-}
-
-body.simulated-mobile-mode .cards-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 12px !important;
-}
-
-body.simulated-mobile-mode .nav-history-btns {
-    display: none !important;
-}
-
-body.simulated-mobile-mode .btn-control#btnShuffle {
-    display: none !important;
-}
-
-body.simulated-mobile-mode .btn-control#btnRepeat {
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    font-size: 15px;
-}
-
-.exit-mobile-preview-btn {
+.exit-frame-btn {
     display: none;
 }
 
-body.simulated-mobile-mode .exit-mobile-preview-btn {
+body.in-mobile-frame .exit-frame-btn {
     display: flex;
     align-items: center;
     gap: 6px;
     position: fixed;
     top: 20px;
     right: 25px;
-    background: linear-gradient(135deg, #ef4444, #dc2626);
+    background: rgba(239, 68, 68, 0.95);
     color: #ffffff;
     border: none;
-    padding: 8px 16px;
-    border-radius: var(--radius-full);
+    padding: 8px 18px;
+    border-radius: 999px;
     font-size: 13px;
     font-weight: 700;
     cursor: pointer;
     box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
-    z-index: 999;
+    z-index: 10001;
 }
 
-body.simulated-mobile-mode .mobile-only-brand {
-    display: flex !important;
-    align-items: center;
-    gap: 6px;
-}
-body.simulated-mobile-mode .mobile-brand-name {
-    font-size: 15px;
-    font-weight: 800;
-    background: linear-gradient(135deg, #ffffff, var(--primary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-body.simulated-mobile-mode #btnToggleMobilePreview,
-body.simulated-mobile-mode #btnMobileConnect,
-body.simulated-mobile-mode #btnOpenAddMusic,
-body.simulated-mobile-mode #btnOpenEqualizer,
-body.simulated-mobile-mode .pc-only-btn,
-body.simulated-mobile-mode .admin-badge,
-body.simulated-mobile-mode .pc-admin-badge,
-body.simulated-mobile-mode .admin-header-btn,
-body.simulated-mobile-mode #adminModal,
-body.simulated-mobile-mode #adminPanelModal,
-body.simulated-mobile-mode #addMusicModal,
-body.simulated-mobile-mode #editSongModal,
-body.simulated-mobile-mode #btnOpenAddMusicLib,
-body.simulated-mobile-mode #btnBatchDelete,
-body.simulated-mobile-mode #btnEmptyAdd,
-body.simulated-mobile-mode [data-edit-id],
-body.simulated-mobile-mode [data-delete-id],
-body.simulated-mobile-mode .card-menu-btn {
-    display: none !important;
+.exit-frame-btn:hover {
+    background: #ef4444;
 }
 
 /* ==========================================================================
