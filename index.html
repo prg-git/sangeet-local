@@ -102,6 +102,12 @@
                 </div>
 
                 <div class="header-actions">
+                    <!-- Admin Panel Button (Accessible on Mobile & PC) -->
+                    <button class="admin-header-btn" id="btnOpenAdminPanel" title="Admin Panel (Change Banner, Add Songs, Manage Library)">
+                        <span>⚙️</span>
+                        <span>Admin</span>
+                    </button>
+
                     <button class="btn-secondary" id="btnToggleMobilePreview" title="Toggle Phone / Mobile View" style="border-color: #8b5cf6; color: #a78bfa;">
                         <span>📱 Phone View</span>
                     </button>
@@ -165,6 +171,10 @@
         <div class="mobile-nav-item" data-view="about">
             <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
             <span>About</span>
+        </div>
+        <div class="mobile-nav-item" id="mobileNavAdmin" style="color: #c084fc;">
+            <svg viewBox="0 0 24 24"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+            <span>Admin</span>
         </div>
     </nav>
 
@@ -335,8 +345,21 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Category / Genre</label>
-                    <input type="text" class="form-input" id="customGenre" list="genreDatalist" placeholder="Koch Rajbongshi, Assamese, Bodo...">
+                    <label class="form-label">Category / Regional Language</label>
+                    <div class="category-pill-selector" id="customCategoryPills" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
+                        <button type="button" class="category-pill-btn active" data-cat="Koch Rajbongshi">Koch Rajbongshi</button>
+                        <button type="button" class="category-pill-btn" data-cat="Assamese">Assamese</button>
+                        <button type="button" class="category-pill-btn" data-cat="Bodo">Bodo</button>
+                        <button type="button" class="category-pill-btn" data-cat="All Music">All Music</button>
+                    </div>
+                    <select class="form-select" id="customGenreSelect">
+                        <option value="Koch Rajbongshi" selected>Koch Rajbongshi</option>
+                        <option value="Assamese">Assamese</option>
+                        <option value="Bodo">Bodo</option>
+                        <option value="All Music">All Music</option>
+                        <option value="custom">Other (Type custom)...</option>
+                    </select>
+                    <input type="text" class="form-input" id="customGenre" placeholder="Enter custom category" style="display: none; margin-top: 6px;" value="Koch Rajbongshi">
                 </div>
 
                 <button type="button" class="btn-primary" id="btnSubmitCustomUpload" style="width: 100%; justify-content: center; padding: 12px; font-size: 15px; margin-top: 10px;">
@@ -400,17 +423,20 @@
 
             <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                 <div>
-                    <label class="form-label">Genre</label>
-                    <input type="text" class="form-input" id="editGenre" list="genreDatalist" placeholder="e.g. Koch Rajbongshi, Assamese, Bodo">
-                    <datalist id="genreDatalist">
-                        <option value="Koch Rajbongshi">
-                        <option value="Assamese">
-                        <option value="Bodo">
-                        <option value="Folk">
-                        <option value="Romantic">
-                        <option value="Traditional">
-                        <option value="Devotional">
-                    </datalist>
+                    <label class="form-label">Category / Language</label>
+                    <div class="category-pill-selector" id="editCategoryPills" style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px;">
+                        <button type="button" class="category-pill-btn" data-cat="Koch Rajbongshi">Koch Rajbongshi</button>
+                        <button type="button" class="category-pill-btn" data-cat="Assamese">Assamese</button>
+                        <button type="button" class="category-pill-btn" data-cat="Bodo">Bodo</button>
+                    </div>
+                    <select class="form-select" id="editGenreSelect">
+                        <option value="Koch Rajbongshi">Koch Rajbongshi</option>
+                        <option value="Assamese">Assamese</option>
+                        <option value="Bodo">Bodo</option>
+                        <option value="All Music">All Music</option>
+                        <option value="custom">Other (Custom)...</option>
+                    </select>
+                    <input type="text" class="form-input" id="editGenre" placeholder="e.g. Koch Rajbongshi, Assamese, Bodo" style="display: none; margin-top: 6px;">
                 </div>
                 <div>
                     <label class="form-label">Year</label>
@@ -431,6 +457,85 @@
                     <button class="btn-secondary" data-close-modal="editSongModal">Cancel</button>
                     <button class="btn-primary" id="btnSaveMetadata">Save Changes</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2B. ADMIN PANEL MODAL (PC & MOBILE) -->
+    <div class="modal-overlay" id="adminPanelModal">
+        <div class="modal-content" style="max-width: 620px;">
+            <div class="modal-header">
+                <h3 class="modal-title" style="display: flex; align-items: center; gap: 8px;">
+                    <span>⚙️</span>
+                    <span>Admin Panel (PC & Mobile)</span>
+                </h3>
+                <button class="modal-close-btn" data-close-modal="adminPanelModal">✕</button>
+            </div>
+
+            <!-- Admin Tabs: Change Banner vs Add Music vs Manage Songs -->
+            <div class="modal-tabs">
+                <button type="button" class="modal-tab-btn active" id="adminTabBtnBanner">🌟 Change Hero Banner</button>
+                <button type="button" class="modal-tab-btn" id="adminTabBtnAdd">🎵 Add Music</button>
+                <button type="button" class="modal-tab-btn" id="adminTabBtnManage">🛠️ Manage Songs</button>
+            </div>
+
+            <!-- TAB 1: Change Hero Banner -->
+            <div id="adminTabBannerContent">
+                <div style="background: rgba(124, 58, 237, 0.1); border: 1px solid rgba(124, 58, 237, 0.3); border-radius: var(--radius-md); padding: 12px; margin-bottom: 16px;">
+                    <div style="font-weight: 700; color: #a78bfa; margin-bottom: 4px;">Featured Hero Banner</div>
+                    <div style="font-size: 13px; color: var(--text-muted);">Select any song to be prominently featured in the top hero banner on the Home screen across PC & Mobile.</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Choose Song for Featured Banner</label>
+                    <select class="form-select" id="adminBannerSongSelect">
+                        <!-- Populated dynamically via ui.js -->
+                    </select>
+                </div>
+
+                <!-- Live Banner Preview Card -->
+                <div class="form-label" style="margin-top: 14px;">Preview:</div>
+                <div id="adminBannerPreviewBox" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.25), rgba(236, 72, 153, 0.2)); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 14px; display: flex; gap: 14px; align-items: center; margin-bottom: 20px;">
+                    <img id="adminBannerCoverImg" src="icons/icon-192.png" alt="Banner Cover" style="width: 70px; height: 70px; border-radius: 10px; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
+                    <div style="flex: 1; min-width: 0;">
+                        <span style="display: inline-block; padding: 2px 8px; background: rgba(16, 185, 129, 0.2); border-radius: 12px; font-size: 10px; font-weight: 700; color: var(--primary); margin-bottom: 4px;" id="adminBannerTag">🎵 Featured Spotlight</span>
+                        <div style="font-size: 16px; font-weight: 700; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="adminBannerTitle">Select a song above</div>
+                        <div style="font-size: 12px; color: var(--text-muted);" id="adminBannerArtist">Artist Name</div>
+                    </div>
+                </div>
+
+                <button type="button" class="btn-primary" id="btnSaveHeroBanner" style="width: 100%; justify-content: center; padding: 12px; font-size: 15px;">
+                    <span>🌟 Save & Set as Hero Banner</span>
+                </button>
+            </div>
+
+            <!-- TAB 2: Add Music (Quick link to Custom Add with Category) -->
+            <div id="adminTabAddContent" style="display: none;">
+                <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 14px; line-height: 1.5;">
+                    Add your songs with custom cover art and category tagging (<strong>Koch Rajbongshi</strong>, <strong>Assamese</strong>, or <strong>Bodo</strong>).
+                </p>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <button type="button" class="btn-primary" id="adminBtnOpenCustomUpload" style="padding: 12px; justify-content: center; font-size: 14px;">
+                        <span>🎨 Add Single Song with Cover Art & Category</span>
+                    </button>
+                    <button type="button" class="btn-secondary" id="adminBtnOpenQuickUpload" style="padding: 12px; justify-content: center; font-size: 14px;">
+                        <span>⚡ Import Multiple Songs / Folder</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- TAB 3: Manage Songs (Edit/Remove) -->
+            <div id="adminTabManageContent" style="display: none;">
+                <div class="form-group">
+                    <input type="text" class="form-input" id="adminManageSearchInput" placeholder="Filter songs to edit or remove...">
+                </div>
+                <div id="adminManageSongsList" style="max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+                    <!-- Populated dynamically via ui.js -->
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+                <button class="btn-secondary" data-close-modal="adminPanelModal">Close</button>
             </div>
         </div>
     </div>

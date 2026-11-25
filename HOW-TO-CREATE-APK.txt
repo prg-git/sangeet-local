@@ -2,50 +2,43 @@
        SANGEET LOCAL - HOW TO GET YOUR ANDROID APK / APP
 ===================================================================
 
-You have 3 easy ways to convert Sangeet Local into an Android App / APK:
+Your music app is now 100% LIVE worldwide at:
+👉 https://prg-git.github.io/sangeet-local/
+
+Here are the 2 fastest ways to get your APK / install on your phone:
 
 -------------------------------------------------------------------
-METHOD 1: 1-CLICK FREE APK BUILDER (Fastest - No Coding Needed)
+METHOD 1: 1-MINUTE FREE APK DOWNLOAD (Via PWABuilder)
 -------------------------------------------------------------------
-1. On your PC, double-click:
-      start-mobile-internet.bat
-   This starts the Cloudflare tunnel and copies your secure HTTPS link
-   (e.g., https://your-music-link.trycloudflare.com).
-
-2. Open your PC or phone browser and visit Microsoft & Google's official PWA tool:
+1. In your PC or phone browser, go to:
       https://www.pwabuilder.com
 
-3. Paste your Cloudflare HTTPS link into the box and click "Start".
-4. Click "Package for Stores" -> Select "Android" -> Click "Download APK".
-5. Send the downloaded .apk to your phone (via WhatsApp, Telegram, or USB) and tap "Install"!
+2. Paste your live link:
+      https://prg-git.github.io/sangeet-local/
+   and click "Start".
+
+3. Click "Package for Stores" -> Select "Android".
+4. Click "Download APK Package".
+5. Send the downloaded .apk file to your Android phone and install!
 
 -------------------------------------------------------------------
-METHOD 2: DIRECT 1-TAP INSTALL (No APK Download Required)
+METHOD 2: 1-TAP DIRECT PHONE INSTALL (No APK Download Needed)
 -------------------------------------------------------------------
-Modern Android phones can install Sangeet Local directly like a native app:
-1. Open your Sangeet link in Google Chrome on your phone:
-   - On same Wi-Fi: http://192.168.31.41:8080
-   - On mobile data: Your Cloudflare HTTPS link
+1. Open this link on your Android phone in Google Chrome:
+      https://prg-git.github.io/sangeet-local/
 2. Tap the Chrome 3-dots menu (top right).
-3. Tap "Add to Home screen" or "Install App".
-4. Sangeet Local will now appear on your phone home screen with its custom
-   music icon and runs in full-screen standalone mode with background audio!
+3. Tap "Install App" (or "Add to Home screen").
+4. Sangeet Local will install with its custom purple music icon on your
+   phone's home screen with full-screen playback and background audio!
 
 -------------------------------------------------------------------
-METHOD 3: COMPILE NATIVE APK WITH ANDROID STUDIO
+EASY SHORT WEB ADDRESS OPTIONS:
 -------------------------------------------------------------------
-A complete, pre-configured Android Studio project is ready in:
-   c:\Project\Latetst\android-apk-project\
+If you want an easy link to share with friends:
+1. Short link: Go to tinyurl.com or bitly.com and create:
+   tinyurl.com/sangeet-app  ==> redirects to your GitHub link!
 
-1. Open Android Studio.
-2. Click "Open" and select the folder:
-      c:\Project\Latetst\android-apk-project
-3. Wait for Gradle sync to complete.
-4. Go to top menu: Build -> Build Bundle(s) / APK(s) -> Build APK(s).
-5. Android Studio will generate the signed/unsigned .apk in:
-      app/build/outputs/apk/debug/app-debug.apk
-6. Copy that .apk to any Android phone and install!
-
-Tip: When opening the app on your phone, you can long-press anywhere on the screen
-to enter a new Wi-Fi IP or Cloudflare tunnel link at any time!
+2. Custom Domain (.com, .in):
+   In GitHub Settings -> Pages -> Custom Domain, you can connect your
+   own domain (like sangeet.in or pinku.live) for free!
 ===================================================================

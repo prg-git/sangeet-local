@@ -1,4 +1,4 @@
-# Sangeet Universal Music Server with Shared Library, Auto-Folder Scanner & Mobile Sync
+﻿# Sangeet Universal Music Server with Shared Library, Auto-Folder Scanner & Mobile Sync
 param(
     [int]$Port = 8080
 )
@@ -469,6 +469,22 @@ while ($true) {
                 Save-JsonFile $LibraryFile $songs
             }
             & $SendJson "200 OK" @{ success = $true; song = $updatedSong }
+            $Client.Close()
+            continue
+        }
+
+        # 5B. POST /api/spotlight (Set Hero Banner Featured Song)
+        if ($Method -eq "POST" -and $Path -eq "/api/spotlight") {
+            $id = $QueryParams["id"]
+            if ($id) {
+                $songs = @(Read-JsonFile $LibraryFile)
+                foreach ($s in $songs) {
+                    $s.isSpotlight = ($s.id -eq $id)
+                }
+                Save-JsonFile $LibraryFile $songs
+                Write-Host ("Set hero banner spotlight song ID: " + $id) -ForegroundColor Green
+            }
+            & $SendJson "200 OK" @{ success = $true; spotlightId = $id }
             $Client.Close()
             continue
         }

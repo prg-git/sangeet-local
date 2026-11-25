@@ -3,7 +3,7 @@
  * Enables offline caching for application assets.
  */
 
-const CACHE_NAME = "sangeet-cache-v1";
+const CACHE_NAME = "sangeet-cache-v2";
 const ASSETS = [
     "./",
     "./index.html",
@@ -43,6 +43,23 @@ self.addEventListener("fetch", (e) => {
     // Only handle GET requests
     if (e.request.method !== "GET") return;
 
+    const url = e.request.url;
+
+    // Network-First for dynamic data (library.json, playlists.json, API)
+    if (url.includes("/data/") || url.includes(".json") || url.includes("_t=")) {
+        e.respondWith(
+            fetch(e.request)
+                .then((networkRes) => {
+                    return networkRes;
+                })
+                .catch(() => {
+                    return caches.match(e.request);
+                })
+        );
+        return;
+    }
+
+    // Cache-First for static assets (css, js, icons)
     e.respondWith(
         caches.match(e.request).then((cached) => {
             return cached || fetch(e.request).catch(() => {

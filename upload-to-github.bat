@@ -46,9 +46,9 @@ cd /d "%~dp0"
 "%GIT_CMD%" remote add origin %REPO_URL%
 
 echo.
-echo Step 2: Preparing and committing all folders...
+echo Step 2: Preparing and committing all folders and updates...
 "%GIT_CMD%" add .
-"%GIT_CMD%" commit -m "Fix folder structure: css, js, music, data, icons" >nul 2>&1
+"%GIT_CMD%" commit -m "Update music library and app changes" >nul 2>&1
 
 echo.
 echo Step 3: Setting branch to main...

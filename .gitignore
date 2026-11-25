@@ -14,3 +14,4 @@ android-apk-project/*.iml
 .DS_Store
 Thumbs.db
 .vscode/
+.idea/

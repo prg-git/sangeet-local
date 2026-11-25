@@ -101,7 +101,20 @@ class UIController {
             customArtist: document.getElementById("customArtist"),
             customAlbum: document.getElementById("customAlbum"),
             customGenre: document.getElementById("customGenre"),
+            customGenreSelect: document.getElementById("customGenreSelect"),
+            editGenreSelect: document.getElementById("editGenreSelect"),
             btnSubmitCustomUpload: document.getElementById("btnSubmitCustomUpload"),
+
+            // Admin Panel
+            adminPanelModal: document.getElementById("adminPanelModal"),
+            btnOpenAdminPanel: document.getElementById("btnOpenAdminPanel"),
+            adminBannerSongSelect: document.getElementById("adminBannerSongSelect"),
+            adminBannerCoverImg: document.getElementById("adminBannerCoverImg"),
+            adminBannerTitle: document.getElementById("adminBannerTitle"),
+            adminBannerArtist: document.getElementById("adminBannerArtist"),
+            btnSaveHeroBanner: document.getElementById("btnSaveHeroBanner"),
+            adminManageSearchInput: document.getElementById("adminManageSearchInput"),
+            adminManageSongsList: document.getElementById("adminManageSongsList"),
 
             // Equalizer
             eqPresetSelect: document.getElementById("eqPresetSelect"),
@@ -207,8 +220,87 @@ class UIController {
         });
 
         // Modal triggers
+        if (this.dom.btnOpenAdminPanel) {
+            this.dom.btnOpenAdminPanel.addEventListener("click", () => this.openAdminPanel("banner"));
+        }
         document.getElementById("btnOpenAddMusic").addEventListener("click", () => this.openModal(this.dom.addMusicModal));
         document.getElementById("btnOpenEqualizer").addEventListener("click", () => this.openModal(this.dom.equalizerModal));
+
+        // Category Pill Selectors: Custom Upload (Tab 2)
+        document.querySelectorAll("#customCategoryPills .category-pill-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                document.querySelectorAll("#customCategoryPills .category-pill-btn").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                const cat = btn.getAttribute("data-cat");
+                if (this.dom.customGenreSelect) {
+                    this.dom.customGenreSelect.value = cat;
+                }
+                if (this.dom.customGenre) {
+                    this.dom.customGenre.value = cat;
+                    this.dom.customGenre.style.display = "none";
+                }
+            });
+        });
+
+        if (this.dom.customGenreSelect) {
+            this.dom.customGenreSelect.addEventListener("change", (e) => {
+                const val = e.target.value;
+                if (val === "custom") {
+                    if (this.dom.customGenre) {
+                        this.dom.customGenre.style.display = "block";
+                        this.dom.customGenre.value = "";
+                        this.dom.customGenre.focus();
+                    }
+                    document.querySelectorAll("#customCategoryPills .category-pill-btn").forEach(b => b.classList.remove("active"));
+                } else {
+                    if (this.dom.customGenre) {
+                        this.dom.customGenre.style.display = "none";
+                        this.dom.customGenre.value = val;
+                    }
+                    document.querySelectorAll("#customCategoryPills .category-pill-btn").forEach(b => {
+                        b.classList.toggle("active", b.getAttribute("data-cat") === val);
+                    });
+                }
+            });
+        }
+
+        // Category Pill Selectors: Edit Modal
+        document.querySelectorAll("#editCategoryPills .category-pill-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                document.querySelectorAll("#editCategoryPills .category-pill-btn").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                const cat = btn.getAttribute("data-cat");
+                if (this.dom.editGenreSelect) {
+                    this.dom.editGenreSelect.value = cat;
+                }
+                if (this.dom.editGenre) {
+                    this.dom.editGenre.value = cat;
+                    this.dom.editGenre.style.display = "none";
+                }
+            });
+        });
+
+        if (this.dom.editGenreSelect) {
+            this.dom.editGenreSelect.addEventListener("change", (e) => {
+                const val = e.target.value;
+                if (val === "custom") {
+                    if (this.dom.editGenre) {
+                        this.dom.editGenre.style.display = "block";
+                        this.dom.editGenre.value = "";
+                        this.dom.editGenre.focus();
+                    }
+                    document.querySelectorAll("#editCategoryPills .category-pill-btn").forEach(b => b.classList.remove("active"));
+                } else {
+                    if (this.dom.editGenre) {
+                        this.dom.editGenre.style.display = "none";
+                        this.dom.editGenre.value = val;
+                    }
+                    document.querySelectorAll("#editCategoryPills .category-pill-btn").forEach(b => {
+                        b.classList.toggle("active", b.getAttribute("data-cat") === val);
+                    });
+                }
+            });
+        }
 
         // Mobile Connect modal trigger
         const btnMobileConnect = document.getElementById("btnMobileConnect");
@@ -429,7 +521,16 @@ class UIController {
                 song.title = this.dom.editTitle.value.trim() || song.title;
                 song.artist = this.dom.editArtist.value.trim() || song.artist;
                 song.album = this.dom.editAlbum.value.trim() || song.album;
-                song.genre = this.dom.editGenre.value.trim() || song.genre;
+                
+                let editGenreVal = "Koch Rajbongshi";
+                if (this.dom.editGenreSelect && this.dom.editGenreSelect.value === "custom") {
+                    editGenreVal = (this.dom.editGenre ? this.dom.editGenre.value.trim() : "") || "Koch Rajbongshi";
+                } else if (this.dom.editGenreSelect) {
+                    editGenreVal = this.dom.editGenreSelect.value;
+                } else if (this.dom.editGenre) {
+                    editGenreVal = this.dom.editGenre.value.trim() || "Koch Rajbongshi";
+                }
+                song.genre = editGenreVal;
                 song.year = this.dom.editYear.value.trim() || song.year;
                 song.lyrics = this.dom.editLyrics.value.trim();
 
@@ -588,7 +689,15 @@ class UIController {
                 const title = (this.dom.customTitle ? this.dom.customTitle.value.trim() : "") || customAudioSelectedFile.name.replace(/\.[^/.]+$/, "");
                 const artist = (this.dom.customArtist ? this.dom.customArtist.value.trim() : "") || "Local Artist";
                 const album = (this.dom.customAlbum ? this.dom.customAlbum.value.trim() : "") || "PC Album";
-                const genre = (this.dom.customGenre ? this.dom.customGenre.value.trim() : "") || "Assamese";
+                
+                let genre = "Koch Rajbongshi";
+                if (this.dom.customGenreSelect && this.dom.customGenreSelect.value === "custom") {
+                    genre = (this.dom.customGenre ? this.dom.customGenre.value.trim() : "") || "Koch Rajbongshi";
+                } else if (this.dom.customGenreSelect) {
+                    genre = this.dom.customGenreSelect.value;
+                } else if (this.dom.customGenre) {
+                    genre = this.dom.customGenre.value.trim() || "Koch Rajbongshi";
+                }
 
                 this.showToast(`Uploading "${title}" to library...`);
                 this.dom.btnSubmitCustomUpload.disabled = true;
@@ -668,6 +777,75 @@ class UIController {
             this.renderQueueItems();
             this.showToast("Queue cleared");
         });
+
+        // Mobile Bottom Nav: Admin Panel Trigger
+        const mobileNavAdmin = document.getElementById("mobileNavAdmin");
+        if (mobileNavAdmin) {
+            mobileNavAdmin.addEventListener("click", () => this.openAdminPanel("banner"));
+        }
+
+        // Admin Modal Tabs
+        const adminTabs = [
+            { btn: document.getElementById("adminTabBtnBanner"), content: document.getElementById("adminTabBannerContent"), name: "banner" },
+            { btn: document.getElementById("adminTabBtnAdd"), content: document.getElementById("adminTabAddContent"), name: "add" },
+            { btn: document.getElementById("adminTabBtnManage"), content: document.getElementById("adminTabManageContent"), name: "manage" }
+        ];
+
+        adminTabs.forEach(tab => {
+            if (tab.btn) {
+                tab.btn.addEventListener("click", () => {
+                    adminTabs.forEach(t => {
+                        if (t.btn) t.btn.classList.toggle("active", t === tab);
+                        if (t.content) t.content.style.display = (t === tab) ? "block" : "none";
+                    });
+                    if (tab.name === "banner") {
+                        this.populateAdminBanner();
+                    } else if (tab.name === "manage") {
+                        this.renderAdminManageSongs(this.dom.adminManageSearchInput ? this.dom.adminManageSearchInput.value : "");
+                    }
+                });
+            }
+        });
+
+        // Admin: Banner Song Select change
+        if (this.dom.adminBannerSongSelect) {
+            this.dom.adminBannerSongSelect.addEventListener("change", () => {
+                this.updateAdminBannerPreview();
+            });
+        }
+
+        // Admin: Save Hero Banner Button
+        if (this.dom.btnSaveHeroBanner) {
+            this.dom.btnSaveHeroBanner.addEventListener("click", async () => {
+                await this.saveHeroBanner();
+            });
+        }
+
+        // Admin: Quick navigation to Add Music modal
+        const adminBtnCustom = document.getElementById("adminBtnOpenCustomUpload");
+        if (adminBtnCustom) {
+            adminBtnCustom.addEventListener("click", () => {
+                this.closeModal(this.dom.adminPanelModal);
+                this.openModal(this.dom.addMusicModal);
+                if (this.dom.tabBtnCustomUpload) this.dom.tabBtnCustomUpload.click();
+            });
+        }
+
+        const adminBtnQuick = document.getElementById("adminBtnOpenQuickUpload");
+        if (adminBtnQuick) {
+            adminBtnQuick.addEventListener("click", () => {
+                this.closeModal(this.dom.adminPanelModal);
+                this.openModal(this.dom.addMusicModal);
+                if (this.dom.tabBtnQuickImport) this.dom.tabBtnQuickImport.click();
+            });
+        }
+
+        // Admin: Search filter in Manage Songs tab
+        if (this.dom.adminManageSearchInput) {
+            this.dom.adminManageSearchInput.addEventListener("input", (e) => {
+                this.renderAdminManageSongs(e.target.value);
+            });
+        }
     }
 
     initAudioEngineSync() {
@@ -919,7 +1097,13 @@ class UIController {
             });
         }
 
-        const spotlight = songs[0] || null;
+        let spotlight = null;
+        if (this.currentSpotlightId) {
+            spotlight = songs.find(s => s.id === this.currentSpotlightId);
+        }
+        if (!spotlight) {
+            spotlight = songs.find(s => s.isSpotlight) || songs[0] || null;
+        }
 
         let html = `
             <!-- Filter Pills (All Music, Koch Rajbongshi, Assamese, Bodo) -->
@@ -943,6 +1127,9 @@ class UIController {
                         <div class="hero-actions">
                             <button class="btn-primary" id="btnPlaySpotlight" data-song-id="${spotlight.id}">
                                 <span>▶ Play Now</span>
+                            </button>
+                            <button class="btn-secondary" id="btnChangeHeroBanner" title="Change Hero Banner Featured Song">
+                                <span>⚙️ Change Banner</span>
                             </button>
                             <button class="btn-secondary pc-only-btn" id="btnAddSongsHero">
                                 <span>+ Add More Music</span>
@@ -1469,6 +1656,14 @@ class UIController {
             });
         }
 
+        // Change Hero Banner button
+        const btnChangeBanner = document.getElementById("btnChangeHeroBanner");
+        if (btnChangeBanner) {
+            btnChangeBanner.addEventListener("click", () => {
+                this.openAdminPanel("banner");
+            });
+        }
+
         // Add buttons
         const btnAddHero = document.getElementById("btnAddSongsHero");
         if (btnAddHero) btnAddHero.addEventListener("click", () => this.openModal(this.dom.addMusicModal));
@@ -1524,6 +1719,27 @@ class UIController {
         this.dom.editYear.value = song.year || "";
         this.dom.editLyrics.value = song.lyrics || "";
 
+        const standardCats = ["Koch Rajbongshi", "Assamese", "Bodo", "All Music"];
+        const sGenre = song.genre || "";
+        if (this.dom.editGenreSelect) {
+            if (standardCats.includes(sGenre)) {
+                this.dom.editGenreSelect.value = sGenre;
+                if (this.dom.editGenre) this.dom.editGenre.style.display = "none";
+            } else if (sGenre) {
+                this.dom.editGenreSelect.value = "custom";
+                if (this.dom.editGenre) {
+                    this.dom.editGenre.style.display = "block";
+                    this.dom.editGenre.value = sGenre;
+                }
+            } else {
+                this.dom.editGenreSelect.value = "Koch Rajbongshi";
+                if (this.dom.editGenre) this.dom.editGenre.style.display = "none";
+            }
+            document.querySelectorAll("#editCategoryPills .category-pill-btn").forEach(p => {
+                p.classList.toggle("active", p.getAttribute("data-cat") === this.dom.editGenreSelect.value);
+            });
+        }
+
         const currentCover = this.getSongCoverUrl(song);
         if (this.dom.editCoverPreview) {
             this.dom.editCoverPreview.src = currentCover;
@@ -1536,6 +1752,200 @@ class UIController {
         }
 
         this.openModal(this.dom.editSongModal);
+    }
+
+    // --- ADMIN PANEL (PC & MOBILE) ---
+
+    async openAdminPanel(tab = "banner") {
+        if (!this.dom.adminPanelModal) return;
+
+        const bannerTabBtn = document.getElementById("adminTabBtnBanner");
+        const addTabBtn = document.getElementById("adminTabBtnAdd");
+        const manageTabBtn = document.getElementById("adminTabBtnManage");
+        const bannerContent = document.getElementById("adminTabBannerContent");
+        const addContent = document.getElementById("adminTabAddContent");
+        const manageContent = document.getElementById("adminTabManageContent");
+
+        // Set active tab
+        if (bannerTabBtn) bannerTabBtn.classList.toggle("active", tab === "banner");
+        if (addTabBtn) addTabBtn.classList.toggle("active", tab === "add");
+        if (manageTabBtn) manageTabBtn.classList.toggle("active", tab === "manage");
+
+        if (bannerContent) bannerContent.style.display = (tab === "banner") ? "block" : "none";
+        if (addContent) addContent.style.display = (tab === "add") ? "block" : "none";
+        if (manageContent) manageContent.style.display = (tab === "manage") ? "block" : "none";
+
+        if (tab === "banner") {
+            await this.populateAdminBanner();
+        } else if (tab === "manage") {
+            await this.renderAdminManageSongs(this.dom.adminManageSearchInput ? this.dom.adminManageSearchInput.value : "");
+        }
+
+        this.openModal(this.dom.adminPanelModal);
+    }
+
+    async populateAdminBanner() {
+        if (!this.dom.adminBannerSongSelect) return;
+
+        const songs = await window.musicDB.getAllSongs();
+        if (songs.length === 0) {
+            this.dom.adminBannerSongSelect.innerHTML = `<option value="">No songs in library yet</option>`;
+            if (this.dom.adminBannerTitle) this.dom.adminBannerTitle.textContent = "No songs found";
+            if (this.dom.adminBannerArtist) this.dom.adminBannerArtist.textContent = "Add songs first";
+            return;
+        }
+
+        // Determine which song is currently featured
+        let currentSpotlight = null;
+        if (this.currentSpotlightId) {
+            currentSpotlight = songs.find(s => s.id === this.currentSpotlightId);
+        }
+        if (!currentSpotlight) {
+            currentSpotlight = songs.find(s => s.isSpotlight) || songs[0];
+        }
+
+        let optionsHtml = "";
+        songs.forEach(s => {
+            const isSelected = (currentSpotlight && s.id === currentSpotlight.id);
+            const categoryTag = s.genre ? ` [${s.genre}]` : "";
+            optionsHtml += `<option value="${s.id}" ${isSelected ? 'selected' : ''}>${this.escapeHtml(s.title)} - ${this.escapeHtml(s.artist)}${categoryTag}</option>`;
+        });
+
+        this.dom.adminBannerSongSelect.innerHTML = optionsHtml;
+        this.updateAdminBannerPreview();
+    }
+
+    async updateAdminBannerPreview() {
+        if (!this.dom.adminBannerSongSelect) return;
+        const selectedId = this.dom.adminBannerSongSelect.value;
+        if (!selectedId) return;
+
+        const songs = await window.musicDB.getAllSongs();
+        const song = songs.find(s => s.id === selectedId);
+        if (!song) return;
+
+        if (this.dom.adminBannerTitle) this.dom.adminBannerTitle.textContent = song.title;
+        if (this.dom.adminBannerArtist) this.dom.adminBannerArtist.textContent = `${song.artist} • ${song.album || 'Single'}`;
+        if (this.dom.adminBannerCoverImg) this.dom.adminBannerCoverImg.src = this.getSongCoverUrl(song);
+
+        const bannerTag = document.getElementById("adminBannerTag");
+        if (bannerTag) {
+            bannerTag.textContent = `🎵 ${song.genre || 'Featured Spotlight'}`;
+        }
+    }
+
+    async saveHeroBanner() {
+        if (!this.dom.adminBannerSongSelect) return;
+        const selectedId = this.dom.adminBannerSongSelect.value;
+        if (!selectedId) {
+            this.showToast("Please choose a song for the hero banner!", "danger");
+            return;
+        }
+
+        const song = await window.musicDB.getSong(selectedId);
+        await window.musicDB.setSpotlight(selectedId);
+        this.currentSpotlightId = selectedId;
+
+        this.showToast(`🌟 Hero Banner updated to: "${song ? song.title : 'Selected Track'}"!`);
+        this.closeModal(this.dom.adminPanelModal);
+        await this.refreshCurrentView();
+    }
+
+    async renderAdminManageSongs(query = "") {
+        const listContainer = this.dom.adminManageSongsList;
+        if (!listContainer) return;
+
+        const allSongs = await window.musicDB.getAllSongs();
+        const q = (query || "").toLowerCase().trim();
+
+        const filtered = q ? allSongs.filter(s => {
+            const t = (s.title || "").toLowerCase();
+            const a = (s.artist || "").toLowerCase();
+            const alb = (s.album || "").toLowerCase();
+            const g = (s.genre || "").toLowerCase();
+            return t.includes(q) || a.includes(q) || alb.includes(q) || g.includes(q);
+        }) : allSongs;
+
+        if (filtered.length === 0) {
+            listContainer.innerHTML = `
+                <div style="text-align: center; color: var(--text-muted); padding: 24px 10px; font-size: 13px;">
+                    ${q ? 'No songs matching "' + this.escapeHtml(q) + '"' : 'No songs in library yet'}
+                </div>
+            `;
+            return;
+        }
+
+        let html = "";
+        filtered.forEach(s => {
+            const coverUrl = this.getSongCoverUrl(s);
+            const isSpotlight = (this.currentSpotlightId === s.id || (!this.currentSpotlightId && s.isSpotlight));
+
+            html += `
+                <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-color); border-radius: var(--radius-md); transition: var(--transition);" class="admin-song-row" data-song-id="${s.id}">
+                    <img src="${coverUrl}" alt="Cover" style="width: 44px; height: 44px; border-radius: 8px; object-fit: cover; flex-shrink: 0; background: #1e293b;">
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-size: 14px; font-weight: 700; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            ${this.escapeHtml(s.title)}
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-muted); display: flex; gap: 6px; align-items: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">
+                            <span>${this.escapeHtml(s.artist)}</span>
+                            <span>•</span>
+                            <span style="display: inline-block; padding: 1px 6px; background: rgba(16, 185, 129, 0.15); border-radius: 10px; font-size: 10px; font-weight: 700; color: var(--primary);">${this.escapeHtml(s.genre || 'Music')}</span>
+                            ${isSpotlight ? '<span style="display: inline-block; padding: 1px 6px; background: rgba(124, 58, 237, 0.25); border-radius: 10px; font-size: 10px; font-weight: 700; color: #a78bfa;">🌟 Featured</span>' : ''}
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 6px; flex-shrink: 0;">
+                        <button type="button" class="btn-secondary" data-admin-set-banner="${s.id}" title="Set as Hero Banner" style="padding: 6px 10px; font-size: 12px; ${isSpotlight ? 'color: #a78bfa; border-color: #8b5cf6;' : ''}">
+                            <span>${isSpotlight ? '🌟 Active' : '🌟 Banner'}</span>
+                        </button>
+                        <button type="button" class="btn-secondary" data-admin-edit="${s.id}" title="Edit song details and album cover" style="padding: 6px 10px; font-size: 12px;">
+                            <span>✏️</span>
+                        </button>
+                        <button type="button" class="btn-secondary" data-admin-delete="${s.id}" title="Delete song" style="padding: 6px 10px; font-size: 12px; color: #ef4444; border-color: rgba(239, 68, 68, 0.4);">
+                            <span>🗑️</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+
+        listContainer.innerHTML = html;
+
+        // Bind clicks inside the song list
+        listContainer.querySelectorAll("[data-admin-set-banner]").forEach(btn => {
+            btn.addEventListener("click", async (e) => {
+                e.stopPropagation();
+                const songId = btn.getAttribute("data-admin-set-banner");
+                const song = await window.musicDB.getSong(songId);
+                await window.musicDB.setSpotlight(songId);
+                this.currentSpotlightId = songId;
+                this.showToast(`🌟 Hero Banner updated to: "${song ? song.title : 'Track'}"!`);
+                await this.renderAdminManageSongs(this.dom.adminManageSearchInput ? this.dom.adminManageSearchInput.value : "");
+                await this.refreshCurrentView();
+            });
+        });
+
+        listContainer.querySelectorAll("[data-admin-edit]").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const songId = btn.getAttribute("data-admin-edit");
+                this.closeModal(this.dom.adminPanelModal);
+                this.openEditMetadataModal(songId);
+            });
+        });
+
+        listContainer.querySelectorAll("[data-admin-delete]").forEach(btn => {
+            btn.addEventListener("click", async (e) => {
+                e.stopPropagation();
+                const songId = btn.getAttribute("data-admin-delete");
+                const song = await window.musicDB.getSong(songId);
+                const title = song ? song.title : "this song";
+                if (confirm(`Permanently delete "${title}" from your library?`)) {
+                    await this.deleteSong(songId);
+                    await this.renderAdminManageSongs(this.dom.adminManageSearchInput ? this.dom.adminManageSearchInput.value : "");
+                }
+            });
+        });
     }
 
     // --- QUEUE DRAWER ---

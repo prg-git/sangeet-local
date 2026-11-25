@@ -58,42 +58,61 @@ class MusicDB {
     async getAllSongs() {
         await this.init();
 
+        let songs = [];
+
         if (this.isServerConnected) {
             try {
                 const res = await fetch("/api/songs?_t=" + Date.now(), { cache: "no-store" });
                 if (res.ok) {
                     const data = await res.json();
-                    const songs = data.songs || [];
+                    songs = data.songs || [];
                     // Cache to IndexedDB in background
                     this.cacheSongsToIndexedDB(songs);
-                    return songs;
                 }
             } catch (e) {
                 console.warn("Server fetch failed, falling back to local cache:", e);
             }
         }
 
-        // Fallback to IndexedDB
-        const localSongs = await this.getLocalIndexedDBSongs();
-        if (localSongs && localSongs.length > 0) {
-            return localSongs;
+        if (!songs || songs.length === 0) {
+            // Static hosting mode (GitHub Pages / Firebase Hosting):
+            // Always try to fetch fresh data/library.json from GitHub to get any admin updates!
+            try {
+                const staticRes = await fetch("data/library.json?_t=" + Date.now(), { cache: "no-store" });
+                if (staticRes.ok) {
+                    const bundledSongs = await staticRes.json();
+                    if (Array.isArray(bundledSongs) && bundledSongs.length > 0) {
+                        await this.cacheSongsToIndexedDB(bundledSongs);
+                        songs = bundledSongs;
+                    }
+                }
+            } catch (e) {
+                console.warn("Static library.json fetch failed, falling back to local cache:", e);
+            }
         }
 
-        // If IndexedDB is empty (e.g. GitHub Pages / static hosting), load pre-bundled library.json
+        // Offline Fallback: Return cached IndexedDB songs if user has no internet
+        if (!songs || songs.length === 0) {
+            const localSongs = await this.getLocalIndexedDBSongs();
+            if (localSongs && localSongs.length > 0) {
+                songs = localSongs;
+            }
+        }
+
+        // Apply saved spotlight preference if present
         try {
-            const staticRes = await fetch("data/library.json");
-            if (staticRes.ok) {
-                const bundledSongs = await staticRes.json();
-                if (Array.isArray(bundledSongs) && bundledSongs.length > 0) {
-                    await this.cacheSongsToIndexedDB(bundledSongs);
-                    return bundledSongs;
+            const savedSpotlight = localStorage.getItem("sangeet_spotlight_id");
+            if (savedSpotlight && Array.isArray(songs) && songs.length > 0) {
+                const hasExplicitSpotlight = songs.some(s => s.isSpotlight);
+                if (!hasExplicitSpotlight) {
+                    songs.forEach(s => {
+                        s.isSpotlight = (s.id === savedSpotlight);
+                    });
                 }
             }
-        } catch (e) {
-            console.warn("Static library.json fetch failed:", e);
-        }
+        } catch (e) {}
 
-        return [];
+        return songs || [];
     }
 
     async getSong(id) {
@@ -217,6 +236,37 @@ class MusicDB {
         return song.isLiked;
     }
 
+    async setSpotlight(songId) {
+        await this.init();
+
+        try {
+            localStorage.setItem("sangeet_spotlight_id", songId);
+        } catch (e) {}
+
+        if (this.isServerConnected) {
+            try {
+                await fetch(`/api/spotlight?id=${encodeURIComponent(songId)}`, { method: "POST" });
+            } catch (e) {
+                console.warn("Server spotlight update error:", e);
+            }
+        }
+
+        // Also update IndexedDB cache
+        if (this.db) {
+            try {
+                const songs = await this.getLocalIndexedDBSongs();
+                const tx = this.db.transaction(["songs"], "readwrite");
+                const store = tx.objectStore("songs");
+                songs.forEach(s => {
+                    s.isSpotlight = (s.id === songId);
+                    store.put(s);
+                });
+            } catch (e) {}
+        }
+
+        return true;
+    }
+
     async updateSong(song, coverBlobOrBase64 = null, removeCover = false) {
         await this.init();
 
@@ -285,6 +335,15 @@ class MusicDB {
             } catch (e) {}
         }
 
+        // Static hosting mode (GitHub Pages / Firebase Hosting):
+        try {
+            const staticPl = await fetch("data/playlists.json?_t=" + Date.now(), { cache: "no-store" });
+            if (staticPl.ok) {
+                const plData = await staticPl.json();
+                if (Array.isArray(plData) && plData.length > 0) return plData;
+            }
+        } catch (e) {}
+
         const localPlaylists = await new Promise((resolve) => {
             if (!this.db) return resolve([]);
             const tx = this.db.transaction(["playlists"], "readonly");
@@ -293,20 +352,7 @@ class MusicDB {
             req.onerror = () => resolve([]);
         });
 
-        if (localPlaylists && localPlaylists.length > 0) {
-            return localPlaylists;
-        }
-
-        // Fallback to static data/playlists.json
-        try {
-            const staticPl = await fetch("data/playlists.json");
-            if (staticPl.ok) {
-                const plData = await staticPl.json();
-                return Array.isArray(plData) ? plData : [];
-            }
-        } catch (e) {}
-
-        return [];
+        return localPlaylists || [];
     }
 
     async createPlaylist(name, description = "") {
