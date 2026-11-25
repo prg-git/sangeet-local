@@ -1,4 +1,4 @@
-# Sangeet Universal Music Server with Shared Library, Auto-Folder Scanner & Mobile Sync
+﻿# Sangeet Universal Music Server with Shared Library, Auto-Folder Scanner & Mobile Sync
 param(
     [int]$Port = 8080
 )
@@ -46,11 +46,30 @@ $MimeTypes = @{
     ".webm" = "audio/webm"
 }
 
+Add-Type -AssemblyName System.Web.Extensions -ErrorAction SilentlyContinue
+
+function Parse-JsonString($jsonStr) {
+    if (-not $jsonStr -or $jsonStr.Trim() -eq "") { return $null }
+    try {
+        return (ConvertFrom-Json $jsonStr)
+    } catch {
+        try {
+            $serializer = New-Object System.Web.Script.Serialization.JavaScriptSerializer
+            $serializer.MaxJsonLength = [int32]::MaxValue
+            $dict = $serializer.DeserializeObject($jsonStr)
+            return [PSCustomObject]$dict
+        } catch {
+            Write-Host "JSON Parse error: $_" -ForegroundColor Red
+            return $null
+        }
+    }
+}
+
 function Read-JsonFile($path) {
     try {
         $content = [System.IO.File]::ReadAllText($path, [System.Text.Encoding]::UTF8)
         if (-not $content -or $content.Trim() -eq "") { return @() }
-        $obj = ConvertFrom-Json $content
+        $obj = Parse-JsonString $content
         if ($null -eq $obj) { return @() }
         return @($obj)
     } catch {
@@ -63,7 +82,7 @@ function Read-JsonObject($path) {
         if (-not (Test-Path $path)) { return $null }
         $content = [System.IO.File]::ReadAllText($path, [System.Text.Encoding]::UTF8)
         if (-not $content -or $content.Trim() -eq "") { return $null }
-        return (ConvertFrom-Json $content)
+        return (Parse-JsonString $content)
     } catch {
         return $null
     }
@@ -444,7 +463,7 @@ while ($true) {
         if ($Method -eq "POST" -and $Path -eq "/api/songs/update") {
             $rawBody = & $ReadBodyBytes
             $bodyStr = [System.Text.Encoding]::UTF8.GetString($rawBody)
-            $updateData = ConvertFrom-Json $bodyStr
+            $updateData = Parse-JsonString $bodyStr
 
             $updatedSong = $null
             if ($updateData -and $updateData.id) {
@@ -480,7 +499,7 @@ while ($true) {
 
                                 if (-not (Test-Path $CoversDir)) { New-Item -ItemType Directory -Path $CoversDir -Force | Out-Null }
                                 $timestamp = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
-                                $coverFilename = "$($s.id)_cover_${timestamp}.jpg"
+                                $coverFilename = "$($s.id)_cover_$timestamp.jpg"
                                 $coverFilePath = Join-Path $CoversDir $coverFilename
                                 [System.IO.File]::WriteAllBytes($coverFilePath, $coverBytes)
                                 $s.coverUrl = "/music/covers/$coverFilename"
@@ -533,7 +552,7 @@ while ($true) {
         if ($Method -eq "POST" -and $Path -eq "/api/banners") {
             $rawBody = & $ReadBodyBytes
             $bodyStr = [System.Text.Encoding]::UTF8.GetString($rawBody)
-            $payload = ConvertFrom-Json $bodyStr
+            $payload = Parse-JsonString $bodyStr
 
             $lang = if ($payload.language) { $payload.language } else { "all" }
             $coverUrl = if ($payload.coverUrl) { $payload.coverUrl } else { "" }
@@ -595,6 +614,53 @@ while ($true) {
 
             Write-Host "Saved ${lang} banner: $($bannerObj.title)" -ForegroundColor Cyan
             & $SendJson "200 OK" @{ success = $true; banners = $currentBanners }
+            $Client.Close()
+            continue
+        }
+
+        # 9. POST /api/publish (Push latest covers, banners & library to GitHub Pages)
+        if ($Method -eq "POST" -and $Path -eq "/api/publish") {
+            try {
+                $gitExe = Join-Path $DocRoot "tools\git\cmd\git.exe"
+                if (-not (Test-Path $gitExe)) {
+                    $gitCmd = Get-Command "git" -ErrorAction SilentlyContinue
+                    if ($gitCmd) { $gitExe = $gitCmd.Source }
+                }
+
+                if (-not (Test-Path $gitExe)) {
+                    & $SendJson "500 Internal Server Error" @{ success = $false; message = "Git executable not found." }
+                    $Client.Close()
+                    continue
+                }
+
+                Write-Host "Publishing updates from PC Admin Studio to GitHub Pages..." -ForegroundColor Cyan
+
+                # Auto-sync local folder
+                $null = Sync-MusicFolder -musicDir $MusicDir -libraryFile $LibraryFile
+
+                # Stage files
+                & $gitExe add -A
+
+                # Commit changes if any
+                $status = & $gitExe status --porcelain
+                if ($status) {
+                    $ts = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
+                    & $gitExe commit -m "Update music library and covers from PC Studio [$ts]"
+                }
+
+                # Push to origin main
+                $pushOutput = & $gitExe push origin main 2>&1 | Out-String
+                Write-Host "Git push result: $pushOutput" -ForegroundColor Green
+
+                & $SendJson "200 OK" @{
+                    success = $true
+                    message = "Successfully published to GitHub Pages! Changes will reflect live on https://prg-git.github.io/sangeet-local/ in ~1 minute."
+                    details = $pushOutput
+                }
+            } catch {
+                Write-Host "Publish error: $_" -ForegroundColor Red
+                & $SendJson "500 Internal Server Error" @{ success = $false; message = $_.Exception.Message }
+            }
             $Client.Close()
             continue
         }

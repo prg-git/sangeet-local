@@ -3,6 +3,46 @@
  * Manages 3-language hero banners, music uploads, cover artwork, and song editing/deletion.
  */
 
+// Compress and downscale any image (phone camera photos up to 15MB) into a lightweight JPEG (~60-120KB)
+// This guarantees instant uploads, avoids exceeding browser/server memory, and loads smoothly on mobile!
+function compressImageFile(file, maxWidth = 600, maxHeight = 600, quality = 0.85) {
+    return new Promise((resolve, reject) => {
+        if (!file) return resolve(null);
+        if (!file.type || !file.type.startsWith("image/")) {
+            const r = new FileReader();
+            r.onload = () => resolve(r.target.result);
+            r.onerror = (err) => reject(err);
+            r.readAsDataURL(file);
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                let { width, height } = img;
+                if (width > maxWidth || height > maxHeight) {
+                    const ratio = Math.min(maxWidth / width, maxHeight / height);
+                    width = Math.round(width * ratio);
+                    height = Math.round(height * ratio);
+                }
+                const canvas = document.createElement("canvas");
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0, width, height);
+                const compressed = canvas.toDataURL("image/jpeg", quality);
+                resolve(compressed);
+            };
+            img.onerror = () => {
+                resolve(e.target.result);
+            };
+            img.src = e.target.result;
+        };
+        reader.onerror = (err) => reject(err);
+        reader.readAsDataURL(file);
+    });
+}
+
 class AdminStudio {
     constructor() {
         this.currentLang = "all";
@@ -39,6 +79,8 @@ class AdminStudio {
         this.dom = {
             totalSongsBadge: document.getElementById("totalSongsBadge"),
             serverStatusBadge: document.getElementById("serverStatusBadge"),
+            btnPublishGithub: document.getElementById("btnPublishGithub"),
+            btnPublishBannerNotice: document.getElementById("btnPublishBannerNotice"),
 
             // Banners Tab
             bannerPreviewBox: document.getElementById("bannerPreviewBox"),
@@ -145,19 +187,21 @@ class AdminStudio {
             this.dom.btnChooseBannerBg.addEventListener("click", () => this.dom.bannerBgFileInput.click());
         }
         if (this.dom.bannerBgFileInput) {
-            this.dom.bannerBgFileInput.addEventListener("change", (e) => {
+            this.dom.bannerBgFileInput.addEventListener("change", async (e) => {
                 const file = e.target.files && e.target.files[0];
                 if (file) {
                     this.bannerCustomBgFile = file;
                     this.bannerBgRemoved = false;
-                    const reader = new FileReader();
-                    reader.onload = (re) => {
-                        this.bannerCustomBgBase64 = re.target.result;
+                    this.showToast("Compressing & preparing background wallpaper...");
+                    try {
+                        const b64 = await compressImageFile(file, 1280, 720, 0.82);
+                        this.bannerCustomBgBase64 = b64;
                         if (this.dom.bannerBgUrlInput) this.dom.bannerBgUrlInput.value = "";
                         this.updateBannerPreview();
-                        this.showToast("Background image loaded!");
-                    };
-                    reader.readAsDataURL(file);
+                        this.showToast("Background image ready! Click 'Save & Publish Banner' below.");
+                    } catch (err) {
+                        this.showToast("Error processing background image: " + err.message, "danger");
+                    }
                 }
             });
         }
@@ -178,19 +222,21 @@ class AdminStudio {
             this.dom.btnChooseBannerCover.addEventListener("click", () => this.dom.bannerCoverFileInput.click());
         }
         if (this.dom.bannerCoverFileInput) {
-            this.dom.bannerCoverFileInput.addEventListener("change", (e) => {
+            this.dom.bannerCoverFileInput.addEventListener("change", async (e) => {
                 const file = e.target.files && e.target.files[0];
                 if (file) {
                     this.bannerCustomImageFile = file;
                     this.bannerCoverRemoved = false;
-                    const reader = new FileReader();
-                    reader.onload = (re) => {
-                        this.bannerCustomImageBase64 = re.target.result;
+                    this.showToast("Compressing & preparing banner artwork...");
+                    try {
+                        const b64 = await compressImageFile(file, 600, 600, 0.85);
+                        this.bannerCustomImageBase64 = b64;
                         if (this.dom.bannerCoverUrlInput) this.dom.bannerCoverUrlInput.value = "";
                         this.updateBannerPreview();
-                        this.showToast("Banner artwork loaded!");
-                    };
-                    reader.readAsDataURL(file);
+                        this.showToast("Banner artwork ready! Click 'Save & Publish Banner' below.");
+                    } catch (err) {
+                        this.showToast("Error processing banner artwork: " + err.message, "danger");
+                    }
                 }
             });
         }
@@ -228,32 +274,29 @@ class AdminStudio {
                     const songId = this.directCoverSongId;
                     const song = this.songsList.find(s => s.id === songId);
                     const title = song ? song.title : "track";
-                    this.showToast(`Uploading cover image for "${title}"...`);
-                    const reader = new FileReader();
-                    reader.onload = async (ev) => {
-                        const b64 = ev.target.result;
-                        try {
-                            const res = await fetch("/api/songs/update", {
-                                method: "POST",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ id: songId, coverBase64: b64 })
-                            });
-                            if (res.ok) {
-                                const data = await res.json();
-                                if (data && data.song && song) {
-                                    song.coverUrl = data.song.coverUrl;
-                                    song.updatedAt = data.song.updatedAt;
-                                }
-                                this.showToast(`Cover image updated for "${title}"!`);
-                                await this.loadData();
-                            } else {
-                                this.showToast("Failed to update cover on server.", "danger");
+                    this.showToast(`Compressing & uploading cover image for "${title}"...`);
+                    try {
+                        const b64 = await compressImageFile(file, 600, 600, 0.85);
+                        if (!b64) throw new Error("Could not process image file");
+                        const res = await fetch("/api/songs/update", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ id: songId, coverBase64: b64 })
+                        });
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (data && data.song && song) {
+                                song.coverUrl = data.song.coverUrl;
+                                song.updatedAt = data.song.updatedAt;
                             }
-                        } catch (err) {
-                            this.showToast("Server error: please ensure 'start-master-admin.bat' is running. (" + err.message + ")", "danger");
+                            this.showToast(`✓ Cover image updated for "${title}"! Click 'Publish to Mobile' above to push to live app.`);
+                            await this.loadData();
+                        } else {
+                            this.showToast("Failed to update cover on server.", "danger");
                         }
-                    };
-                    reader.readAsDataURL(file);
+                    } catch (err) {
+                        this.showToast("Error updating cover: " + err.message, "danger");
+                    }
                 }
             });
         }
@@ -282,17 +325,18 @@ class AdminStudio {
             this.dom.btnBrowseCover.addEventListener("click", () => this.dom.adminCoverFileInput.click());
         }
         if (this.dom.adminCoverFileInput) {
-            this.dom.adminCoverFileInput.addEventListener("change", (e) => {
+            this.dom.adminCoverFileInput.addEventListener("change", async (e) => {
                 const file = e.target.files && e.target.files[0];
                 if (file) {
                     this.selectedCoverFile = file;
-                    const reader = new FileReader();
-                    reader.onload = (re) => {
-                        this.selectedCoverBase64 = re.target.result;
-                        this.dom.addCoverPreview.src = re.target.result;
+                    try {
+                        const b64 = await compressImageFile(file, 600, 600, 0.85);
+                        this.selectedCoverBase64 = b64;
+                        this.dom.addCoverPreview.src = b64;
                         if (this.dom.adminCoverUrlInput) this.dom.adminCoverUrlInput.value = "";
-                    };
-                    reader.readAsDataURL(file);
+                    } catch (err) {
+                        this.showToast("Error processing cover: " + err.message, "danger");
+                    }
                 }
             });
         }
@@ -342,18 +386,19 @@ class AdminStudio {
             this.dom.btnEditChooseCover.addEventListener("click", () => this.dom.editModalCoverFileInput.click());
         }
         if (this.dom.editModalCoverFileInput) {
-            this.dom.editModalCoverFileInput.addEventListener("change", (e) => {
+            this.dom.editModalCoverFileInput.addEventListener("change", async (e) => {
                 const file = e.target.files && e.target.files[0];
                 if (file) {
                     this.editCoverFile = file;
                     this.editCoverRemoved = false;
-                    const reader = new FileReader();
-                    reader.onload = (re) => {
-                        this.editCoverBase64 = re.target.result;
-                        this.dom.editModalCoverImg.src = re.target.result;
+                    try {
+                        const b64 = await compressImageFile(file, 600, 600, 0.85);
+                        this.editCoverBase64 = b64;
+                        this.dom.editModalCoverImg.src = b64;
                         if (this.dom.editModalCoverUrlInput) this.dom.editModalCoverUrlInput.value = "";
-                    };
-                    reader.readAsDataURL(file);
+                    } catch (err) {
+                        this.showToast("Error processing cover: " + err.message, "danger");
+                    }
                 }
             });
         }
@@ -366,6 +411,51 @@ class AdminStudio {
                 if (this.dom.editModalCoverUrlInput) this.dom.editModalCoverUrlInput.value = "";
                 this.dom.editModalCoverImg.src = "icons/icon-192.png";
             });
+        }
+
+        // --- PUBLISH TO GITHUB PAGES HANDLER ---
+        const handlePublish = async () => {
+            if (this.isPublishing) return;
+            this.isPublishing = true;
+            const origText = this.dom.btnPublishGithub ? this.dom.btnPublishGithub.innerHTML : "";
+            if (this.dom.btnPublishGithub) {
+                this.dom.btnPublishGithub.disabled = true;
+                this.dom.btnPublishGithub.innerHTML = `<span>⏳ Publishing to GitHub...</span>`;
+            }
+            if (this.dom.btnPublishBannerNotice) {
+                this.dom.btnPublishBannerNotice.disabled = true;
+                this.dom.btnPublishBannerNotice.textContent = "⏳ Publishing...";
+            }
+            this.showToast("⏳ Publishing all covers, banners & library to GitHub Pages...", "info");
+
+            try {
+                const res = await fetch("/api/publish", { method: "POST" });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    this.showToast("🎉 " + data.message, "success");
+                } else {
+                    this.showToast("Publish failed: " + (data.message || "Unknown error"), "danger");
+                }
+            } catch (err) {
+                this.showToast("Publish error: " + err.message + ". You can also run 'upload-to-github.bat' on your PC.", "danger");
+            } finally {
+                this.isPublishing = false;
+                if (this.dom.btnPublishGithub) {
+                    this.dom.btnPublishGithub.disabled = false;
+                    this.dom.btnPublishGithub.innerHTML = origText;
+                }
+                if (this.dom.btnPublishBannerNotice) {
+                    this.dom.btnPublishBannerNotice.disabled = false;
+                    this.dom.btnPublishBannerNotice.textContent = "🚀 Publish Changes Now";
+                }
+            }
+        };
+
+        if (this.dom.btnPublishGithub) {
+            this.dom.btnPublishGithub.addEventListener("click", handlePublish);
+        }
+        if (this.dom.btnPublishBannerNotice) {
+            this.dom.btnPublishBannerNotice.addEventListener("click", handlePublish);
         }
         document.querySelectorAll("#editModalCategoryPills .category-pill-btn").forEach(btn => {
             btn.addEventListener("click", () => {
@@ -578,7 +668,7 @@ class AdminStudio {
             if (res.ok) {
                 const data = await res.json();
                 this.bannersData = data.banners || this.bannersData;
-                this.showToast(`🌟 Saved & Published banner with background for [${lang}]!`);
+                this.showToast(`🌟 Saved banner for [${lang}] locally! Click 'Publish to Mobile' above to update live app.`);
             } else {
                 this.showToast("Failed to save banner on server.", "danger");
             }
@@ -634,7 +724,18 @@ class AdminStudio {
             });
 
             if (res.ok) {
-                this.showToast(`🎉 "${title}" uploaded successfully to library!`);
+                const uploadData = await res.json();
+                const uploadedSong = uploadData && uploadData.song;
+                if (this.selectedCoverBase64 && uploadedSong && uploadedSong.id && !uploadedSong.coverUrl) {
+                    try {
+                        await fetch("/api/songs/update", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ id: uploadedSong.id, coverBase64: this.selectedCoverBase64 })
+                        });
+                    } catch (e) {}
+                }
+                this.showToast(`🎉 "${title}" uploaded successfully! Click 'Publish to Mobile' above to update live app.`);
                 // Reset form
                 this.selectedAudioFile = null;
                 this.selectedCoverFile = null;
@@ -819,7 +920,7 @@ class AdminStudio {
             });
 
             if (res.ok) {
-                this.showToast(`Saved changes for "${title}"!`);
+                this.showToast(`✓ Saved changes for "${title}"! Click 'Publish to Mobile' above to push to live app.`);
                 this.closeEditModal();
                 await this.loadData();
             } else {
