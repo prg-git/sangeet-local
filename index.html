@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sangeet - Personal JioSaavn & Gaana Music Studio</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎵</text></svg>">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎵</text></svg>">
     <link rel="stylesheet" href="css/style.css">
     <link rel="manifest" href="manifest.json">
 </head>
+
 <body class="theme-dark">
 
     <!-- Floating button to exit simulated phone view on PC -->
@@ -21,7 +24,8 @@
             <div class="brand">
                 <div class="brand-icon">🎵</div>
                 <div class="brand-text">
-                    <h1 style="display: flex; align-items: center; gap: 8px;">SANGEET <span class="admin-badge">ADMIN</span></h1>
+                    <h1 style="display: flex; align-items: center; gap: 8px;">SANGEET <span
+                            class="admin-badge">ADMIN</span></h1>
                     <span>Personal Music Studio (PC Hub)</span>
                 </div>
             </div>
@@ -31,25 +35,39 @@
                 <div class="nav-title">Menu</div>
                 <ul class="nav-list">
                     <li class="nav-item active" data-view="home">
-                        <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+                        <svg viewBox="0 0 24 24">
+                            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+                        </svg>
                         <span>Home</span>
                     </li>
                     <li class="nav-item" data-view="search">
-                        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                        <svg viewBox="0 0 24 24">
+                            <path
+                                d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                        </svg>
                         <span>Search & Explore</span>
                     </li>
                     <li class="nav-item" data-view="library">
-                        <svg viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg>
+                        <svg viewBox="0 0 24 24">
+                            <path
+                                d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z" />
+                        </svg>
                         <span>My Library</span>
                         <span class="badge-count" id="librarySongCount">0</span>
                     </li>
                     <li class="nav-item" data-view="liked">
-                        <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                        <svg viewBox="0 0 24 24">
+                            <path
+                                d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                        </svg>
                         <span>Liked Songs</span>
                         <span class="badge-count" id="likedSongCount">0</span>
                     </li>
                     <li class="nav-item" data-view="about">
-                        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                        <svg viewBox="0 0 24 24">
+                            <path
+                                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                        </svg>
                         <span>About Creator</span>
                     </li>
                 </ul>
@@ -96,23 +114,30 @@
                 </div>
 
                 <div class="search-container">
-                    <svg class="search-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-                    <input type="text" class="search-input" id="globalSearchInput" placeholder="Search songs, artists, albums, or genres...">
+                    <svg class="search-icon" viewBox="0 0 24 24">
+                        <path fill="currentColor"
+                            d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                    </svg>
+                    <input type="text" class="search-input" id="globalSearchInput"
+                        placeholder="Search songs, artists, albums, or genres...">
                     <button class="search-clear-btn" id="btnSearchClear">✕</button>
                 </div>
 
                 <div class="header-actions">
                     <!-- Admin Panel Button (Accessible on Mobile & PC) -->
-                    <button class="admin-header-btn" id="btnOpenAdminPanel" title="Admin Panel (Change Banner, Add Songs, Manage Library)">
+                    <button class="admin-header-btn" id="btnOpenAdminPanel"
+                        title="Admin Panel (Change Banner, Add Songs, Manage Library)">
                         <span>⚙️</span>
                         <span>Admin</span>
                     </button>
 
-                    <button class="btn-secondary" id="btnToggleMobilePreview" title="Toggle Phone / Mobile View" style="border-color: #8b5cf6; color: #a78bfa;">
+                    <button class="btn-secondary" id="btnToggleMobilePreview" title="Toggle Phone / Mobile View"
+                        style="border-color: #8b5cf6; color: #a78bfa;">
                         <span>📱 Phone View</span>
                     </button>
 
-                    <button class="btn-secondary" id="btnMobileConnect" title="Open on Mobile Phone" style="border-color: var(--primary); color: var(--primary);">
+                    <button class="btn-secondary" id="btnMobileConnect" title="Open on Mobile Phone"
+                        style="border-color: var(--primary); color: var(--primary);">
                         <span>🔗 QR Code</span>
                     </button>
 
@@ -153,27 +178,44 @@
     <!-- ================= MOBILE BOTTOM NAVIGATION BAR ================= -->
     <nav class="mobile-bottom-nav" id="mobileBottomNav">
         <div class="mobile-nav-item active" data-view="home">
-            <svg viewBox="0 0 24 24"><path fill="currentColor" d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            <svg viewBox="0 0 24 24">
+                <path fill="currentColor" d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+            </svg>
             <span>Home</span>
         </div>
         <div class="mobile-nav-item" data-view="search">
-            <svg viewBox="0 0 24 24"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            <svg viewBox="0 0 24 24">
+                <path fill="currentColor"
+                    d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+            </svg>
             <span>Search</span>
         </div>
         <div class="mobile-nav-item" data-view="library">
-            <svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg>
+            <svg viewBox="0 0 24 24">
+                <path fill="currentColor"
+                    d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z" />
+            </svg>
             <span>Library</span>
         </div>
         <div class="mobile-nav-item" data-view="liked">
-            <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            <svg viewBox="0 0 24 24">
+                <path fill="currentColor"
+                    d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            </svg>
             <span>Liked</span>
         </div>
         <div class="mobile-nav-item" data-view="about">
-            <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+            <svg viewBox="0 0 24 24">
+                <path fill="currentColor"
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+            </svg>
             <span>About</span>
         </div>
         <div class="mobile-nav-item" id="mobileNavAdmin" style="color: #c084fc;">
-            <svg viewBox="0 0 24 24"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+            <svg viewBox="0 0 24 24">
+                <path fill="currentColor"
+                    d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
+            </svg>
             <span>Admin</span>
         </div>
     </nav>
@@ -184,14 +226,16 @@
         <!-- Player Left: Song Info & Like -->
         <div class="player-left">
             <div class="player-cover-wrap" id="playerCoverWrap">
-                <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><rect width='100%' height='100%' fill='%231e293b'/><text x='50%' y='55%' font-size='40' fill='%23fff' text-anchor='middle' dominant-baseline='middle'>♫</text></svg>" alt="Album Cover" class="player-cover" id="playerCoverImg">
+                <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><rect width='100%' height='100%' fill='%231e293b'/><text x='50%' y='55%' font-size='40' fill='%23fff' text-anchor='middle' dominant-baseline='middle'>♫</text></svg>"
+                    alt="Album Cover" class="player-cover" id="playerCoverImg">
             </div>
             <div class="player-info">
                 <div class="player-title" id="playerSongTitle">No song playing</div>
                 <div class="player-artist" id="playerSongArtist">Select a song from library</div>
             </div>
             <button class="player-like-btn" id="playerLikeBtn" title="Like Song">♥</button>
-            <button class="btn-control" id="playerLyricsBtn" title="Show Lyrics" style="font-size: 13px; font-weight: 700;">MIC</button>
+            <button class="btn-control" id="playerLyricsBtn" title="Show Lyrics"
+                style="font-size: 13px; font-weight: 700;">MIC</button>
         </div>
 
         <!-- Player Center: Playback Controls & Timeline -->
@@ -220,8 +264,9 @@
             <!-- Mini live visualizer -->
             <canvas class="mini-visualizer-canvas" id="miniVisualizerCanvas" width="60" height="24"></canvas>
 
-            <button class="btn-control" id="btnPlaybackSpeed" title="Speed" style="font-size: 12px; font-weight: 700; width: 38px;">1.0x</button>
-            
+            <button class="btn-control" id="btnPlaybackSpeed" title="Speed"
+                style="font-size: 12px; font-weight: 700; width: 38px;">1.0x</button>
+
             <button class="btn-control" id="btnQueueToggle" title="Queue">
                 <span>📑</span>
                 <span id="queueBadge" style="font-size: 10px; margin-left: 2px;"></span>
@@ -251,8 +296,10 @@
 
             <!-- Mode Tabs: Quick Import vs Custom Add with Cover & Details -->
             <div class="modal-tabs">
-                <button type="button" class="modal-tab-btn active" id="tabBtnQuickImport">⚡ Quick Import (Files & Drag-Drop)</button>
-                <button type="button" class="modal-tab-btn" id="tabBtnCustomUpload">🎨 Custom Upload (With Cover Art & Details)</button>
+                <button type="button" class="modal-tab-btn active" id="tabBtnQuickImport">⚡ Quick Import (Files &
+                    Drag-Drop)</button>
+                <button type="button" class="modal-tab-btn" id="tabBtnCustomUpload">🎨 Custom Upload (With Cover Art &
+                    Details)</button>
             </div>
 
             <!-- TAB 1: Quick Drag and Drop Box -->
@@ -261,7 +308,8 @@
                     <div class="dropzone-icon">📥</div>
                     <div class="dropzone-text">
                         <h4>Drag and drop audio files here</h4>
-                        <p>Supports MP3, WAV, FLAC, M4A, OGG, AAC files with automatic ID3 tag & album art extraction</p>
+                        <p>Supports MP3, WAV, FLAC, M4A, OGG, AAC files with automatic ID3 tag & album art extraction
+                        </p>
                     </div>
                     <div style="display: flex; gap: 12px; justify-content: center;">
                         <button class="btn-primary" id="btnBrowseFiles">
@@ -271,7 +319,8 @@
                             <span>Select Folder</span>
                         </button>
                     </div>
-                    <input type="file" id="fileInput" multiple accept="audio/*,.mp3,.wav,.flac,.m4a,.ogg,.aac" style="display: none;">
+                    <input type="file" id="fileInput" multiple accept="audio/*,.mp3,.wav,.flac,.m4a,.ogg,.aac"
+                        style="display: none;">
                     <input type="file" id="folderInput" webkitdirectory directory multiple style="display: none;">
                 </div>
 
@@ -279,8 +328,10 @@
                 <div style="margin: 20px 0;">
                     <label class="form-label">Or Add Online Audio Stream / Direct MP3 URL</label>
                     <div style="display: flex; gap: 8px;">
-                        <input type="url" class="form-input" id="streamUrlInput" placeholder="https://example.com/song.mp3">
-                        <button class="btn-secondary" id="btnAddStreamUrl" style="white-space: nowrap;">+ Add URL</button>
+                        <input type="url" class="form-input" id="streamUrlInput"
+                            placeholder="https://example.com/song.mp3">
+                        <button class="btn-secondary" id="btnAddStreamUrl" style="white-space: nowrap;">+ Add
+                            URL</button>
                     </div>
                 </div>
 
@@ -300,28 +351,37 @@
                         <button type="button" class="btn-primary" id="btnBrowseCustomAudio">
                             <span>🎵 Choose Audio File</span>
                         </button>
-                        <span id="customAudioBadge" style="display: none; padding: 6px 12px; background: rgba(16, 185, 129, 0.15); border: 1px solid var(--primary); border-radius: var(--radius-full); font-size: 13px; color: var(--primary); font-weight: 600;"></span>
-                        <input type="file" id="customAudioInput" accept="audio/*,.mp3,.wav,.flac,.m4a,.ogg,.aac" style="display: none;">
+                        <span id="customAudioBadge"
+                            style="display: none; padding: 6px 12px; background: rgba(16, 185, 129, 0.15); border: 1px solid var(--primary); border-radius: var(--radius-full); font-size: 13px; color: var(--primary); font-weight: 600;"></span>
+                        <input type="file" id="customAudioInput" accept="audio/*,.mp3,.wav,.flac,.m4a,.ogg,.aac"
+                            style="display: none;">
                     </div>
                 </div>
 
                 <!-- Cover Image Chooser -->
                 <div class="form-group">
                     <label class="form-label">2. Custom Album Cover Image (Optional)</label>
-                    <div style="display: flex; gap: 16px; align-items: center; padding: 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-color); border-radius: var(--radius-md);">
-                        <div style="width: 80px; height: 80px; border-radius: var(--radius-md); overflow: hidden; background: #1e293b; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-                            <img id="customCoverPreview" src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><rect width='100%' height='100%' fill='%231e293b'/><text x='50%' y='55%' font-size='42' fill='%2310b981' text-anchor='middle' dominant-baseline='middle'>♫</text></svg>" alt="Preview" style="width: 100%; height: 100%; object-fit: cover;">
+                    <div
+                        style="display: flex; gap: 16px; align-items: center; padding: 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                        <div
+                            style="width: 80px; height: 80px; border-radius: var(--radius-md); overflow: hidden; background: #1e293b; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+                            <img id="customCoverPreview"
+                                src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><rect width='100%' height='100%' fill='%231e293b'/><text x='50%' y='55%' font-size='42' fill='%2310b981' text-anchor='middle' dominant-baseline='middle'>♫</text></svg>"
+                                alt="Preview" style="width: 100%; height: 100%; object-fit: cover;">
                         </div>
                         <div style="display: flex; flex-direction: column; gap: 8px;">
                             <div style="display: flex; gap: 8px;">
-                                <button type="button" class="btn-secondary" id="btnBrowseCustomCover" style="padding: 6px 14px; font-size: 12px;">
+                                <button type="button" class="btn-secondary" id="btnBrowseCustomCover"
+                                    style="padding: 6px 14px; font-size: 12px;">
                                     <span>🖼️ Choose Cover Image</span>
                                 </button>
-                                <button type="button" class="btn-secondary" id="btnRemoveCustomCover" style="padding: 6px 14px; font-size: 12px; color: #ef4444; border-color: rgba(239, 68, 68, 0.4);">
+                                <button type="button" class="btn-secondary" id="btnRemoveCustomCover"
+                                    style="padding: 6px 14px; font-size: 12px; color: #ef4444; border-color: rgba(239, 68, 68, 0.4);">
                                     <span>✕ Clear</span>
                                 </button>
                             </div>
-                            <span style="font-size: 12px; color: var(--text-dim);">Select any JPG, PNG, or WebP image from your PC</span>
+                            <span style="font-size: 12px; color: var(--text-dim);">Select any JPG, PNG, or WebP image
+                                from your PC</span>
                             <input type="file" id="customCoverInput" accept="image/*" style="display: none;">
                         </div>
                     </div>
@@ -336,7 +396,8 @@
                 <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                     <div>
                         <label class="form-label">Artist</label>
-                        <input type="text" class="form-input" id="customArtist" placeholder="e.g. Koch Rajbongshi Artist">
+                        <input type="text" class="form-input" id="customArtist"
+                            placeholder="e.g. Koch Rajbongshi Artist">
                     </div>
                     <div>
                         <label class="form-label">Album</label>
@@ -346,8 +407,10 @@
 
                 <div class="form-group">
                     <label class="form-label">Category / Regional Language</label>
-                    <div class="category-pill-selector" id="customCategoryPills" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
-                        <button type="button" class="category-pill-btn active" data-cat="Koch Rajbongshi">Koch Rajbongshi</button>
+                    <div class="category-pill-selector" id="customCategoryPills"
+                        style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
+                        <button type="button" class="category-pill-btn active" data-cat="Koch Rajbongshi">Koch
+                            Rajbongshi</button>
                         <button type="button" class="category-pill-btn" data-cat="Assamese">Assamese</button>
                         <button type="button" class="category-pill-btn" data-cat="Bodo">Bodo</button>
                         <button type="button" class="category-pill-btn" data-cat="All Music">All Music</button>
@@ -359,10 +422,12 @@
                         <option value="All Music">All Music</option>
                         <option value="custom">Other (Type custom)...</option>
                     </select>
-                    <input type="text" class="form-input" id="customGenre" placeholder="Enter custom category" style="display: none; margin-top: 6px;" value="Koch Rajbongshi">
+                    <input type="text" class="form-input" id="customGenre" placeholder="Enter custom category"
+                        style="display: none; margin-top: 6px;" value="Koch Rajbongshi">
                 </div>
 
-                <button type="button" class="btn-primary" id="btnSubmitCustomUpload" style="width: 100%; justify-content: center; padding: 12px; font-size: 15px; margin-top: 10px;">
+                <button type="button" class="btn-primary" id="btnSubmitCustomUpload"
+                    style="width: 100%; justify-content: center; padding: 12px; font-size: 15px; margin-top: 10px;">
                     <span>🚀 Upload & Add Song to Library</span>
                 </button>
             </div>
@@ -391,16 +456,20 @@
                 <div class="edit-cover-actions">
                     <div style="font-size: 13px; font-weight: 700; color: var(--text-main);">Album Cover Image</div>
                     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                        <button type="button" class="btn-primary" id="btnChooseEditCover" style="padding: 6px 14px; font-size: 12px;">
+                        <button type="button" class="btn-primary" id="btnChooseEditCover"
+                            style="padding: 6px 14px; font-size: 12px;">
                             <span>🖼️ Change Cover</span>
                         </button>
-                        <button type="button" class="btn-secondary" id="btnRemoveEditCover" style="padding: 6px 14px; font-size: 12px; color: #ef4444; border-color: rgba(239, 68, 68, 0.4);">
+                        <button type="button" class="btn-secondary" id="btnRemoveEditCover"
+                            style="padding: 6px 14px; font-size: 12px; color: #ef4444; border-color: rgba(239, 68, 68, 0.4);">
                             <span>✕ Remove Cover</span>
                         </button>
                         <input type="file" id="editCoverFileInput" accept="image/*" style="display: none;">
                     </div>
                     <div>
-                        <input type="url" class="form-input" id="editCoverUrlInput" placeholder="Or paste image web link (https://...)" style="font-size: 12px; padding: 6px 10px;">
+                        <input type="url" class="form-input" id="editCoverUrlInput"
+                            placeholder="Or paste image web link (https://...)"
+                            style="font-size: 12px; padding: 6px 10px;">
                     </div>
                 </div>
             </div>
@@ -424,8 +493,10 @@
             <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                 <div>
                     <label class="form-label">Category / Language</label>
-                    <div class="category-pill-selector" id="editCategoryPills" style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px;">
-                        <button type="button" class="category-pill-btn" data-cat="Koch Rajbongshi">Koch Rajbongshi</button>
+                    <div class="category-pill-selector" id="editCategoryPills"
+                        style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px;">
+                        <button type="button" class="category-pill-btn" data-cat="Koch Rajbongshi">Koch
+                            Rajbongshi</button>
                         <button type="button" class="category-pill-btn" data-cat="Assamese">Assamese</button>
                         <button type="button" class="category-pill-btn" data-cat="Bodo">Bodo</button>
                     </div>
@@ -436,7 +507,8 @@
                         <option value="All Music">All Music</option>
                         <option value="custom">Other (Custom)...</option>
                     </select>
-                    <input type="text" class="form-input" id="editGenre" placeholder="e.g. Koch Rajbongshi, Assamese, Bodo" style="display: none; margin-top: 6px;">
+                    <input type="text" class="form-input" id="editGenre"
+                        placeholder="e.g. Koch Rajbongshi, Assamese, Bodo" style="display: none; margin-top: 6px;">
                 </div>
                 <div>
                     <label class="form-label">Year</label>
@@ -446,14 +518,19 @@
 
             <div class="form-group">
                 <label class="form-label">Lyrics</label>
-                <textarea class="form-textarea" id="editLyrics" placeholder="Paste lyrics or timestamps here..."></textarea>
+                <textarea class="form-textarea" id="editLyrics"
+                    placeholder="Paste lyrics or timestamps here..."></textarea>
             </div>
 
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
-                <button class="btn-secondary" id="btnDeleteCurrentSongModal" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.4);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; flex-wrap: wrap; gap: 8px;">
+                <button class="btn-secondary" id="btnDeleteCurrentSongModal"
+                    style="color: #ef4444; border-color: rgba(239, 68, 68, 0.4);">
                     <span>🗑 Remove Song</span>
                 </button>
-                <div style="display: flex; gap: 10px;">
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button type="button" class="btn-secondary" id="btnSetAsBannerFromEdit" style="color: #a78bfa; border-color: #8b5cf6;">
+                        <span>🌟 Set as Banner</span>
+                    </button>
                     <button class="btn-secondary" data-close-modal="editSongModal">Cancel</button>
                     <button class="btn-primary" id="btnSaveMetadata">Save Changes</button>
                 </div>
@@ -472,6 +549,17 @@
                 <button class="modal-close-btn" data-close-modal="adminPanelModal">✕</button>
             </div>
 
+            <!-- Sync & Status Bar -->
+            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 8px 12px; margin-bottom: 14px; font-size: 12px; flex-wrap: wrap; gap: 6px;">
+                <span id="adminSyncStatusText" style="color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+                    <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></span>
+                    <span>PC & Mobile Sync Ready</span>
+                </span>
+                <button type="button" class="btn-secondary" id="btnAdminRefreshSync" style="padding: 4px 10px; font-size: 11px;">
+                    <span>🔄 Refresh & Sync from PC</span>
+                </button>
+            </div>
+
             <!-- Admin Tabs: Change Banner vs Add Music vs Manage Songs -->
             <div class="modal-tabs">
                 <button type="button" class="modal-tab-btn active" id="adminTabBtnBanner">🌟 Change Hero Banner</button>
@@ -481,9 +569,11 @@
 
             <!-- TAB 1: Change Hero Banner -->
             <div id="adminTabBannerContent">
-                <div style="background: rgba(124, 58, 237, 0.1); border: 1px solid rgba(124, 58, 237, 0.3); border-radius: var(--radius-md); padding: 12px; margin-bottom: 16px;">
+                <div
+                    style="background: rgba(124, 58, 237, 0.1); border: 1px solid rgba(124, 58, 237, 0.3); border-radius: var(--radius-md); padding: 12px; margin-bottom: 16px;">
                     <div style="font-weight: 700; color: #a78bfa; margin-bottom: 4px;">Featured Hero Banner</div>
-                    <div style="font-size: 13px; color: var(--text-muted);">Select any song to be prominently featured in the top hero banner on the Home screen across PC & Mobile.</div>
+                    <div style="font-size: 13px; color: var(--text-muted);">Select any song to be prominently featured
+                        in the top hero banner on the Home screen across PC & Mobile.</div>
                 </div>
 
                 <div class="form-group">
@@ -495,16 +585,22 @@
 
                 <!-- Live Banner Preview Card -->
                 <div class="form-label" style="margin-top: 14px;">Preview:</div>
-                <div id="adminBannerPreviewBox" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.25), rgba(236, 72, 153, 0.2)); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 14px; display: flex; gap: 14px; align-items: center; margin-bottom: 20px;">
-                    <img id="adminBannerCoverImg" src="icons/icon-192.png" alt="Banner Cover" style="width: 70px; height: 70px; border-radius: 10px; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
+                <div id="adminBannerPreviewBox"
+                    style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.25), rgba(236, 72, 153, 0.2)); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 14px; display: flex; gap: 14px; align-items: center; margin-bottom: 20px;">
+                    <img id="adminBannerCoverImg" src="icons/icon-192.png" alt="Banner Cover"
+                        style="width: 70px; height: 70px; border-radius: 10px; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
                     <div style="flex: 1; min-width: 0;">
-                        <span style="display: inline-block; padding: 2px 8px; background: rgba(16, 185, 129, 0.2); border-radius: 12px; font-size: 10px; font-weight: 700; color: var(--primary); margin-bottom: 4px;" id="adminBannerTag">🎵 Featured Spotlight</span>
-                        <div style="font-size: 16px; font-weight: 700; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="adminBannerTitle">Select a song above</div>
+                        <span
+                            style="display: inline-block; padding: 2px 8px; background: rgba(16, 185, 129, 0.2); border-radius: 12px; font-size: 10px; font-weight: 700; color: var(--primary); margin-bottom: 4px;"
+                            id="adminBannerTag">🎵 Featured Spotlight</span>
+                        <div style="font-size: 16px; font-weight: 700; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                            id="adminBannerTitle">Select a song above</div>
                         <div style="font-size: 12px; color: var(--text-muted);" id="adminBannerArtist">Artist Name</div>
                     </div>
                 </div>
 
-                <button type="button" class="btn-primary" id="btnSaveHeroBanner" style="width: 100%; justify-content: center; padding: 12px; font-size: 15px;">
+                <button type="button" class="btn-primary" id="btnSaveHeroBanner"
+                    style="width: 100%; justify-content: center; padding: 12px; font-size: 15px;">
                     <span>🌟 Save & Set as Hero Banner</span>
                 </button>
             </div>
@@ -512,13 +608,16 @@
             <!-- TAB 2: Add Music (Quick link to Custom Add with Category) -->
             <div id="adminTabAddContent" style="display: none;">
                 <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 14px; line-height: 1.5;">
-                    Add your songs with custom cover art and category tagging (<strong>Koch Rajbongshi</strong>, <strong>Assamese</strong>, or <strong>Bodo</strong>).
+                    Add your songs with custom cover art and category tagging (<strong>Koch Rajbongshi</strong>,
+                    <strong>Assamese</strong>, or <strong>Bodo</strong>).
                 </p>
                 <div style="display: flex; flex-direction: column; gap: 12px;">
-                    <button type="button" class="btn-primary" id="adminBtnOpenCustomUpload" style="padding: 12px; justify-content: center; font-size: 14px;">
+                    <button type="button" class="btn-primary" id="adminBtnOpenCustomUpload"
+                        style="padding: 12px; justify-content: center; font-size: 14px;">
                         <span>🎨 Add Single Song with Cover Art & Category</span>
                     </button>
-                    <button type="button" class="btn-secondary" id="adminBtnOpenQuickUpload" style="padding: 12px; justify-content: center; font-size: 14px;">
+                    <button type="button" class="btn-secondary" id="adminBtnOpenQuickUpload"
+                        style="padding: 12px; justify-content: center; font-size: 14px;">
                         <span>⚡ Import Multiple Songs / Folder</span>
                     </button>
                 </div>
@@ -527,9 +626,11 @@
             <!-- TAB 3: Manage Songs (Edit/Remove) -->
             <div id="adminTabManageContent" style="display: none;">
                 <div class="form-group">
-                    <input type="text" class="form-input" id="adminManageSearchInput" placeholder="Filter songs to edit or remove...">
+                    <input type="text" class="form-input" id="adminManageSearchInput"
+                        placeholder="Filter songs to edit or remove...">
                 </div>
-                <div id="adminManageSongsList" style="max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+                <div id="adminManageSongsList"
+                    style="max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
                     <!-- Populated dynamically via ui.js -->
                 </div>
             </div>
@@ -562,25 +663,31 @@
             </div>
 
             <!-- 5 Band Sliders -->
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; height: 180px; padding: 0 16px 20px 16px;">
+            <div
+                style="display: flex; justify-content: space-between; align-items: flex-end; height: 180px; padding: 0 16px 20px 16px;">
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-                    <input type="range" class="volume-slider" id="eqBand0" min="-12" max="12" step="1" value="0" style="writing-mode: bt-lr; -webkit-appearance: slider-vertical; width: 8px; height: 130px;">
+                    <input type="range" class="volume-slider" id="eqBand0" min="-12" max="12" step="1" value="0"
+                        style="writing-mode: bt-lr; -webkit-appearance: slider-vertical; width: 8px; height: 130px;">
                     <span style="font-size: 11px; color: var(--text-dim);">60Hz</span>
                 </div>
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-                    <input type="range" class="volume-slider" id="eqBand1" min="-12" max="12" step="1" value="0" style="writing-mode: bt-lr; -webkit-appearance: slider-vertical; width: 8px; height: 130px;">
+                    <input type="range" class="volume-slider" id="eqBand1" min="-12" max="12" step="1" value="0"
+                        style="writing-mode: bt-lr; -webkit-appearance: slider-vertical; width: 8px; height: 130px;">
                     <span style="font-size: 11px; color: var(--text-dim);">250Hz</span>
                 </div>
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-                    <input type="range" class="volume-slider" id="eqBand2" min="-12" max="12" step="1" value="0" style="writing-mode: bt-lr; -webkit-appearance: slider-vertical; width: 8px; height: 130px;">
+                    <input type="range" class="volume-slider" id="eqBand2" min="-12" max="12" step="1" value="0"
+                        style="writing-mode: bt-lr; -webkit-appearance: slider-vertical; width: 8px; height: 130px;">
                     <span style="font-size: 11px; color: var(--text-dim);">1kHz</span>
                 </div>
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-                    <input type="range" class="volume-slider" id="eqBand3" min="-12" max="12" step="1" value="0" style="writing-mode: bt-lr; -webkit-appearance: slider-vertical; width: 8px; height: 130px;">
+                    <input type="range" class="volume-slider" id="eqBand3" min="-12" max="12" step="1" value="0"
+                        style="writing-mode: bt-lr; -webkit-appearance: slider-vertical; width: 8px; height: 130px;">
                     <span style="font-size: 11px; color: var(--text-dim);">4kHz</span>
                 </div>
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-                    <input type="range" class="volume-slider" id="eqBand4" min="-12" max="12" step="1" value="0" style="writing-mode: bt-lr; -webkit-appearance: slider-vertical; width: 8px; height: 130px;">
+                    <input type="range" class="volume-slider" id="eqBand4" min="-12" max="12" step="1" value="0"
+                        style="writing-mode: bt-lr; -webkit-appearance: slider-vertical; width: 8px; height: 130px;">
                     <span style="font-size: 11px; color: var(--text-dim);">12kHz</span>
                 </div>
             </div>
@@ -593,16 +700,19 @@
 
     <!-- 4. QUEUE DRAWER -->
     <div class="modal-overlay" id="queueDrawerModal">
-        <div class="modal-content" style="position: fixed; right: 20px; bottom: calc(var(--player-height) + 20px); max-height: 480px; width: 380px; margin: 0;">
+        <div class="modal-content"
+            style="position: fixed; right: 20px; bottom: calc(var(--player-height) + 20px); max-height: 480px; width: 380px; margin: 0;">
             <div class="modal-header">
                 <h3 class="modal-title">Play Queue</h3>
                 <div style="display: flex; gap: 8px;">
-                    <button class="btn-secondary" id="btnClearQueue" style="padding: 4px 10px; font-size: 12px;">Clear</button>
+                    <button class="btn-secondary" id="btnClearQueue"
+                        style="padding: 4px 10px; font-size: 12px;">Clear</button>
                     <button class="modal-close-btn" data-close-modal="queueDrawerModal">✕</button>
                 </div>
             </div>
 
-            <div id="queueListContainer" style="max-height: 360px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px;">
+            <div id="queueListContainer"
+                style="max-height: 360px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px;">
                 <!-- Queue items populated by ui.js -->
             </div>
         </div>
@@ -613,10 +723,12 @@
         <div class="fs-bg-blur" id="fsBgBlur"></div>
 
         <div class="fs-header">
-            <div style="font-size: 13px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--primary);">
+            <div
+                style="font-size: 13px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--primary);">
                 NOW PLAYING IN SANGEET HD
             </div>
-            <button class="btn-circle" id="btnCloseFullscreen" style="width: 40px; height: 40px; font-size: 18px;">✕</button>
+            <button class="btn-circle" id="btnCloseFullscreen"
+                style="width: 40px; height: 40px; font-size: 18px;">✕</button>
         </div>
 
         <div class="fs-body">
@@ -627,7 +739,9 @@
             </div>
 
             <div class="fs-lyrics-col">
-                <div style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: var(--text-dim); margin-bottom: 14px;">Lyrics</div>
+                <div
+                    style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: var(--text-dim); margin-bottom: 14px;">
+                    Lyrics</div>
                 <div class="fs-lyrics-text" id="fsLyricsText">No lyrics available for this song.</div>
             </div>
         </div>
@@ -647,35 +761,47 @@
             </div>
 
             <!-- Mode description -->
-            <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius-md); padding: 12px; margin-bottom: 18px; text-align: left; font-size: 13px;">
-                <div style="font-weight: 700; color: var(--primary); margin-bottom: 4px;">📶 Method 1: On Same Home Wi-Fi</div>
-                <div style="color: var(--text-muted);">Connect your phone to the same Wi-Fi and scan the QR code below:</div>
+            <div
+                style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius-md); padding: 12px; margin-bottom: 18px; text-align: left; font-size: 13px;">
+                <div style="font-weight: 700; color: var(--primary); margin-bottom: 4px;">📶 Method 1: On Same Home
+                    Wi-Fi</div>
+                <div style="color: var(--text-muted);">Connect your phone to the same Wi-Fi and scan the QR code below:
+                </div>
             </div>
 
             <!-- QR Code Box -->
-            <div style="background: #ffffff; padding: 14px; border-radius: 12px; display: inline-block; margin-bottom: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.5);">
-                <img id="mobileQrCodeImg" src="" alt="Mobile Link QR Code" style="width: 180px; height: 180px; display: block; border-radius: 6px;">
+            <div
+                style="background: #ffffff; padding: 14px; border-radius: 12px; display: inline-block; margin-bottom: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.5);">
+                <img id="mobileQrCodeImg" src="" alt="Mobile Link QR Code"
+                    style="width: 180px; height: 180px; display: block; border-radius: 6px;">
             </div>
 
             <!-- URL Box with Copy Button -->
             <div style="display: flex; gap: 8px; margin-bottom: 20px;">
-                <input type="text" class="form-input" id="mobileUrlInput" readonly style="font-family: monospace; font-weight: 700; text-align: center; font-size: 14px; color: var(--primary);">
+                <input type="text" class="form-input" id="mobileUrlInput" readonly
+                    style="font-family: monospace; font-weight: 700; text-align: center; font-size: 14px; color: var(--primary);">
                 <button class="btn-primary" id="btnCopyMobileUrl" style="white-space: nowrap;">Copy Link</button>
             </div>
 
             <!-- Mobile Data / Outside Wi-Fi Guide -->
-            <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; font-size: 12px; color: var(--text-main); text-align: left; line-height: 1.6; margin-bottom: 14px;">
-                <div style="font-weight: 700; color: #f59e0b; margin-bottom: 4px;">🌐 Method 2: On Mobile Data (4G / 5G / Anywhere)</div>
+            <div
+                style="background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; font-size: 12px; color: var(--text-main); text-align: left; line-height: 1.6; margin-bottom: 14px;">
+                <div style="font-weight: 700; color: #f59e0b; margin-bottom: 4px;">🌐 Method 2: On Mobile Data (4G / 5G
+                    / Anywhere)</div>
                 <div style="color: var(--text-muted); margin-bottom: 6px;">If your phone is NOT on the same Wi-Fi:</div>
                 <ol style="margin-left: 18px; color: var(--text-muted);">
-                    <li>On PC, double-click: <code style="color: var(--primary); font-weight: 700;">start-mobile-internet.bat</code></li>
-                    <li>It generates a free worldwide link: <code style="color: #60a5fa;">https://*.trycloudflare.com</code></li>
+                    <li>On PC, double-click: <code
+                            style="color: var(--primary); font-weight: 700;">start-mobile-internet.bat</code></li>
+                    <li>It generates a free worldwide link: <code
+                            style="color: #60a5fa;">https://*.trycloudflare.com</code></li>
                     <li>Open that link on your phone over Mobile Data!</li>
                 </ol>
             </div>
 
-            <div style="background: rgba(255, 255, 255, 0.03); border-radius: 8px; padding: 10px; font-size: 11px; color: var(--text-dim); text-align: left; line-height: 1.5;">
-                💡 <strong>PWA Install:</strong> In Safari tap <em>Share &rarr; Add to Home Screen</em>, or in Chrome tap <em>Install App</em> to use Sangeet like a native mobile app!
+            <div
+                style="background: rgba(255, 255, 255, 0.03); border-radius: 8px; padding: 10px; font-size: 11px; color: var(--text-dim); text-align: left; line-height: 1.5;">
+                💡 <strong>PWA Install:</strong> In Safari tap <em>Share &rarr; Add to Home Screen</em>, or in Chrome
+                tap <em>Install App</em> to use Sangeet like a native mobile app!
             </div>
         </div>
     </div>
@@ -692,4 +818,5 @@
     <script src="js/app.js"></script>
 
 </body>
+
 </html>

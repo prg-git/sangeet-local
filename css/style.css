@@ -776,17 +776,21 @@ body.theme-violet .hero-banner {
 
 /* Action button inside card */
 .card-menu-btn {
-    background: none;
-    border: none;
-    color: var(--text-dim);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: var(--text-main);
     cursor: pointer;
-    padding: 4px;
-    border-radius: 4px;
+    padding: 3px 8px;
+    border-radius: var(--radius-full);
+    font-size: 13px;
+    font-weight: 700;
     transition: var(--transition);
 }
-.card-menu-btn:hover {
-    color: var(--text-main);
-    background: rgba(255, 255, 255, 0.1);
+.card-menu-btn:hover,
+.card-menu-btn:active {
+    color: #ffffff;
+    background: var(--primary);
+    border-color: var(--primary);
 }
 
 /* ==========================================================================
@@ -1724,13 +1728,20 @@ body.theme-violet .songs-table tr.playing {
         white-space: nowrap;
     }
 
-    /* HIDE PC ADMIN CONTROLS & EQ ON MOBILE */
+    /* HIDE ONLY DEV/PC-SPECIFIC BUTTONS ON MOBILE, KEEP ADD & ADMIN ACCESSIBLE */
     #btnToggleMobilePreview,
     #btnMobileConnect,
-    #btnOpenAddMusic,
-    #btnOpenEqualizer,
-    .pc-only-btn {
+    #btnOpenEqualizer {
         display: none !important;
+    }
+
+    #btnOpenAddMusic {
+        display: inline-flex !important;
+        align-items: center;
+        gap: 4px;
+        padding: 5px 10px !important;
+        font-size: 11px !important;
+        border-radius: var(--radius-full);
     }
 
     .admin-header-btn {
@@ -1793,15 +1804,30 @@ body.theme-violet .songs-table tr.playing {
         -webkit-tap-highlight-color: rgba(16, 185, 129, 0.2);
     }
 
+    /* Mobile song rows: hide #, album, genre, and duration so title, artist, and actions have full width */
+    .songs-table th.col-num,
+    .songs-table td.col-num,
     .songs-table th.col-album,
     .songs-table td.col-album,
     .songs-table th:nth-child(5),
-    .songs-table td:nth-child(5) {
-        display: none;
+    .songs-table td:nth-child(5),
+    .songs-table th.col-duration,
+    .songs-table td.col-duration {
+        display: none !important;
     }
 
     .songs-table td {
-        padding: 10px 8px;
+        padding: 10px 6px;
+    }
+
+    .col-actions {
+        width: 95px !important;
+        white-space: nowrap;
+    }
+
+    .row-btn {
+        padding: 6px 5px !important;
+        font-size: 15px !important;
     }
 
     /* ==============================================================
@@ -2139,10 +2165,16 @@ body.simulated-mobile-mode .mobile-brand-name {
 }
 body.simulated-mobile-mode #btnToggleMobilePreview,
 body.simulated-mobile-mode #btnMobileConnect,
-body.simulated-mobile-mode #btnOpenAddMusic,
-body.simulated-mobile-mode #btnOpenEqualizer,
-body.simulated-mobile-mode .pc-only-btn {
+body.simulated-mobile-mode #btnOpenEqualizer {
     display: none !important;
+}
+body.simulated-mobile-mode #btnOpenAddMusic {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 10px !important;
+    font-size: 11px !important;
+    border-radius: var(--radius-full);
 }
 
 /* ==========================================================================

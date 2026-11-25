@@ -846,6 +846,44 @@ class UIController {
                 this.renderAdminManageSongs(e.target.value);
             });
         }
+
+        // Set as Hero Banner directly from Edit Modal
+        const btnSetBannerFromEdit = document.getElementById("btnSetAsBannerFromEdit");
+        if (btnSetBannerFromEdit) {
+            btnSetBannerFromEdit.addEventListener("click", async () => {
+                const songId = this.dom.editSongId.value;
+                if (!songId) return;
+                await window.musicDB.setSpotlight(songId);
+                this.currentSpotlightId = songId;
+                const song = await window.musicDB.getSong(songId);
+                this.showToast(`🌟 "${song ? song.title : 'Track'}" set as Hero Banner!`);
+                this.closeModal(this.dom.editSongModal);
+                await this.refreshCurrentView();
+            });
+        }
+
+        // Admin: Refresh & Sync from PC button
+        const btnAdminSync = document.getElementById("btnAdminRefreshSync");
+        if (btnAdminSync) {
+            btnAdminSync.addEventListener("click", async () => {
+                btnAdminSync.disabled = true;
+                btnAdminSync.innerHTML = "<span>⏳ Syncing...</span>";
+                this.showToast("Syncing latest library updates...");
+                try {
+                    await window.musicDB.syncFreshLibrary();
+                    await this.updateCounters();
+                    await this.refreshCurrentView();
+                    await this.populateAdminBanner();
+                    await this.renderAdminManageSongs(this.dom.adminManageSearchInput ? this.dom.adminManageSearchInput.value : "");
+                    this.showToast("✅ Mobile view updated with latest PC library!");
+                } catch (e) {
+                    this.showToast("Sync completed");
+                } finally {
+                    btnAdminSync.disabled = false;
+                    btnAdminSync.innerHTML = "<span>🔄 Refresh & Sync from PC</span>";
+                }
+            });
+        }
     }
 
     initAudioEngineSync() {
@@ -1131,8 +1169,8 @@ class UIController {
                             <button class="btn-secondary" id="btnChangeHeroBanner" title="Change Hero Banner Featured Song">
                                 <span>⚙️ Change Banner</span>
                             </button>
-                            <button class="btn-secondary pc-only-btn" id="btnAddSongsHero">
-                                <span>+ Add More Music</span>
+                            <button class="btn-secondary" id="btnAddSongsHero">
+                                <span>+ Add Music</span>
                             </button>
                         </div>
                     </div>
@@ -1149,7 +1187,7 @@ class UIController {
                         <h2 class="hero-title">Sangeet Local</h2>
                         <p class="hero-desc">Your personal music streaming player. All songs uploaded from your PC appear and play here instantly.</p>
                         <div class="hero-actions">
-                            <button class="btn-primary pc-only-btn" id="btnAddSongsHero">
+                            <button class="btn-primary" id="btnAddSongsHero">
                                 <span>+ Add Music</span>
                             </button>
                         </div>
@@ -1241,10 +1279,10 @@ class UIController {
                     <button class="btn-secondary" id="btnShuffleAllLibrary">
                         <span>🔀 Shuffle</span>
                     </button>
-                    <button class="btn-secondary pc-only-btn" id="btnOpenAddMusicLib">
+                    <button class="btn-secondary" id="btnOpenAddMusicLib">
                         <span>+ Add Songs</span>
                     </button>
-                    <button class="btn-secondary pc-only-btn" id="btnBatchDelete" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.4);" title="Delete All Songs">
+                    <button class="btn-secondary" id="btnBatchDelete" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.4);" title="Delete All Songs">
                         <span>🗑 Clear All</span>
                     </button>
                 </div>
@@ -1774,6 +1812,15 @@ class UIController {
         if (bannerContent) bannerContent.style.display = (tab === "banner") ? "block" : "none";
         if (addContent) addContent.style.display = (tab === "add") ? "block" : "none";
         if (manageContent) manageContent.style.display = (tab === "manage") ? "block" : "none";
+
+        const statusEl = document.getElementById("adminSyncStatusText");
+        if (statusEl) {
+            const isServer = window.musicDB.isServerConnected;
+            statusEl.innerHTML = `
+                <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${isServer ? '#10b981' : '#38bdf8'};"></span>
+                <span>${isServer ? 'Connected to PC Server' : 'Cloud / Mobile Mode (GitHub Sync)'}</span>
+            `;
+        }
 
         if (tab === "banner") {
             await this.populateAdminBanner();

@@ -110,7 +110,7 @@ class MusicDB {
                     });
                 }
             }
-        } catch (e) {}
+        } catch (e) { }
 
         return songs || [];
     }
@@ -226,7 +226,7 @@ class MusicDB {
                     const data = await res.json();
                     return data.isLiked;
                 }
-            } catch (e) {}
+            } catch (e) { }
         }
 
         const song = await this.getSong(id);
@@ -241,7 +241,7 @@ class MusicDB {
 
         try {
             localStorage.setItem("sangeet_spotlight_id", songId);
-        } catch (e) {}
+        } catch (e) { }
 
         if (this.isServerConnected) {
             try {
@@ -261,7 +261,7 @@ class MusicDB {
                     s.isSpotlight = (s.id === songId);
                     store.put(s);
                 });
-            } catch (e) {}
+            } catch (e) { }
         }
 
         return true;
@@ -277,9 +277,11 @@ class MusicDB {
         } else if (coverBlobOrBase64) {
             if (typeof coverBlobOrBase64 === "string") {
                 payload.coverBase64 = coverBlobOrBase64.replace(/^data:image\/[a-z]+;base64,/, '');
+                payload.coverUrl = coverBlobOrBase64.startsWith("data:") ? coverBlobOrBase64 : `data:image/jpeg;base64,${payload.coverBase64}`;
             } else {
                 const b64 = await this.blobToBase64(coverBlobOrBase64);
                 payload.coverBase64 = b64 ? b64.replace(/^data:image\/[a-z]+;base64,/, '') : null;
+                if (b64) payload.coverUrl = b64;
             }
         }
 
@@ -312,6 +314,45 @@ class MusicDB {
         return payload;
     }
 
+    async syncFreshLibrary() {
+        await this.init();
+        let freshSongs = [];
+
+        // 1. Try local server first
+        try {
+            const res = await fetch("/api/songs?_t=" + Date.now(), { cache: "no-store" });
+            if (res.ok) {
+                const data = await res.json();
+                freshSongs = data.songs || [];
+                this.isServerConnected = true;
+            }
+        } catch (e) {
+            this.isServerConnected = false;
+        }
+
+        // 2. Try static library.json (GitHub Pages / offline sync)
+        if (!freshSongs || freshSongs.length === 0) {
+            try {
+                const staticRes = await fetch("data/library.json?_t=" + Date.now(), { cache: "no-store" });
+                if (staticRes.ok) {
+                    const bundled = await staticRes.json();
+                    if (Array.isArray(bundled) && bundled.length > 0) {
+                        freshSongs = bundled;
+                    }
+                }
+            } catch (e) {
+                console.warn("Static library.json sync failed:", e);
+            }
+        }
+
+        // 3. Clear and update local IndexedDB cache
+        if (freshSongs && freshSongs.length > 0) {
+            await this.cacheSongsToIndexedDB(freshSongs);
+        }
+
+        return freshSongs;
+    }
+
     async incrementPlayCount(id) {
         const song = await this.getSong(id);
         if (!song) return;
@@ -332,7 +373,7 @@ class MusicDB {
                     const data = await res.json();
                     return data.playlists || [];
                 }
-            } catch (e) {}
+            } catch (e) { }
         }
 
         // Static hosting mode (GitHub Pages / Firebase Hosting):
@@ -342,7 +383,7 @@ class MusicDB {
                 const plData = await staticPl.json();
                 if (Array.isArray(plData) && plData.length > 0) return plData;
             }
-        } catch (e) {}
+        } catch (e) { }
 
         const localPlaylists = await new Promise((resolve) => {
             if (!this.db) return resolve([]);
@@ -369,7 +410,7 @@ class MusicDB {
                     const data = await res.json();
                     return data.playlist;
                 }
-            } catch (e) {}
+            } catch (e) { }
         }
 
         return new Promise((resolve) => {
@@ -394,7 +435,7 @@ class MusicDB {
         if (this.isServerConnected) {
             try {
                 await fetch(`/api/playlists?id=${encodeURIComponent(id)}`, { method: "DELETE" });
-            } catch (e) {}
+            } catch (e) { }
         }
 
         if (this.db) {
@@ -411,7 +452,7 @@ class MusicDB {
             try {
                 await fetch(`/api/playlists/add-song?playlistId=${encodeURIComponent(playlistId)}&songId=${encodeURIComponent(songId)}`, { method: "POST" });
                 return true;
-            } catch (e) {}
+            } catch (e) { }
         }
 
         return new Promise((resolve) => {
@@ -439,7 +480,7 @@ class MusicDB {
             try {
                 await fetch(`/api/playlists/remove-song?playlistId=${encodeURIComponent(playlistId)}&songId=${encodeURIComponent(songId)}`, { method: "POST" });
                 return true;
-            } catch (e) {}
+            } catch (e) { }
         }
 
         return new Promise((resolve) => {
@@ -473,7 +514,7 @@ class MusicDB {
     async setSetting(key, value) {
         try {
             localStorage.setItem("sangeet_setting_" + key, JSON.stringify(value));
-        } catch (e) {}
+        } catch (e) { }
         return value;
     }
 
@@ -492,12 +533,13 @@ class MusicDB {
     }
 
     async cacheSongsToIndexedDB(songs) {
-        if (!this.db) return;
+        if (!this.db || !Array.isArray(songs)) return;
         try {
             const tx = this.db.transaction(["songs"], "readwrite");
             const store = tx.objectStore("songs");
+            store.clear();
             songs.forEach(s => store.put(s));
-        } catch (e) {}
+        } catch (e) { }
     }
 
     getLocalIndexedDBSongs() {
