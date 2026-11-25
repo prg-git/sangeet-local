@@ -1,110 +1,78 @@
 @echo off
-title Upload Sangeet Project to GitHub
+title Upload Sangeet Project to GitHub (prg-git/sangeet-local)
 color 0a
 echo ===================================================================
-echo           UPLOAD SANGEET LOCAL PROJECT TO GITHUB
+echo     UPLOAD SANGEET LOCAL PROJECT TO GITHUB (prg-git/sangeet-local)
 echo ===================================================================
-echo  This tool uploads your entire project (HTML, CSS, JS, Music, Icons)
-echo  directly to your GitHub repository with all folders intact!
+echo  This script will fix the folder structure by uploading:
+echo    - css/       (styles)
+echo    - js/        (audio player, database, UI)
+echo    - music/     (songs)
+echo    - data/      (library.json, playlists.json)
+echo    - icons/     (app icons)
+echo    - .nojekyll  (GitHub Pages configuration)
 echo ===================================================================
 echo.
 
-set "GIT_CMD="
+set "GIT_CMD=%~dp0tools\git\cmd\git.exe"
 
-:: Check local portable Git first
-if exist "%~dp0tools\git\cmd\git.exe" (
-    set "GIT_CMD=%~dp0tools\git\cmd\git.exe"
-)
-
-:: If not found locally, check system PATH
-if "%GIT_CMD%"=="" (
+if not exist "%GIT_CMD%" (
     where git >nul 2>&1
-    if %errorLevel% equ 0 set "GIT_CMD=git"
-)
-
-:: Check common program files paths
-if "%GIT_CMD%"=="" (
-    if exist "C:\Program Files\Git\cmd\git.exe" (
-        set "GIT_CMD=C:\Program Files\Git\cmd\git.exe"
-    ) else if exist "C:\Users\%USERNAME%\AppData\Local\Programs\Git\cmd\git.exe" (
-        set "GIT_CMD=C:\Users\%USERNAME%\AppData\Local\Programs\Git\cmd\git.exe"
+    if %errorLevel% equ 0 (
+        set "GIT_CMD=git"
+    ) else (
+        echo [INFO] Portable Git not found. Downloading...
+        powershell -ExecutionPolicy Bypass -File "%~dp0tools\download-git.ps1"
     )
 )
 
-:: If still not found, download portable Git automatically
-if "%GIT_CMD%"=="" (
-    echo [INFO] Downloading portable Git (no installation required)...
-    powershell -ExecutionPolicy Bypass -File "%~dp0tools\download-git.ps1"
-    if exist "%~dp0tools\git\cmd\git.exe" (
-        set "GIT_CMD=%~dp0tools\git\cmd\git.exe"
-    )
-)
-
-if "%GIT_CMD%"=="" (
-    echo [ERROR] Git could not be located.
-    pause
-    exit /b
-)
-
-echo [OK] Ready with Git: %GIT_CMD%
+echo [OK] Using Git: %GIT_CMD%
 echo.
-echo ===================================================================
-echo  Please enter your GitHub Repository URL.
-echo  Example: https://github.com/YOUR_USERNAME/sangeet.git
-echo ===================================================================
-echo.
-set /p REPO_URL="Enter GitHub Repository URL: "
 
-if "%REPO_URL%"=="" (
-    echo [ERROR] No URL entered. Aborted.
-    pause
-    exit /b
-)
+set "DEFAULT_URL=https://github.com/prg-git/sangeet-local.git"
+echo Your GitHub Repository is set to:
+echo   %DEFAULT_URL%
+echo.
+echo Press ENTER to upload to this repository, or paste a new URL below:
+set "REPO_URL="
+set /p REPO_URL="Repository URL [%DEFAULT_URL%]: "
+
+if "%REPO_URL%"=="" set "REPO_URL=%DEFAULT_URL%"
 
 echo.
-echo Step 1: Initializing Git repository...
+echo Step 1: Connecting repository to %REPO_URL%...
 cd /d "%~dp0"
-if not exist ".git" (
-    "%GIT_CMD%" init
-)
-
-echo.
-echo Step 2: Staging all project files, music, and folders...
-"%GIT_CMD%" add .
-
-echo.
-echo Step 3: Creating commit...
-"%GIT_CMD%" commit -m "Deploy Sangeet Local Music Studio"
-
-echo.
-echo Step 4: Setting branch to main...
-"%GIT_CMD%" branch -M main
-
-echo.
-echo Step 5: Connecting to %REPO_URL%...
 "%GIT_CMD%" remote remove origin >nul 2>&1
 "%GIT_CMD%" remote add origin %REPO_URL%
 
 echo.
-echo Step 6: Uploading all files and folders to GitHub...
+echo Step 2: Preparing and committing all folders...
+"%GIT_CMD%" add .
+"%GIT_CMD%" commit -m "Fix folder structure: css, js, music, data, icons" >nul 2>&1
+
+echo.
+echo Step 3: Setting branch to main...
+"%GIT_CMD%" branch -M main
+
+echo.
+echo Step 4: Uploading all folders to GitHub...
+echo (If GitHub asks to log in, click 'Sign in with your browser')
+echo.
 "%GIT_CMD%" push -u origin main --force
 
 if %errorLevel% equ 0 (
     echo.
     echo ===================================================================
-    echo  [SUCCESS] All files and folders have been uploaded to GitHub!
+    echo  [SUCCESS] All folders (css, js, music, data, icons) are uploaded!
     echo ===================================================================
     echo.
-    echo  FINAL STEP to make your app LIVE on Mobile Data:
-    echo  1. Open your repository on GitHub in your browser.
-    echo  2. Click "Settings" (top tab) -^> "Pages" (left menu).
-    echo  3. Under "Branch", select "main" and folder "/ (root)", then click "Save".
-    echo  4. In 1 minute, your site will be LIVE worldwide!
+    echo  Your site is now FIXED and will be working in 30-60 seconds at:
+    echo  👉 https://prg-git.github.io/sangeet-local/
+    echo.
     echo ===================================================================
 ) else (
     echo.
-    echo [NOTE] If a browser window opened asking you to sign into GitHub,
-    echo please click "Sign in with your browser" to allow the upload.
+    echo [ERROR] Push failed. If a browser popup appeared, please complete sign-in.
 )
 
 echo.
