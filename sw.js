@@ -1,9 +1,9 @@
 /**
  * Sangeet Service Worker
- * Enables offline caching for application assets.
+ * Enables offline caching with Network-First strategy so updates appear instantly.
  */
 
-const CACHE_NAME = "sangeet-cache-v2";
+const CACHE_NAME = "sangeet-cache-v5";
 const ASSETS = [
     "./",
     "./index.html",
@@ -14,13 +14,15 @@ const ASSETS = [
     "./js/audio.js",
     "./js/ui.js",
     "./js/app.js",
-    "./manifest.json"
+    "./manifest.json",
+    "./data/banners.json",
+    "./data/songs.json"
 ];
 
 self.addEventListener("install", (e) => {
     e.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(ASSETS);
+            return cache.addAll(ASSETS).catch(() => {});
         })
     );
     self.skipWaiting();
@@ -40,34 +42,26 @@ self.addEventListener("activate", (e) => {
 });
 
 self.addEventListener("fetch", (e) => {
-    // Only handle GET requests
     if (e.request.method !== "GET") return;
 
-    const url = e.request.url;
-
-    // Network-First for dynamic data (library.json, playlists.json, API)
-    if (url.includes("/data/") || url.includes(".json") || url.includes("_t=")) {
-        e.respondWith(
-            fetch(e.request)
-                .then((networkRes) => {
-                    return networkRes;
-                })
-                .catch(() => {
-                    return caches.match(e.request);
-                })
-        );
-        return;
-    }
-
-    // Cache-First for static assets (css, js, icons)
+    // Network-First strategy: ALWAYS fetch fresh version from internet/GitHub first!
+    // Falls back to offline cache ONLY when internet is disconnected.
     e.respondWith(
-        caches.match(e.request).then((cached) => {
-            return cached || fetch(e.request).catch(() => {
-                // If offline and request is HTML navigation, return cached index
-                if (e.request.mode === "navigate") {
-                    return caches.match("./index.html");
+        fetch(e.request)
+            .then((networkRes) => {
+                if (networkRes && networkRes.status === 200) {
+                    const resClone = networkRes.clone();
+                    caches.open(CACHE_NAME).then((cache) => cache.put(e.request, resClone));
                 }
-            });
-        })
+                return networkRes;
+            })
+            .catch(() => {
+                return caches.match(e.request).then((cached) => {
+                    if (cached) return cached;
+                    if (e.request.mode === "navigate") {
+                        return caches.match("./index.html");
+                    }
+                });
+            })
     );
 });

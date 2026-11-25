@@ -1100,7 +1100,7 @@ class UIController {
                 <div class="empty-state">
                     <div class="empty-icon">📂</div>
                     <h3>Your Library is Empty</h3>
-                    <p>Songs added by the administrator will appear here.</p>
+                    <p>Songs will appear here when added to your music collection.</p>
                 </div>
             `;
         }

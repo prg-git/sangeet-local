@@ -244,15 +244,7 @@ body {
 }
 
 .admin-badge {
-    font-size: 10px;
-    background: linear-gradient(135deg, #8b5cf6, #ec4899);
-    color: #ffffff;
-    padding: 2px 7px;
-    border-radius: var(--radius-full);
-    font-weight: 800;
-    letter-spacing: 0.8px;
-    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.4);
-    -webkit-text-fill-color: #ffffff;
+    display: none !important;
 }
 
 .mobile-only-brand {
