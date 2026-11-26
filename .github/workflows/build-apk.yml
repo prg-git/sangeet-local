@@ -22,14 +22,7 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Sync Latest Web App Files to Android Assets
-        run: |
-          mkdir -p android-apk-project/app/src/main/assets
-          cp -r index.html css js icons data music manifest.json sw.js android-apk-project/app/src/main/assets/
+          cache: 'gradle'
 
       - name: Make Gradle Wrapper Executable
         run: chmod +x android-apk-project/gradlew
