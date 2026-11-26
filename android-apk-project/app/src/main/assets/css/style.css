@@ -1656,19 +1656,32 @@ body.theme-violet .songs-table tr.playing {
     }
 
     .app-layout {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
         height: calc(100dvh - var(--player-height) - 54px) !important;
         height: calc(100vh - var(--player-height) - 54px) !important;
+        max-height: calc(100dvh - var(--player-height) - 54px) !important;
         min-height: 0 !important;
         overflow: hidden !important;
+        position: relative !important;
     }
 
     .main-view {
+        display: flex !important;
+        flex-direction: column !important;
+        flex: 1 1 0% !important;
+        width: 100% !important;
+        height: 100% !important;
+        max-height: 100% !important;
         min-height: 0 !important;
         overflow: hidden !important;
+        position: relative !important;
     }
 
     .top-nav {
-        height: 56px;
+        flex-shrink: 0 !important;
+        height: 56px !important;
         padding: 0 10px;
         gap: 8px;
     }
@@ -1722,13 +1735,21 @@ body.theme-violet .songs-table tr.playing {
         padding: 0 32px 0 36px;
     }
 
-    /* CRITICAL FIX FOR MOBILE SCROLL: smooth touch scrolling with 240px bottom clearance */
+    /* CRITICAL FIX FOR MOBILE SCROLL: bounded height + smooth touch scrolling with 240px bottom clearance */
     .content-body {
-        padding: 14px 12px 240px 12px !important;
-        overflow-y: scroll !important;
+        display: block !important;
+        flex: 1 1 0% !important;
+        width: 100% !important;
+        height: calc(100% - 56px) !important;
+        max-height: calc(100% - 56px) !important;
+        min-height: 0 !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
         -webkit-overflow-scrolling: touch !important;
         touch-action: pan-y !important;
-        min-height: 0 !important;
+        overscroll-behavior-y: contain !important;
+        padding: 14px 12px 240px 12px !important;
+        box-sizing: border-box !important;
     }
 
     .hero-banner {
@@ -2389,17 +2410,85 @@ body.theme-violet .songs-table tr.playing {
     backdrop-filter: blur(20px);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 768px), (max-width: 1024px) and (pointer: coarse), (pointer: coarse) {
     .desktop-blocker {
         display: none !important;
+        pointer-events: none !important;
     }
     .exit-frame-btn {
         display: none !important;
+        pointer-events: none !important;
     }
 }
 
-body.in-mobile-frame .desktop-blocker {
+body.in-mobile-frame .desktop-blocker,
+body.is-android-app .desktop-blocker {
     display: none !important;
+    pointer-events: none !important;
+}
+
+/* Force mobile layout & smooth scrolling when running as Android APK */
+body.is-android-app {
+    width: 100% !important;
+    height: 100% !important;
+    height: 100dvh !important;
+    overflow: hidden !important;
+    touch-action: pan-y !important;
+}
+
+body.is-android-app .sidebar {
+    display: none !important;
+}
+
+body.is-android-app .mobile-bottom-nav {
+    display: flex !important;
+}
+
+body.is-android-app .app-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    height: calc(100dvh - var(--player-height) - 54px) !important;
+    height: calc(100vh - var(--player-height) - 54px) !important;
+    max-height: calc(100dvh - var(--player-height) - 54px) !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    position: relative !important;
+}
+
+body.is-android-app .main-view {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 0% !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    position: relative !important;
+}
+
+body.is-android-app .top-nav {
+    flex-shrink: 0 !important;
+    height: 56px !important;
+    padding: 0 10px !important;
+    gap: 8px !important;
+}
+
+body.is-android-app .content-body {
+    display: block !important;
+    flex: 1 1 0% !important;
+    width: 100% !important;
+    height: calc(100% - 56px) !important;
+    max-height: calc(100% - 56px) !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y !important;
+    overscroll-behavior-y: contain !important;
+    padding: 14px 12px 240px 12px !important;
+    box-sizing: border-box !important;
 }
 
 .blocker-card {

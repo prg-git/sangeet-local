@@ -3,7 +3,7 @@
  * Enables offline caching with Network-First strategy so updates appear instantly.
  */
 
-const CACHE_NAME = "sangeet-cache-v16";
+const CACHE_NAME = "sangeet-cache-v17";
 const ASSETS = [
     "./",
     "./index.html",
@@ -23,7 +23,7 @@ const ASSETS = [
 self.addEventListener("install", (e) => {
     e.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(ASSETS).catch(() => {});
+            return cache.addAll(ASSETS).catch(() => { });
         })
     );
     self.skipWaiting();

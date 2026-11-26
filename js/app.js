@@ -90,6 +90,7 @@ class SangeetApp {
             splash.classList.add("splash-fade-out");
             setTimeout(() => {
                 splash.style.display = "none";
+                if (splash.parentNode) splash.parentNode.removeChild(splash);
             }, 650);
         }, remaining);
     }

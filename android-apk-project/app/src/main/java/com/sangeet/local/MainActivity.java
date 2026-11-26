@@ -23,7 +23,6 @@ import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.webkit.WebViewAssetLoader;
 
 import java.io.FileInputStream;
@@ -35,7 +34,6 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity {
 
     private WebView webView;
-    private SwipeRefreshLayout swipeRefresh;
     private SharedPreferences prefs;
     private WebViewAssetLoader assetLoader;
     private AudioManager audioManager;
@@ -93,7 +91,12 @@ public class MainActivity extends AppCompatActivity {
 
         prefs = getSharedPreferences("SangeetPrefs", Context.MODE_PRIVATE);
         webView = findViewById(R.id.webView);
-        swipeRefresh = findViewById(R.id.swipeRefresh);
+
+        // Configure WebView smooth scrolling & overscroll
+        webView.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);
+        webView.setVerticalScrollBarEnabled(false);
+        webView.setHorizontalScrollBarEnabled(false);
+        webView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
 
         // Configure WebViewAssetLoader for safe HTTPS loading of local APK assets
         assetLoader = new WebViewAssetLoader.Builder()
@@ -108,8 +111,11 @@ public class MainActivity extends AppCompatActivity {
         settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(true);
         settings.setLoadsImagesAutomatically(true);
-        settings.setUseWideViewPort(true);
-        settings.setLoadWithOverviewMode(true);
+
+        // Do not force desktop 980px viewport! Ensure true mobile viewport is respected
+        settings.setUseWideViewPort(false);
+        settings.setLoadWithOverviewMode(false);
+        settings.setTextZoom(100);
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
 
         // Customize User-Agent so web app knows it is running as native Android APK
@@ -151,17 +157,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                if (swipeRefresh != null) {
-                    swipeRefresh.setRefreshing(false);
-                }
             }
 
             @Override
             public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
                 super.onReceivedError(view, request, error);
-                if (swipeRefresh != null) {
-                    swipeRefresh.setRefreshing(false);
-                }
                 // If offline and trying to load remote URL, smoothly fallback to bundled local app
                 if (request.isForMainFrame() && !request.getUrl().toString().startsWith(LOCAL_ASSET_URL)) {
                     Toast.makeText(MainActivity.this, "Offline: Using cached music library", Toast.LENGTH_SHORT).show();
@@ -169,16 +169,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-
-        // Pull to refresh: swipe down to instantly sync latest songs and changes from GitHub
-        if (swipeRefresh != null) {
-            swipeRefresh.setColorSchemeColors(0xFF10B981, 0xFF8B5CF6, 0xFF06B6D4);
-            swipeRefresh.setOnRefreshListener(() -> {
-                if (webView != null) {
-                    webView.reload();
-                }
-            });
-        }
 
         // Setup background audio focus management
         setupAudioFocus();
