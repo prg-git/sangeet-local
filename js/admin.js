@@ -146,7 +146,15 @@ class AdminStudio {
             editModalGenre: document.getElementById("editModalGenre"),
             editModalLyrics: document.getElementById("editModalLyrics"),
 
-            toastContainer: document.getElementById("toastContainer")
+            toastContainer: document.getElementById("toastContainer"),
+
+            // Mobile Links Hub
+            linkWifiInput: document.getElementById("linkWifiInput"),
+            btnCopyWifiLink: document.getElementById("btnCopyWifiLink"),
+            btnOpenWifiLink: document.getElementById("btnOpenWifiLink"),
+            linkGithubInput: document.getElementById("linkGithubInput"),
+            btnCopyGithubLink: document.getElementById("btnCopyGithubLink"),
+            btnOpenGithubLink: document.getElementById("btnOpenGithubLink")
         };
     }
 
@@ -467,9 +475,69 @@ class AdminStudio {
         if (this.dom.btnSaveEditModal) {
             this.dom.btnSaveEditModal.addEventListener("click", () => this.saveEditModal());
         }
+
+        // --- MOBILE LINKS HUB COPY BUTTONS ---
+        if (this.dom.btnCopyWifiLink) {
+            this.dom.btnCopyWifiLink.addEventListener("click", () => {
+                const val = this.dom.linkWifiInput ? this.dom.linkWifiInput.value : "";
+                if (navigator.clipboard && val) {
+                    navigator.clipboard.writeText(val).then(() => {
+                        this.showToast("Copied mobile Wi-Fi link to clipboard!");
+                    }).catch(() => {
+                        this.dom.linkWifiInput.select();
+                        document.execCommand("copy");
+                        this.showToast("Copied mobile Wi-Fi link!");
+                    });
+                } else if (val) {
+                    this.dom.linkWifiInput.select();
+                    document.execCommand("copy");
+                    this.showToast("Copied mobile Wi-Fi link!");
+                }
+            });
+        }
+
+        if (this.dom.btnCopyGithubLink) {
+            this.dom.btnCopyGithubLink.addEventListener("click", () => {
+                const val = this.dom.linkGithubInput ? this.dom.linkGithubInput.value : "";
+                if (navigator.clipboard && val) {
+                    navigator.clipboard.writeText(val).then(() => {
+                        this.showToast("Copied public mobile app link to clipboard!");
+                    }).catch(() => {
+                        this.dom.linkGithubInput.select();
+                        document.execCommand("copy");
+                        this.showToast("Copied public mobile app link!");
+                    });
+                } else if (val) {
+                    this.dom.linkGithubInput.select();
+                    document.execCommand("copy");
+                    this.showToast("Copied public mobile app link!");
+                }
+            });
+        }
     }
 
     async loadData() {
+        // Fetch server network info (local IP, Wi-Fi link, GitHub link)
+        try {
+            const infoRes = await fetch("/api/info?_t=" + Date.now());
+            if (infoRes.ok) {
+                const info = await infoRes.json();
+                if (this.dom.linkWifiInput && info.mobileWifiUrl) {
+                    this.dom.linkWifiInput.value = info.mobileWifiUrl;
+                }
+                if (this.dom.btnOpenWifiLink && info.mobileWifiUrl) {
+                    this.dom.btnOpenWifiLink.href = info.mobileWifiUrl;
+                }
+                if (this.dom.linkGithubInput && info.mobileGithubUrl) {
+                    this.dom.linkGithubInput.value = info.mobileGithubUrl;
+                }
+                if (this.dom.btnOpenGithubLink && info.mobileGithubUrl) {
+                    this.dom.btnOpenGithubLink.href = info.mobileGithubUrl;
+                }
+            }
+        } catch (e) {
+            // Static or offline mode
+        }
         try {
             // Load songs
             const songsRes = await fetch("/api/songs?_t=" + Date.now());

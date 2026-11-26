@@ -47,7 +47,7 @@ cd /d "%~dp0"
 
 echo.
 echo Step 2: Preparing and committing all folders and updates...
-"%GIT_CMD%" add .
+"%GIT_CMD%" add -A
 "%GIT_CMD%" commit -m "Update music library and app changes" >nul 2>&1
 
 echo.

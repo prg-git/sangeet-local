@@ -201,6 +201,100 @@
         .song-manage-row:hover {
             border-color: var(--border-hover);
         }
+
+        .mobile-links-hub {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(59, 130, 246, 0.08));
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            border-radius: var(--radius-lg);
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .mobile-links-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 16px 0;
+        }
+
+        @media (max-width: 800px) {
+            .mobile-links-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .mobile-link-box {
+            background: rgba(15, 23, 42, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-md);
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .mobile-link-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mobile-link-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .mobile-link-badge {
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 6px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+
+        .mobile-link-input-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .mobile-link-input {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: #38bdf8;
+            font-size: 13px;
+            padding: 7px 10px;
+            font-family: monospace;
+            outline: none;
+        }
+
+        .sync-pulse {
+            width: 10px;
+            height: 10px;
+            background-color: #10b981;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 0 rgba(16, 185, 129, 0.7);
+            animation: pulseSync 2s infinite;
+        }
+
+        @keyframes pulseSync {
+            0% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+            }
+        }
     </style>
 </head>
 
@@ -240,20 +334,87 @@
             </div>
         </div>
 
-        <!-- PC Master Admin to Mobile Sync Notice Banner -->
-        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 14px 20px; margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
-            <div style="display: flex; align-items: center; gap: 12px; font-size: 13px; color: #e2e8f0;">
-                <span style="font-size: 22px;">💡</span>
+        <!-- Mobile View App Live Sync & Links Hub -->
+        <div class="mobile-links-hub">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
                 <div>
-                    <div><strong>PC to Mobile Live Sync:</strong> All album covers, audio files, and hero banners save locally on this PC instantly.</div>
-                    <div style="color: var(--text-muted); font-size: 12px; margin-top: 2px;">
-                        To update the Mobile View at <a href="https://prg-git.github.io/sangeet-local/" target="_blank" style="color: #38bdf8; text-decoration: underline; font-weight: 600;">https://prg-git.github.io/sangeet-local/</a>, click the green <strong>🚀 Publish to Mobile (GitHub)</strong> button above!
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 20px;">📱</span>
+                        <h2 style="font-size: 16px; font-weight: 800; color: #ffffff; margin: 0;">
+                            Mobile View App Live Links & Auto-Sync
+                        </h2>
+                        <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 11px; padding: 2px 8px; border-radius: 12px; background: rgba(16, 185, 129, 0.2); color: #34d399; font-weight: 700; border: 1px solid rgba(16, 185, 129, 0.35);">
+                            <span class="sync-pulse"></span> AUTO-SYNC ACTIVE
+                        </span>
+                    </div>
+                    <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
+                        When you add songs, change album covers, or update banners in this PC Studio, your mobile customer app updates automatically!
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" id="btnPublishBannerNotice" class="btn-primary" style="font-size: 12px; padding: 8px 14px; background: linear-gradient(135deg, #10b981, #059669); border: none; border-radius: 6px; cursor: pointer; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                        <span>🚀 Force Push to Mobile Now</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Two Link Cards Grid -->
+            <div class="mobile-links-grid">
+                <!-- 1. Wi-Fi Local Network Link -->
+                <div class="mobile-link-box">
+                    <div class="mobile-link-header">
+                        <span class="mobile-link-title">
+                            <span>📶</span> Local Wi-Fi Mobile Link
+                        </span>
+                        <span class="mobile-link-badge" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3);">
+                            SAME WI-FI
+                        </span>
+                    </div>
+                    <div style="font-size: 12px; color: var(--text-muted);">
+                        Instant local streaming on any phone on the same Wi-Fi:
+                    </div>
+                    <div class="mobile-link-input-group">
+                        <input type="text" id="linkWifiInput" class="mobile-link-input" readonly value="http://localhost:8080">
+                        <button type="button" id="btnCopyWifiLink" class="btn-secondary" style="font-size: 12px; padding: 6px 12px; white-space: nowrap;">
+                            📋 Copy Link
+                        </button>
+                        <a id="btnOpenWifiLink" href="index.html" target="_blank" class="btn-secondary" style="font-size: 12px; padding: 6px 12px; text-decoration: none; white-space: nowrap;" title="Test mobile player view">
+                            📲 Open
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 2. GitHub Pages Public Link -->
+                <div class="mobile-link-box">
+                    <div class="mobile-link-header">
+                        <span class="mobile-link-title">
+                            <span>🌐</span> Public Worldwide Mobile App
+                        </span>
+                        <span class="mobile-link-badge" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);">
+                            WORLDWIDE
+                        </span>
+                    </div>
+                    <div style="font-size: 12px; color: var(--text-muted);">
+                        Access anywhere on cellular or remote internet:
+                    </div>
+                    <div class="mobile-link-input-group">
+                        <input type="text" id="linkGithubInput" class="mobile-link-input" readonly value="https://prg-git.github.io/sangeet-local/">
+                        <button type="button" id="btnCopyGithubLink" class="btn-secondary" style="font-size: 12px; padding: 6px 12px; white-space: nowrap;">
+                            📋 Copy Link
+                        </button>
+                        <a id="btnOpenGithubLink" href="https://prg-git.github.io/sangeet-local/" target="_blank" class="btn-secondary" style="font-size: 12px; padding: 6px 12px; text-decoration: none; white-space: nowrap;" title="Open live public mobile app">
+                            🌐 Open
+                        </a>
                     </div>
                 </div>
             </div>
-            <button type="button" id="btnPublishBannerNotice" class="btn-primary" style="font-size: 12px; padding: 8px 16px; background: #10b981; border: none; border-radius: 6px; cursor: pointer; font-weight: 700;">
-                🚀 Publish Changes Now
-            </button>
+
+            <!-- Auto-Sync Info Bar -->
+            <div style="font-size: 12px; color: #a7f3d0; background: rgba(16, 185, 129, 0.1); border-radius: 6px; padding: 8px 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                <span>✨ <strong>Real-Time Sync:</strong> Adding music or editing album covers automatically writes to your music repository and syncs directly to the mobile view.</span>
+                <span style="color: var(--text-muted); font-size: 11px;">Mobile Player Polling: Active (Every 6s)</span>
+            </div>
         </div>
 
         <!-- Navigation Tabs -->

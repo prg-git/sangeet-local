@@ -1,4 +1,4 @@
-# Sangeet Universal Music Server with Shared Library, Auto-Folder Scanner & Mobile Sync
+﻿# Sangeet Universal Music Server with Shared Library, Auto-Folder Scanner & Mobile Sync
 param(
     [int]$Port = 8080
 )
@@ -94,6 +94,34 @@ function Save-JsonFile($path, $data) {
         [System.IO.File]::WriteAllText($path, $json, [System.Text.Encoding]::UTF8)
     } catch {
         Write-Host "Failed to save JSON file $path : $_"
+    }
+}
+
+# Background auto-publish to GitHub Pages so Mobile View App receives updates directly
+function Auto-PublishToGit {
+    try {
+        $gitExe = Join-Path $DocRoot "tools\git\cmd\git.exe"
+        if (-not (Test-Path $gitExe)) {
+            $gitCmd = Get-Command "git" -ErrorAction SilentlyContinue
+            if ($gitCmd) { $gitExe = $gitCmd.Source }
+        }
+
+        if (Test-Path $gitExe) {
+            Start-Job -ScriptBlock {
+                param($gitPath, $workDir)
+                Set-Location $workDir
+                & $gitPath add -A
+                $status = & $gitPath status --porcelain
+                if ($status) {
+                    $ts = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
+                    & $gitPath commit -m "Auto-sync library from PC Master Admin [$ts]"
+                    & $gitPath push origin main 2>&1
+                }
+            } -ArgumentList $gitExe, $DocRoot | Out-Null
+            Write-Host "[Auto-Sync] Triggered background push to GitHub for mobile app." -ForegroundColor Cyan
+        }
+    } catch {
+        Write-Host "[Auto-Sync] Error: $_" -ForegroundColor Yellow
     }
 }
 
@@ -392,6 +420,7 @@ while ($true) {
             $existing = @(Read-JsonFile $LibraryFile)
             $newList = @($songRecord) + $existing
             Save-JsonFile $LibraryFile $newList
+            Auto-PublishToGit
 
             $bodyLen = $rawBody.Length
             Write-Host ("Uploaded song: " + $title + " by " + $artist + " (" + $bodyLen + " bytes)") -ForegroundColor Cyan
@@ -431,6 +460,7 @@ while ($true) {
                         }
                     }
                     Save-JsonFile $PlaylistsFile $pls
+                    Auto-PublishToGit
                     Write-Host "Deleted song ID: $id" -ForegroundColor Yellow
                 }
             }
@@ -453,6 +483,7 @@ while ($true) {
                     }
                 }
                 Save-JsonFile $LibraryFile $songs
+                Auto-PublishToGit
             }
             & $SendJson "200 OK" @{ success = $true; isLiked = $isLiked }
             $Client.Close()
@@ -518,6 +549,7 @@ while ($true) {
                     }
                 }
                 Save-JsonFile $LibraryFile $songs
+                Auto-PublishToGit
             }
             & $SendJson "200 OK" @{ success = $true; song = $updatedSong }
             $Client.Close()
@@ -611,6 +643,7 @@ while ($true) {
 
             $jsonStr = ConvertTo-Json -InputObject $currentBanners -Depth 10
             [System.IO.File]::WriteAllText($BannersFile, $jsonStr, [System.Text.Encoding]::UTF8)
+            Auto-PublishToGit
 
             Write-Host "Saved ${lang} banner: $($bannerObj.title)" -ForegroundColor Cyan
             & $SendJson "200 OK" @{ success = $true; banners = $currentBanners }
@@ -660,6 +693,19 @@ while ($true) {
             } catch {
                 Write-Host "Publish error: $_" -ForegroundColor Red
                 & $SendJson "500 Internal Server Error" @{ success = $false; message = $_.Exception.Message }
+            }
+            $Client.Close()
+            continue
+        }
+
+        # 10. GET /api/info (Network URLs for PC & Mobile View App)
+        if ($Method -eq "GET" -and $Path -eq "/api/info") {
+            & $SendJson "200 OK" @{
+                serverOnline = $true
+                port = $Port
+                localIp = $LocalIP
+                mobileWifiUrl = "http://${LocalIP}:${Port}"
+                mobileGithubUrl = "https://prg-git.github.io/sangeet-local/"
             }
             $Client.Close()
             continue

@@ -123,6 +123,7 @@ class UIController {
         this.initEventListeners();
         this.initAudioEngineSync();
         this.startVisualizerLoop();
+        this.startLiveSync();
     }
 
     initEventListeners() {
@@ -1831,6 +1832,58 @@ class UIController {
     }
 
     // --- UTILITIES & HELPERS ---
+
+    // Real-Time Live Sync: Automatically detects when songs or covers are added/edited in PC Studio
+    startLiveSync() {
+        let lastSyncSignature = null;
+        let isSyncing = false;
+
+        const checkSync = async () => {
+            if (isSyncing) return;
+            isSyncing = true;
+            try {
+                const songs = await window.musicDB.getAllSongs();
+                let banners = null;
+                try {
+                    const bRes = await fetch("data/banners.json?_t=" + Date.now(), { cache: "no-store" });
+                    if (bRes.ok) banners = await bRes.json();
+                } catch (e) {}
+
+                const songsSig = (songs || []).map(s => `${s.id}:${s.title}:${s.coverUrl || ''}:${s.updatedAt || ''}`).join("|");
+                const bannersSig = banners ? JSON.stringify(banners) : "";
+                const currentSignature = `${(songs || []).length}_${songsSig}_${bannersSig}`;
+
+                if (lastSyncSignature !== null && lastSyncSignature !== currentSignature) {
+                    console.log("[LiveSync] Change detected from PC Admin Studio! Updating mobile view smoothly...");
+                    if (banners) {
+                        this.bannersData = banners;
+                    }
+                    await this.updateCounters();
+                    await this.refreshCurrentView();
+                    this.showToast("⚡ Mobile library updated with latest songs from PC Studio!");
+                }
+                lastSyncSignature = currentSignature;
+            } catch (err) {
+                // Silently swallow background sync errors
+            } finally {
+                isSyncing = false;
+            }
+        };
+
+        // Initial check after start
+        setTimeout(checkSync, 1500);
+
+        // Continuous polling every 6 seconds
+        this.liveSyncTimer = setInterval(checkSync, 6000);
+
+        // Instant refresh on mobile screen wakeup or window focus
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "visible") {
+                checkSync();
+            }
+        });
+        window.addEventListener("focus", () => checkSync());
+    }
 
     getSongCoverUrl(song) {
         if (!song) return "";
