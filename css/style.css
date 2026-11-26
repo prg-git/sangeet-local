@@ -1598,20 +1598,23 @@ body.theme-violet .songs-table tr.playing {
         display: none !important;
     }
 
-    /* Mobile Bottom Navigation Bar */
+    /* Mobile Bottom Navigation Bar (Fixed at the very bottom of the screen) */
     .mobile-bottom-nav {
         display: flex !important;
         align-items: center;
         justify-content: space-around;
         position: fixed;
-        bottom: var(--player-height);
+        bottom: 0;
         left: 0;
         right: 0;
-        height: 54px;
-        background: rgba(11, 15, 23, 0.98);
-        border-top: 1px solid var(--border-color);
-        backdrop-filter: blur(16px);
-        z-index: 90;
+        height: 56px;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+        background: linear-gradient(180deg, rgba(14, 10, 32, 0.98) 0%, rgba(7, 10, 22, 0.99) 100%);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        z-index: 100;
+        box-shadow: 0 -4px 25px rgba(0, 0, 0, 0.5);
     }
 
     .mobile-nav-item {
@@ -1772,12 +1775,13 @@ body.theme-violet .songs-table tr.playing {
         align-items: center;
         gap: 6px 10px;
         position: fixed;
-        bottom: 0;
+        bottom: calc(56px + env(safe-area-inset-bottom, 0px));
         left: 0;
         right: 0;
-        z-index: 100;
+        z-index: 99;
         background: linear-gradient(180deg, rgba(20, 14, 42, 0.96) 0%, rgba(9, 13, 28, 0.98) 100%) !important;
         border-top: 1px solid rgba(139, 92, 246, 0.38) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
         backdrop-filter: blur(28px) !important;
         -webkit-backdrop-filter: blur(28px) !important;
         box-shadow: 0 -10px 32px rgba(0, 0, 0, 0.75), 0 -1px 0 rgba(6, 182, 212, 0.3) !important;
@@ -2386,24 +2390,33 @@ body.in-mobile-frame .app-layout {
 body.in-mobile-frame .mobile-bottom-nav {
     display: flex !important;
     position: absolute !important;
-    bottom: 98px !important;
-    width: 390px !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    z-index: 90 !important;
-}
-
-body.in-mobile-frame .music-player-bar {
-    display: grid !important;
-    position: absolute !important;
     bottom: 0 !important;
     width: 390px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
     border-radius: 0 0 34px 34px !important;
-    height: 98px !important;
+    height: 56px !important;
+    padding-bottom: 6px !important;
     z-index: 100 !important;
-    box-shadow: 0 0 0 10px #1e293b, 0 20px 60px rgba(0,0,0,0.9);
+    background: linear-gradient(180deg, rgba(14, 10, 32, 0.98) 0%, rgba(7, 10, 22, 0.99) 100%) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+body.in-mobile-frame .music-player-bar {
+    display: grid !important;
+    position: absolute !important;
+    bottom: 56px !important;
+    width: 390px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    border-radius: 0 !important;
+    height: 98px !important;
+    z-index: 99 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+body.in-mobile-frame .music-player-bar.is-playing {
+    border-top: 1px solid rgba(168, 85, 247, 0.65) !important;
 }
 
 .exit-frame-btn {

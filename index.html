@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sangeet Local - Regional Music Player</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎵</text></svg>">
-    <link rel="stylesheet" href="css/style.css?v=5.0">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎵</text></svg>">
+    <link rel="stylesheet" href="css/style.css?v=6.0">
     <link rel="manifest" href="manifest.json">
     <script>
         // Force refresh service worker caches immediately
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            navigator.serviceWorker.getRegistrations().then(function (registrations) {
                 for (var r of registrations) {
                     r.update();
                 }
@@ -18,10 +20,12 @@
         }
     </script>
 </head>
+
 <body class="theme-dark">
 
     <!-- ================= MODERN ANIMATED SPLASH SCREEN (SANGEET LOCAL v1.0.0) ================= -->
-    <div id="appSplashScreen" class="app-splash-screen" role="dialog" aria-modal="true" aria-label="Loading Sangeet Local">
+    <div id="appSplashScreen" class="app-splash-screen" role="dialog" aria-modal="true"
+        aria-label="Loading Sangeet Local">
         <!-- Ambient Background Lights & Music Waves -->
         <div class="splash-ambient-glow glow-top"></div>
         <div class="splash-ambient-glow glow-bottom"></div>
@@ -46,16 +50,23 @@
                             </linearGradient>
                         </defs>
                         <!-- Stylized Vinyl/Sound Wave Disc -->
-                        <circle cx="50" cy="50" r="44" stroke="url(#splashGrad)" stroke-width="2.5" stroke-dasharray="8 4" class="splash-spin-ring" />
+                        <circle cx="50" cy="50" r="44" stroke="url(#splashGrad)" stroke-width="2.5"
+                            stroke-dasharray="8 4" class="splash-spin-ring" />
                         <circle cx="50" cy="50" r="36" stroke="rgba(255, 255, 255, 0.12)" stroke-width="1.5" />
-                        <circle cx="50" cy="50" r="28" fill="rgba(15, 23, 42, 0.85)" stroke="url(#splashGrad)" stroke-width="2" />
+                        <circle cx="50" cy="50" r="28" fill="rgba(15, 23, 42, 0.85)" stroke="url(#splashGrad)"
+                            stroke-width="2" />
                         <!-- Sound wave bars inside logo -->
                         <g class="splash-core-wave">
-                            <rect x="36" y="44" width="3.5" height="12" rx="1.75" fill="url(#waveGrad)" class="wave-bar wb-1" />
-                            <rect x="43" y="38" width="3.5" height="24" rx="1.75" fill="url(#waveGrad)" class="wave-bar wb-2" />
-                            <rect x="50" y="32" width="3.5" height="36" rx="1.75" fill="url(#waveGrad)" class="wave-bar wb-3" />
-                            <rect x="57" y="40" width="3.5" height="20" rx="1.75" fill="url(#waveGrad)" class="wave-bar wb-4" />
-                            <rect x="64" y="46" width="3.5" height="8" rx="1.75" fill="url(#waveGrad)" class="wave-bar wb-5" />
+                            <rect x="36" y="44" width="3.5" height="12" rx="1.75" fill="url(#waveGrad)"
+                                class="wave-bar wb-1" />
+                            <rect x="43" y="38" width="3.5" height="24" rx="1.75" fill="url(#waveGrad)"
+                                class="wave-bar wb-2" />
+                            <rect x="50" y="32" width="3.5" height="36" rx="1.75" fill="url(#waveGrad)"
+                                class="wave-bar wb-3" />
+                            <rect x="57" y="40" width="3.5" height="20" rx="1.75" fill="url(#waveGrad)"
+                                class="wave-bar wb-4" />
+                            <rect x="64" y="46" width="3.5" height="8" rx="1.75" fill="url(#waveGrad)"
+                                class="wave-bar wb-5" />
                         </g>
                     </svg>
                 </div>
@@ -118,8 +129,12 @@
                 </div>
 
                 <div class="search-container">
-                    <svg class="search-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-                    <input type="text" class="search-input" id="globalSearchInput" placeholder="Search songs, artists, albums, or genres...">
+                    <svg class="search-icon" viewBox="0 0 24 24">
+                        <path fill="currentColor"
+                            d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                    </svg>
+                    <input type="text" class="search-input" id="globalSearchInput"
+                        placeholder="Search songs, artists, albums, or genres...">
                     <button class="search-clear-btn" id="btnSearchClear">✕</button>
                 </div>
 
@@ -156,23 +171,37 @@
     <!-- ================= MOBILE BOTTOM NAVIGATION BAR ================= -->
     <nav class="mobile-bottom-nav" id="mobileBottomNav">
         <div class="mobile-nav-item active" data-view="home">
-            <svg viewBox="0 0 24 24"><path fill="currentColor" d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            <svg viewBox="0 0 24 24">
+                <path fill="currentColor" d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+            </svg>
             <span>Home</span>
         </div>
         <div class="mobile-nav-item" data-view="search">
-            <svg viewBox="0 0 24 24"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            <svg viewBox="0 0 24 24">
+                <path fill="currentColor"
+                    d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+            </svg>
             <span>Search</span>
         </div>
         <div class="mobile-nav-item" data-view="library">
-            <svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg>
+            <svg viewBox="0 0 24 24">
+                <path fill="currentColor"
+                    d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z" />
+            </svg>
             <span>Library</span>
         </div>
         <div class="mobile-nav-item" data-view="liked">
-            <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            <svg viewBox="0 0 24 24">
+                <path fill="currentColor"
+                    d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            </svg>
             <span>Liked</span>
         </div>
         <div class="mobile-nav-item" data-view="about">
-            <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+            <svg viewBox="0 0 24 24">
+                <path fill="currentColor"
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+            </svg>
             <span>About</span>
         </div>
     </nav>
@@ -190,9 +219,11 @@
         <div class="player-left">
             <div class="player-cover-wrap" id="playerCoverWrap">
                 <div class="player-cover-glow-ring"></div>
-                <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><rect width='100%' height='100%' fill='%231e293b'/><text x='50%' y='55%' font-size='40' fill='%23fff' text-anchor='middle' dominant-baseline='middle'>♫</text></svg>" alt="Album Cover" class="player-cover" id="playerCoverImg">
+                <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><rect width='100%' height='100%' fill='%231e293b'/><text x='50%' y='55%' font-size='40' fill='%23fff' text-anchor='middle' dominant-baseline='middle'>♫</text></svg>"
+                    alt="Album Cover" class="player-cover" id="playerCoverImg">
             </div>
             <div class="player-info">
+                <div class="player-title" id="playerSongTitle">No song playing</div>
                 <div class="player-title-row">
                     <div class="player-title" id="playerSongTitle">No song playing</div>
                     <!-- Animated Music Wave Bars (Active when song is playing) -->
@@ -207,7 +238,8 @@
                 <div class="player-artist" id="playerSongArtist">Select a song from library</div>
             </div>
             <button class="player-like-btn" id="playerLikeBtn" title="Like Song">♥</button>
-            <button class="btn-control" id="playerLyricsBtn" title="Show Lyrics" style="font-size: 13px; font-weight: 700;">MIC</button>
+            <button class="btn-control" id="playerLyricsBtn" title="Show Lyrics"
+                style="font-size: 13px; font-weight: 700;">MIC</button>
         </div>
 
         <!-- Player Center: Playback Controls & Timeline -->
@@ -236,8 +268,9 @@
             <!-- Mini live visualizer -->
             <canvas class="mini-visualizer-canvas" id="miniVisualizerCanvas" width="60" height="24"></canvas>
 
-            <button class="btn-control" id="btnPlaybackSpeed" title="Speed" style="font-size: 12px; font-weight: 700; width: 38px;">1.0x</button>
-            
+            <button class="btn-control" id="btnPlaybackSpeed" title="Speed"
+                style="font-size: 12px; font-weight: 700; width: 38px;">1.0x</button>
+
             <button class="btn-control" id="btnQueueToggle" title="Queue">
                 <span>📑</span>
                 <span id="queueBadge" style="font-size: 10px; margin-left: 2px;"></span>
@@ -279,25 +312,31 @@
             </div>
 
             <!-- 5 Band Sliders -->
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; height: 180px; padding: 0 16px 20px 16px;">
+            <div
+                style="display: flex; justify-content: space-between; align-items: flex-end; height: 180px; padding: 0 16px 20px 16px;">
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-                    <input type="range" class="volume-slider" id="eqBand0" min="-12" max="12" step="1" value="0" style="writing-mode: bt-lr; -webkit-appearance: slider-vertical; width: 8px; height: 130px;">
+                    <input type="range" class="volume-slider" id="eqBand0" min="-12" max="12" step="1" value="0"
+                        style="writing-mode: bt-lr; -webkit-appearance: slider-vertical; width: 8px; height: 130px;">
                     <span style="font-size: 11px; color: var(--text-dim);">60Hz</span>
                 </div>
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-                    <input type="range" class="volume-slider" id="eqBand1" min="-12" max="12" step="1" value="0" style="writing-mode: bt-lr; -webkit-appearance: slider-vertical; width: 8px; height: 130px;">
+                    <input type="range" class="volume-slider" id="eqBand1" min="-12" max="12" step="1" value="0"
+                        style="writing-mode: bt-lr; -webkit-appearance: slider-vertical; width: 8px; height: 130px;">
                     <span style="font-size: 11px; color: var(--text-dim);">250Hz</span>
                 </div>
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-                    <input type="range" class="volume-slider" id="eqBand2" min="-12" max="12" step="1" value="0" style="writing-mode: bt-lr; -webkit-appearance: slider-vertical; width: 8px; height: 130px;">
+                    <input type="range" class="volume-slider" id="eqBand2" min="-12" max="12" step="1" value="0"
+                        style="writing-mode: bt-lr; -webkit-appearance: slider-vertical; width: 8px; height: 130px;">
                     <span style="font-size: 11px; color: var(--text-dim);">1kHz</span>
                 </div>
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-                    <input type="range" class="volume-slider" id="eqBand3" min="-12" max="12" step="1" value="0" style="writing-mode: bt-lr; -webkit-appearance: slider-vertical; width: 8px; height: 130px;">
+                    <input type="range" class="volume-slider" id="eqBand3" min="-12" max="12" step="1" value="0"
+                        style="writing-mode: bt-lr; -webkit-appearance: slider-vertical; width: 8px; height: 130px;">
                     <span style="font-size: 11px; color: var(--text-dim);">4kHz</span>
                 </div>
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-                    <input type="range" class="volume-slider" id="eqBand4" min="-12" max="12" step="1" value="0" style="writing-mode: bt-lr; -webkit-appearance: slider-vertical; width: 8px; height: 130px;">
+                    <input type="range" class="volume-slider" id="eqBand4" min="-12" max="12" step="1" value="0"
+                        style="writing-mode: bt-lr; -webkit-appearance: slider-vertical; width: 8px; height: 130px;">
                     <span style="font-size: 11px; color: var(--text-dim);">12kHz</span>
                 </div>
             </div>
@@ -310,16 +349,19 @@
 
     <!-- 4. QUEUE DRAWER -->
     <div class="modal-overlay" id="queueDrawerModal">
-        <div class="modal-content" style="position: fixed; right: 20px; bottom: calc(var(--player-height) + 20px); max-height: 480px; width: 380px; margin: 0;">
+        <div class="modal-content"
+            style="position: fixed; right: 20px; bottom: calc(var(--player-height) + 20px); max-height: 480px; width: 380px; margin: 0;">
             <div class="modal-header">
                 <h3 class="modal-title">Play Queue</h3>
                 <div style="display: flex; gap: 8px;">
-                    <button class="btn-secondary" id="btnClearQueue" style="padding: 4px 10px; font-size: 12px;">Clear</button>
+                    <button class="btn-secondary" id="btnClearQueue"
+                        style="padding: 4px 10px; font-size: 12px;">Clear</button>
                     <button class="modal-close-btn" data-close-modal="queueDrawerModal">✕</button>
                 </div>
             </div>
 
-            <div id="queueListContainer" style="max-height: 360px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px;">
+            <div id="queueListContainer"
+                style="max-height: 360px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px;">
                 <!-- Queue items populated by ui.js -->
             </div>
         </div>
@@ -330,10 +372,12 @@
         <div class="fs-bg-blur" id="fsBgBlur"></div>
 
         <div class="fs-header">
-            <div style="font-size: 13px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--primary);">
+            <div
+                style="font-size: 13px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--primary);">
                 NOW PLAYING IN SANGEET HD
             </div>
-            <button class="btn-circle" id="btnCloseFullscreen" style="width: 40px; height: 40px; font-size: 18px;">✕</button>
+            <button class="btn-circle" id="btnCloseFullscreen"
+                style="width: 40px; height: 40px; font-size: 18px;">✕</button>
         </div>
 
         <div class="fs-body">
@@ -344,7 +388,9 @@
             </div>
 
             <div class="fs-lyrics-col">
-                <div style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: var(--text-dim); margin-bottom: 14px;">Lyrics</div>
+                <div
+                    style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: var(--text-dim); margin-bottom: 14px;">
+                    Lyrics</div>
                 <div class="fs-lyrics-text" id="fsLyricsText">No lyrics available for this song.</div>
             </div>
         </div>
@@ -364,35 +410,47 @@
             </div>
 
             <!-- Mode description -->
-            <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius-md); padding: 12px; margin-bottom: 18px; text-align: left; font-size: 13px;">
-                <div style="font-weight: 700; color: var(--primary); margin-bottom: 4px;">📶 Method 1: On Same Home Wi-Fi</div>
-                <div style="color: var(--text-muted);">Connect your phone to the same Wi-Fi and scan the QR code below:</div>
+            <div
+                style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius-md); padding: 12px; margin-bottom: 18px; text-align: left; font-size: 13px;">
+                <div style="font-weight: 700; color: var(--primary); margin-bottom: 4px;">📶 Method 1: On Same Home
+                    Wi-Fi</div>
+                <div style="color: var(--text-muted);">Connect your phone to the same Wi-Fi and scan the QR code below:
+                </div>
             </div>
 
             <!-- QR Code Box -->
-            <div style="background: #ffffff; padding: 14px; border-radius: 12px; display: inline-block; margin-bottom: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.5);">
-                <img id="mobileQrCodeImg" src="" alt="Mobile Link QR Code" style="width: 180px; height: 180px; display: block; border-radius: 6px;">
+            <div
+                style="background: #ffffff; padding: 14px; border-radius: 12px; display: inline-block; margin-bottom: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.5);">
+                <img id="mobileQrCodeImg" src="" alt="Mobile Link QR Code"
+                    style="width: 180px; height: 180px; display: block; border-radius: 6px;">
             </div>
 
             <!-- URL Box with Copy Button -->
             <div style="display: flex; gap: 8px; margin-bottom: 20px;">
-                <input type="text" class="form-input" id="mobileUrlInput" readonly style="font-family: monospace; font-weight: 700; text-align: center; font-size: 14px; color: var(--primary);">
+                <input type="text" class="form-input" id="mobileUrlInput" readonly
+                    style="font-family: monospace; font-weight: 700; text-align: center; font-size: 14px; color: var(--primary);">
                 <button class="btn-primary" id="btnCopyMobileUrl" style="white-space: nowrap;">Copy Link</button>
             </div>
 
             <!-- Mobile Data / Outside Wi-Fi Guide -->
-            <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; font-size: 12px; color: var(--text-main); text-align: left; line-height: 1.6; margin-bottom: 14px;">
-                <div style="font-weight: 700; color: #f59e0b; margin-bottom: 4px;">🌐 Method 2: On Mobile Data (4G / 5G / Anywhere)</div>
+            <div
+                style="background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; font-size: 12px; color: var(--text-main); text-align: left; line-height: 1.6; margin-bottom: 14px;">
+                <div style="font-weight: 700; color: #f59e0b; margin-bottom: 4px;">🌐 Method 2: On Mobile Data (4G / 5G
+                    / Anywhere)</div>
                 <div style="color: var(--text-muted); margin-bottom: 6px;">If your phone is NOT on the same Wi-Fi:</div>
                 <ol style="margin-left: 18px; color: var(--text-muted);">
-                    <li>On PC, double-click: <code style="color: var(--primary); font-weight: 700;">start-mobile-internet.bat</code></li>
-                    <li>It generates a free worldwide link: <code style="color: #60a5fa;">https://*.trycloudflare.com</code></li>
+                    <li>On PC, double-click: <code
+                            style="color: var(--primary); font-weight: 700;">start-mobile-internet.bat</code></li>
+                    <li>It generates a free worldwide link: <code
+                            style="color: #60a5fa;">https://*.trycloudflare.com</code></li>
                     <li>Open that link on your phone over Mobile Data!</li>
                 </ol>
             </div>
 
-            <div style="background: rgba(255, 255, 255, 0.03); border-radius: 8px; padding: 10px; font-size: 11px; color: var(--text-dim); text-align: left; line-height: 1.5;">
-                💡 <strong>PWA Install:</strong> In Safari tap <em>Share &rarr; Add to Home Screen</em>, or in Chrome tap <em>Install App</em> to use Sangeet like a native mobile app!
+            <div
+                style="background: rgba(255, 255, 255, 0.03); border-radius: 8px; padding: 10px; font-size: 11px; color: var(--text-dim); text-align: left; line-height: 1.5;">
+                💡 <strong>PWA Install:</strong> In Safari tap <em>Share &rarr; Add to Home Screen</em>, or in Chrome
+                tap <em>Install App</em> to use Sangeet like a native mobile app!
             </div>
         </div>
     </div>
@@ -410,13 +468,16 @@
 
             <h2 class="blocker-title">Desktop View Not Supported</h2>
             <p class="blocker-subtitle">
-                <strong>Sangeet Local</strong> is exclusively designed for mobile phones. PC & Desktop browser view is not supported on this mobile app.
+                <strong>Sangeet Local</strong> is exclusively designed for mobile phones. PC & Desktop browser view is
+                not supported on this mobile app.
             </p>
 
             <!-- QR Code Box -->
             <div class="blocker-qr-card">
                 <div class="blocker-qr-wrap">
-                    <img id="blockerQrCodeImg" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https%3A%2F%2Fprg-git.github.io%2Fsangeet-local%2F" alt="Scan QR Code to open on mobile" class="blocker-qr-img">
+                    <img id="blockerQrCodeImg"
+                        src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https%3A%2F%2Fprg-git.github.io%2Fsangeet-local%2F"
+                        alt="Scan QR Code to open on mobile" class="blocker-qr-img">
                 </div>
                 <div class="blocker-qr-text">
                     📷 <strong>Scan with your mobile camera</strong> to listen on your phone.
@@ -425,8 +486,10 @@
 
             <!-- Direct Link Copy -->
             <div class="blocker-url-row">
-                <input type="text" id="blockerMobileUrlInput" class="blocker-url-input" value="https://prg-git.github.io/sangeet-local/" readonly>
-                <button type="button" class="btn-primary" id="btnCopyBlockerUrl" style="white-space: nowrap;">Copy Link</button>
+                <input type="text" id="blockerMobileUrlInput" class="blocker-url-input"
+                    value="https://prg-git.github.io/sangeet-local/" readonly>
+                <button type="button" class="btn-primary" id="btnCopyBlockerUrl" style="white-space: nowrap;">Copy
+                    Link</button>
             </div>
 
             <div class="blocker-divider">
@@ -438,7 +501,8 @@
             </button>
 
             <div class="blocker-hint">
-                💡 <strong>Browser DevTools:</strong> Press <kbd>F12</kbd> & click the <strong>📱 Device Mode</strong> icon (<kbd>Ctrl+Shift+M</kbd>) in Chrome / Edge to switch directly to mobile view.
+                💡 <strong>Browser DevTools:</strong> Press <kbd>F12</kbd> & click the <strong>📱 Device Mode</strong>
+                icon (<kbd>Ctrl+Shift+M</kbd>) in Chrome / Edge to switch directly to mobile view.
             </div>
         </div>
     </div>
@@ -447,25 +511,26 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <!-- Scripts -->
-    <script src="js/db.js?v=5.0"></script>
-    <script src="js/id3.js?v=5.0"></script>
-    <script src="js/synth.js?v=5.0"></script>
-    <script src="js/audio.js?v=5.0"></script>
-    <script src="js/ui.js?v=5.0"></script>
-    <script src="js/app.js?v=5.0"></script>
+    <script src="js/db.js?v=6.0"></script>
+    <script src="js/id3.js?v=6.0"></script>
+    <script src="js/synth.js?v=6.0"></script>
+    <script src="js/audio.js?v=6.0"></script>
+    <script src="js/ui.js?v=6.0"></script>
+    <script src="js/app.js?v=6.0"></script>
 
     <script>
         // Failsafe timer: ensures splash screen gracefully closes after 3s under any network condition
-        window.addEventListener("load", function() {
-            setTimeout(function() {
+        window.addEventListener("load", function () {
+            setTimeout(function () {
                 var splash = document.getElementById("appSplashScreen");
                 if (splash && !splash.classList.contains("splash-fade-out")) {
                     splash.classList.add("splash-fade-out");
-                    setTimeout(function() { splash.style.display = "none"; }, 650);
+                    setTimeout(function () { splash.style.display = "none"; }, 650);
                 }
             }, 3000);
         });
     </script>
 
 </body>
+
 </html>
