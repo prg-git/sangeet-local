@@ -1,4 +1,4 @@
-# Sangeet Universal Music Server with Shared Library, Auto-Folder Scanner & Mobile Sync
+﻿# Sangeet Universal Music Server with Shared Library, Auto-Folder Scanner & Mobile Sync
 param(
     [int]$Port = 8080
 )
@@ -97,9 +97,37 @@ function Save-JsonFile($path, $data) {
     }
 }
 
+# Sync web and music files into Android APK assets folder so bundled APK stays completely up-to-date
+function Sync-AndroidAssets {
+    try {
+        $assetsDir = Join-Path $DocRoot "android-apk-project\app\src\main\assets"
+        if (-not (Test-Path $assetsDir)) { New-Item -ItemType Directory -Path $assetsDir -Force | Out-Null }
+
+        # Copy web files
+        foreach ($f in @("index.html", "manifest.json", "sw.js")) {
+            $src = Join-Path $DocRoot $f
+            if (Test-Path $src) { Copy-Item $src -Destination $assetsDir -Force -ErrorAction SilentlyContinue }
+        }
+
+        # Copy folders: css, js, icons, data, music
+        foreach ($d in @("css", "js", "icons", "data", "music")) {
+            $src = Join-Path $DocRoot $d
+            $dst = Join-Path $assetsDir $d
+            if (Test-Path $src) {
+                if (-not (Test-Path $dst)) { New-Item -ItemType Directory -Path $dst -Force | Out-Null }
+                Copy-Item -Path (Join-Path $src "*") -Destination $dst -Recurse -Force -ErrorAction SilentlyContinue
+            }
+        }
+    } catch {
+        Write-Host "Sync-AndroidAssets error: $_" -ForegroundColor Yellow
+    }
+}
+
 # Background auto-publish to GitHub Pages so Mobile View App receives updates directly
 function Auto-PublishToGit {
     try {
+        Sync-AndroidAssets
+
         $gitExe = Join-Path $DocRoot "tools\git\cmd\git.exe"
         if (-not (Test-Path $gitExe)) {
             $gitCmd = Get-Command "git" -ErrorAction SilentlyContinue
@@ -118,7 +146,7 @@ function Auto-PublishToGit {
                     & $gitPath push origin main 2>&1
                 }
             } -ArgumentList $gitExe, $DocRoot | Out-Null
-            Write-Host "[Auto-Sync] Triggered background push to GitHub for mobile app." -ForegroundColor Cyan
+            Write-Host "[Auto-Sync] Synced APK assets and triggered background push to GitHub." -ForegroundColor Cyan
         }
     } catch {
         Write-Host "[Auto-Sync] Error: $_" -ForegroundColor Yellow
@@ -163,7 +191,7 @@ function Sync-MusicFolder {
             if ($cleanTitle -match '(?i)koch|rajbongshi|rajbanshi|kamtapur|kamatapur|bhawaiya|goalpariya|baniya|mahut|bhromora|mayna') {
                 $detectedGenre = "Koch Rajbongshi"
                 $detectedArtist = "Koch Rajbongshi Artist"
-            } elseif ($cleanTitle -match '(?i)bodo|borok|mech|bathou') {
+            } elseif ($cleanTitle -match '(?i)bodo|borok|mech|bathou|gwsw|simang|mwjang|angnw|onayao|bwisagu|bagurumba|sifung|kham') {
                 $detectedGenre = "Bodo"
                 $detectedArtist = "Bodo Artist"
             } elseif ($cleanTitle -match '(?i)assamese|asomiya|axomiya' -or $cleanTitle -match '[\u0980-\u09FF]') {
@@ -363,7 +391,13 @@ while ($true) {
         if ($Method -eq "POST" -and $Path -eq "/api/upload") {
             $rawBody = & $ReadBodyBytes
 
-            $rawFilename = if ($Headers.ContainsKey("x-file-name")) { [System.Uri]::UnescapeDataString($Headers["x-file-name"]) } else { "track.mp3" }
+            $rawFilename = if ($Headers.ContainsKey("x-file-name")) {
+                [System.Uri]::UnescapeDataString($Headers["x-file-name"])
+            } elseif ($Headers.ContainsKey("x-filename")) {
+                [System.Uri]::UnescapeDataString($Headers["x-filename"])
+            } else {
+                "track.mp3"
+            }
             $ext = [System.IO.Path]::GetExtension($rawFilename)
             if (-not $ext) { $ext = ".mp3" }
 
@@ -382,6 +416,11 @@ while ($true) {
 
             [System.IO.File]::WriteAllBytes($audioFilePath, $rawBody)
 
+            # Sync audio file to Android assets
+            $androidMusicDir = Join-Path $DocRoot "android-apk-project\app\src\main\assets\music"
+            if (-not (Test-Path $androidMusicDir)) { New-Item -ItemType Directory -Path $androidMusicDir -Force | Out-Null }
+            try { [System.IO.File]::Copy($audioFilePath, (Join-Path $androidMusicDir $savedFilename), $true) } catch {}
+
             $coverUrl = $null
             if ($coverBase64) {
                 try {
@@ -392,6 +431,11 @@ while ($true) {
                     $coverFilePath = Join-Path $CoversDir $coverFilename
                     [System.IO.File]::WriteAllBytes($coverFilePath, $coverBytes)
                     $coverUrl = "/music/covers/$coverFilename"
+                    
+                    # Sync cover to android project
+                    $androidCoversDir = Join-Path $androidMusicDir "covers"
+                    if (-not (Test-Path $androidCoversDir)) { New-Item -ItemType Directory -Path $androidCoversDir -Force | Out-Null }
+                    try { [System.IO.File]::Copy($coverFilePath, (Join-Path $androidCoversDir $coverFilename), $true) } catch {}
                     Write-Host "Saved upload cover art: $coverFilename" -ForegroundColor Green
                 } catch {
                     Write-Host "Failed to save upload cover art: $_" -ForegroundColor Red
@@ -668,8 +712,9 @@ while ($true) {
 
                 Write-Host "Publishing updates from PC Admin Studio to GitHub Pages..." -ForegroundColor Cyan
 
-                # Auto-sync local folder
+                # Auto-sync local folder and Android APK assets
                 $null = Sync-MusicFolder -musicDir $MusicDir -libraryFile $LibraryFile
+                Sync-AndroidAssets
 
                 # Stage files
                 & $gitExe add -A

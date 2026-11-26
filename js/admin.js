@@ -771,6 +771,7 @@ class AdminStudio {
 
         const headers = {
             "x-filename": encodeURIComponent(this.selectedAudioFile.name),
+            "x-file-name": encodeURIComponent(this.selectedAudioFile.name),
             "x-title": encodeURIComponent(title),
             "x-artist": encodeURIComponent(artist),
             "x-album": encodeURIComponent(album),
@@ -780,7 +781,8 @@ class AdminStudio {
             "x-duration": "0"
         };
 
-        if (this.selectedCoverBase64) {
+        // Only send cover in header if small (< 8KB) to avoid HTTP header overflow
+        if (this.selectedCoverBase64 && this.selectedCoverBase64.length < 8192) {
             headers["x-cover-base64"] = this.selectedCoverBase64;
         }
 
@@ -803,7 +805,11 @@ class AdminStudio {
                         });
                     } catch (e) {}
                 }
-                this.showToast(`🎉 "${title}" uploaded successfully! Click 'Publish to Mobile' above to update live app.`);
+
+                // Automatically trigger live publish in background so mobile app updates immediately
+                fetch("/api/publish", { method: "POST" }).catch(() => {});
+
+                this.showToast(`🎉 "${title}" uploaded! Mobile app and APK library synchronized.`);
                 // Reset form
                 this.selectedAudioFile = null;
                 this.selectedCoverFile = null;

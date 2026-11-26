@@ -5,7 +5,7 @@
     "tag": "🎵 Sangeet Local",
     "coverUrl": "",
     "bgUrl": "",
-    "songId": "song_1795530737675_998"
+    "songId": "song_bodo_gwswthangni_simang"
   },
   "koch_rajbongshi": {
     "title": "Koch Rajbongshi Melodies",
@@ -24,11 +24,11 @@
     "songId": "song_1795530737675_998"
   },
   "bodo": {
-    "title": "Bodo Regional Beats",
+    "title": "Gwswthangni Simang - Bodo Spotlight",
     "subtitle": "Traditional & Contemporary Bodo Music",
     "tag": "🎵 Bodo",
     "coverUrl": "",
     "bgUrl": "",
-    "songId": ""
+    "songId": "song_bodo_gwswthangni_simang"
   }
 }
