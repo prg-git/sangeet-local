@@ -6,6 +6,7 @@
 
 class SangeetApp {
     static async init() {
+        const startTime = Date.now();
         console.log("Initializing Sangeet Music Studio with Mobile Sync...");
 
         try {
@@ -67,7 +68,30 @@ class SangeetApp {
             console.log("Sangeet Music Studio ready with PC & Mobile Live Sync!");
         } catch (err) {
             console.error("Initialization error:", err);
+        } finally {
+            // Dismiss modern animated splash screen smoothly
+            this.dismissSplashScreen(startTime);
         }
+    }
+
+    /**
+     * Smoothly transitions out the splash screen after the music engine & view have loaded
+     */
+    static dismissSplashScreen(startTime = 0) {
+        const splash = document.getElementById("appSplashScreen");
+        if (!splash) return;
+
+        // Ensure minimum 2.2s display time for the visual music beats animation
+        const elapsed = Date.now() - startTime;
+        const minDuration = 2200;
+        const remaining = Math.max(0, minDuration - elapsed);
+
+        setTimeout(() => {
+            splash.classList.add("splash-fade-out");
+            setTimeout(() => {
+                splash.style.display = "none";
+            }, 650);
+        }, remaining);
     }
 
     /**
