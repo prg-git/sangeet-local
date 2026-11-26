@@ -4,6 +4,7 @@ tools/*
 
 
 # Android build outputs
+*.apk
 android-apk-project/.gradle/
 android-apk-project/build/
 android-apk-project/*/build/
