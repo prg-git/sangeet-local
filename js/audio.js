@@ -16,7 +16,7 @@ class AudioEngine {
         // Mobile touch audio unlock
         const unlockAudio = () => {
             if (this.audioCtx && this.audioCtx.state === "suspended") {
-                this.audioCtx.resume().catch(() => {});
+                this.audioCtx.resume().catch(() => { });
             }
             document.removeEventListener("touchstart", unlockAudio);
             document.removeEventListener("click", unlockAudio);
@@ -237,7 +237,7 @@ class AudioEngine {
                 console.warn("Seek error:", e);
                 try {
                     this.audio.currentTime = target;
-                } catch (e2) {}
+                } catch (e2) { }
             }
         }
     }
@@ -256,7 +256,7 @@ class AudioEngine {
                 console.warn("Seek percent error:", e);
                 try {
                     this.audio.currentTime = target;
-                } catch (e2) {}
+                } catch (e2) { }
             }
         }
     }

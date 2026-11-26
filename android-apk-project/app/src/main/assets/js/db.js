@@ -61,14 +61,14 @@ class MusicDB {
                 const arr = JSON.parse(raw);
                 if (Array.isArray(arr)) return new Set(arr);
             }
-        } catch (e) {}
+        } catch (e) { }
         return new Set();
     }
 
     saveLikedIds(set) {
         try {
             localStorage.setItem("sangeet_liked_song_ids_v2", JSON.stringify(Array.from(set)));
-        } catch (e) {}
+        } catch (e) { }
     }
 
     getSongIdentifier(song) {
@@ -95,8 +95,8 @@ class MusicDB {
             const urlKey = song.audioUrl ? String(song.audioUrl) : null;
             const sigKey = this.getSongIdentifier(song);
             song.isLiked = (idKey && likedSet.has(idKey)) ||
-                           (urlKey && likedSet.has(urlKey)) ||
-                           (sigKey && likedSet.has(sigKey));
+                (urlKey && likedSet.has(urlKey)) ||
+                (sigKey && likedSet.has(sigKey));
         });
         return songs;
     }
@@ -251,7 +251,7 @@ class MusicDB {
 
         const songs = await this.getAllSongs();
         const song = songs.find(s => String(s.id) === String(id) || String(s.audioUrl) === String(id));
-        
+
         const likedSet = this.getLikedIds();
         const idKey = String(id);
         const urlKey = song && song.audioUrl ? String(song.audioUrl) : null;
@@ -277,14 +277,14 @@ class MusicDB {
                 try {
                     const tx = this.db.transaction(["songs"], "readwrite");
                     tx.objectStore("songs").put(song);
-                } catch (e) {}
+                } catch (e) { }
             }
         }
 
         if (this.isServerConnected) {
             try {
                 await fetch(`/api/songs/like?id=${encodeURIComponent(id)}`, { method: "POST" });
-            } catch (e) {}
+            } catch (e) { }
         }
 
         return newLiked;
@@ -355,7 +355,7 @@ class MusicDB {
                     const data = await res.json();
                     return data.playlists || [];
                 }
-            } catch (e) {}
+            } catch (e) { }
         }
 
         const localPlaylists = await new Promise((resolve) => {
@@ -377,7 +377,7 @@ class MusicDB {
                 const plData = await staticPl.json();
                 return Array.isArray(plData) ? plData : [];
             }
-        } catch (e) {}
+        } catch (e) { }
 
         return [];
     }
@@ -396,7 +396,7 @@ class MusicDB {
                     const data = await res.json();
                     return data.playlist;
                 }
-            } catch (e) {}
+            } catch (e) { }
         }
 
         return new Promise((resolve) => {
@@ -421,7 +421,7 @@ class MusicDB {
         if (this.isServerConnected) {
             try {
                 await fetch(`/api/playlists?id=${encodeURIComponent(id)}`, { method: "DELETE" });
-            } catch (e) {}
+            } catch (e) { }
         }
 
         if (this.db) {
@@ -438,7 +438,7 @@ class MusicDB {
             try {
                 await fetch(`/api/playlists/add-song?playlistId=${encodeURIComponent(playlistId)}&songId=${encodeURIComponent(songId)}`, { method: "POST" });
                 return true;
-            } catch (e) {}
+            } catch (e) { }
         }
 
         return new Promise((resolve) => {
@@ -466,7 +466,7 @@ class MusicDB {
             try {
                 await fetch(`/api/playlists/remove-song?playlistId=${encodeURIComponent(playlistId)}&songId=${encodeURIComponent(songId)}`, { method: "POST" });
                 return true;
-            } catch (e) {}
+            } catch (e) { }
         }
 
         return new Promise((resolve) => {
@@ -500,7 +500,7 @@ class MusicDB {
     async setSetting(key, value) {
         try {
             localStorage.setItem("sangeet_setting_" + key, JSON.stringify(value));
-        } catch (e) {}
+        } catch (e) { }
         return value;
     }
 
@@ -524,7 +524,7 @@ class MusicDB {
             const tx = this.db.transaction(["songs"], "readwrite");
             const store = tx.objectStore("songs");
             songs.forEach(s => store.put(s));
-        } catch (e) {}
+        } catch (e) { }
     }
 
     getLocalIndexedDBSongs() {
