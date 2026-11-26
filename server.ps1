@@ -132,7 +132,7 @@ function Sync-MusicFolder {
             # Auto-detect regional genre
             $detectedGenre = "Assamese"
             $detectedArtist = "Assamese Artist"
-            if ($cleanTitle -match '(?i)koch|rajbongshi|rajbanshi|kamtapur|kamatapur') {
+            if ($cleanTitle -match '(?i)koch|rajbongshi|rajbanshi|kamtapur|kamatapur|bhawaiya|goalpariya|baniya|mahut|bhromora|mayna') {
                 $detectedGenre = "Koch Rajbongshi"
                 $detectedArtist = "Koch Rajbongshi Artist"
             } elseif ($cleanTitle -match '(?i)bodo|borok|mech|bathou') {

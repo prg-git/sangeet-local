@@ -948,9 +948,16 @@ class UIController {
                 if (filter === "koch rajbongshi") {
                     return allMeta.includes("koch") || allMeta.includes("rajbongshi") ||
                         allMeta.includes("rajbanshi") || allMeta.includes("kamtapur") ||
-                        allMeta.includes("kamatapur");
+                        allMeta.includes("kamatapur") || allMeta.includes("bhawaiya") ||
+                        allMeta.includes("goalpariya");
                 }
                 if (filter === "assamese") {
+                    if (allMeta.includes("koch") || allMeta.includes("rajbongshi") ||
+                        allMeta.includes("rajbanshi") || allMeta.includes("kamtapur") ||
+                        allMeta.includes("kamatapur") || allMeta.includes("bhawaiya") ||
+                        allMeta.includes("bodo") || allMeta.includes("borok")) {
+                        return false;
+                    }
                     return allMeta.includes("assamese") || allMeta.includes("asomiya") ||
                         allMeta.includes("axomiya") || /[\u0980-\u09FF]/.test(s.title || "") ||
                         /[\u0980-\u09FF]/.test(s.artist || "");

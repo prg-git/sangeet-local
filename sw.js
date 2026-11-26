@@ -3,7 +3,7 @@
  * Enables offline caching with Network-First strategy so updates appear instantly.
  */
 
-const CACHE_NAME = "sangeet-cache-v7";
+const CACHE_NAME = "sangeet-cache-v8";
 const ASSETS = [
     "./",
     "./index.html",
@@ -15,6 +15,7 @@ const ASSETS = [
     "./js/ui.js",
     "./js/app.js",
     "./manifest.json",
+    "./data/library.json",
     "./data/banners.json",
     "./data/songs.json"
 ];
