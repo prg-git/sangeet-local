@@ -713,12 +713,18 @@ class UIController {
         engine.on("play", (song) => {
             this.dom.btnPlayPause.innerHTML = "❚❚";
             this.dom.playerCoverWrap.classList.add("spinning");
+            const playerBar = document.querySelector(".music-player-bar");
+            if (playerBar) playerBar.classList.add("is-playing");
+            document.body.classList.add("audio-playing");
             this.highlightPlayingRow(song ? song.id : null);
         });
 
         engine.on("pause", () => {
             this.dom.btnPlayPause.innerHTML = "▶";
             this.dom.playerCoverWrap.classList.remove("spinning");
+            const playerBar = document.querySelector(".music-player-bar");
+            if (playerBar) playerBar.classList.remove("is-playing");
+            document.body.classList.remove("audio-playing");
         });
 
         engine.on("trackChange", (song) => {
@@ -1726,6 +1732,77 @@ class UIController {
 
                     miniCtx.fillStyle = isPlaying ? "#10b981" : "rgba(255, 255, 255, 0.2)";
                     miniCtx.fillRect(x, y, barWidth, barHeight);
+                }
+            }
+
+            // Render mobile active flowing soundwave
+            const mCanvas = document.getElementById("mobileWaveCanvas");
+            if (mCanvas && (window.innerWidth <= 768 || document.body.classList.contains("in-mobile-frame"))) {
+                const mCtx = mCanvas.getContext("2d");
+                if (mCtx) {
+                    if (mCanvas.width !== mCanvas.offsetWidth && mCanvas.offsetWidth > 0) {
+                        mCanvas.width = mCanvas.offsetWidth;
+                    }
+                    mCtx.clearRect(0, 0, mCanvas.width, mCanvas.height);
+
+                    const width = mCanvas.width;
+                    const height = mCanvas.height;
+                    const midY = height / 2;
+
+                    if (isPlaying) {
+                        // Calculate audio energy for amplitude
+                        let energy = 0;
+                        for (let k = 0; k < 16; k++) {
+                            energy += (freqData[k] || 0);
+                        }
+                        const avgEnergy = energy / 16;
+                        const amp = Math.max(3.5, (avgEnergy / 255) * (height / 2.3));
+                        const stepTime = performance.now() * 0.0035;
+
+                        // Primary glowing sound wave (Cyan to Purple to Pink)
+                        mCtx.beginPath();
+                        mCtx.lineWidth = 2.4;
+                        const grad1 = mCtx.createLinearGradient(0, 0, width, 0);
+                        grad1.addColorStop(0, "rgba(139, 92, 246, 0.2)");
+                        grad1.addColorStop(0.25, "rgba(6, 182, 212, 0.95)");
+                        grad1.addColorStop(0.7, "rgba(168, 85, 247, 0.95)");
+                        grad1.addColorStop(1, "rgba(236, 72, 153, 0.2)");
+                        mCtx.strokeStyle = grad1;
+
+                        for (let x = 0; x <= width; x += 4) {
+                            const wave1 = Math.sin(x * 0.024 + stepTime) * amp;
+                            const wave2 = Math.cos(x * 0.016 - stepTime * 0.7) * (amp * 0.5);
+                            const y = midY + wave1 + wave2;
+                            if (x === 0) mCtx.moveTo(x, y);
+                            else mCtx.lineTo(x, y);
+                        }
+                        mCtx.stroke();
+
+                        // Secondary depth wave
+                        mCtx.beginPath();
+                        mCtx.lineWidth = 1.4;
+                        const grad2 = mCtx.createLinearGradient(0, 0, width, 0);
+                        grad2.addColorStop(0, "transparent");
+                        grad2.addColorStop(0.35, "rgba(236, 72, 153, 0.7)");
+                        grad2.addColorStop(0.65, "rgba(59, 130, 246, 0.8)");
+                        grad2.addColorStop(1, "transparent");
+                        mCtx.strokeStyle = grad2;
+
+                        for (let x = 0; x <= width; x += 6) {
+                            const y = midY + Math.sin(x * 0.038 - stepTime * 1.3) * (amp * 0.65);
+                            if (x === 0) mCtx.moveTo(x, y);
+                            else mCtx.lineTo(x, y);
+                        }
+                        mCtx.stroke();
+                    } else {
+                        // Resting flat line
+                        mCtx.beginPath();
+                        mCtx.lineWidth = 1;
+                        mCtx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+                        mCtx.moveTo(0, midY);
+                        mCtx.lineTo(width, midY);
+                        mCtx.stroke();
+                    }
                 }
             }
 
