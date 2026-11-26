@@ -271,58 +271,143 @@ class UIController {
             });
         });
 
-        // Player Controls
-        this.dom.btnPlayPause.addEventListener("click", () => window.audioEngine.togglePlay());
-        this.dom.btnPrevious.addEventListener("click", () => window.audioEngine.playPrevious());
-        this.dom.btnNext.addEventListener("click", () => window.audioEngine.playNext());
-        this.dom.btnShuffle.addEventListener("click", () => {
+        // Player Controls (with event stopPropagation to prevent accidentally triggering player bar expansion)
+        this.dom.btnPlayPause.addEventListener("click", (e) => {
+            e.stopPropagation();
+            window.audioEngine.togglePlay();
+        });
+        this.dom.btnPrevious.addEventListener("click", (e) => {
+            e.stopPropagation();
+            window.audioEngine.playPrevious();
+        });
+        this.dom.btnNext.addEventListener("click", (e) => {
+            e.stopPropagation();
+            window.audioEngine.playNext();
+        });
+        this.dom.btnShuffle.addEventListener("click", (e) => {
+            e.stopPropagation();
             const isShuffled = window.audioEngine.toggleShuffle();
             this.dom.btnShuffle.classList.toggle("active", isShuffled);
             this.showToast(isShuffled ? "Shuffle Enabled" : "Shuffle Disabled");
         });
-        this.dom.btnRepeat.addEventListener("click", () => {
+        this.dom.btnRepeat.addEventListener("click", (e) => {
+            e.stopPropagation();
             const mode = window.audioEngine.cycleRepeat();
             this.dom.btnRepeat.classList.toggle("active", mode !== "off");
             this.dom.btnRepeat.innerHTML = mode === "one" ? "🔂" : "🔁";
             this.showToast("Repeat: " + mode.toUpperCase());
         });
 
-        // Progress bar scrubbing (supports mouse click + mobile touch drag)
-        const handleSeek = (clientX) => {
+        // Progress bar scrubbing & seeking (robust for Android WebView touch + mouse)
+        this.isScrubbing = false;
+        let scrubPercent = 0;
+
+        const getPercentFromClientX = (clientX) => {
             const rect = this.dom.progressBarWrap.getBoundingClientRect();
-            const percent = Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100));
-            window.audioEngine.seekPercent(percent);
+            if (!rect.width || rect.width <= 0) return 0;
+            return Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100));
         };
 
+        const updateScrubVisual = (percent) => {
+            scrubPercent = percent;
+            this.dom.progressFill.style.width = percent + "%";
+            const duration = window.audioEngine.getDuration ? window.audioEngine.getDuration() : (window.audioEngine.audio ? window.audioEngine.audio.duration : 0);
+            if (Number.isFinite(duration) && duration > 0) {
+                const previewSecs = (percent / 100) * duration;
+                this.dom.currentTimeText.textContent = this.formatTime(previewSecs);
+            }
+        };
+
+        // Direct tap / click on progress bar
         this.dom.progressBarWrap.addEventListener("click", (e) => {
-            handleSeek(e.clientX);
+            e.stopPropagation();
+            const percent = getPercentFromClientX(e.clientX);
+            updateScrubVisual(percent);
+            window.audioEngine.seekPercent(percent);
         });
 
+        // Touch scrubbing on mobile (touchmove updates visual only, commit on touchend)
         this.dom.progressBarWrap.addEventListener("touchstart", (e) => {
+            e.stopPropagation();
             if (e.touches && e.touches[0]) {
-                handleSeek(e.touches[0].clientX);
+                this.isScrubbing = true;
+                const percent = getPercentFromClientX(e.touches[0].clientX);
+                updateScrubVisual(percent);
             }
-        }, { passive: true });
+        }, { passive: false });
 
         this.dom.progressBarWrap.addEventListener("touchmove", (e) => {
-            if (e.touches && e.touches[0]) {
-                handleSeek(e.touches[0].clientX);
+            e.stopPropagation();
+            if (this.isScrubbing && e.touches && e.touches[0]) {
+                if (e.cancelable) e.preventDefault(); // Prevent page scroll during horizontal drag
+                const percent = getPercentFromClientX(e.touches[0].clientX);
+                updateScrubVisual(percent);
             }
-        }, { passive: true });
+        }, { passive: false });
 
-        // Tapping track info on mobile opens Fullscreen Now Playing screen
-        this.dom.playerCoverWrap.addEventListener("click", () => this.openFullscreenPlayer());
-        this.dom.playerSongTitle.addEventListener("click", () => this.openFullscreenPlayer());
-        this.dom.playerSongArtist.addEventListener("click", () => this.openFullscreenPlayer());
+        const commitTouchSeek = (e) => {
+            if (this.isScrubbing) {
+                if (e) e.stopPropagation();
+                this.isScrubbing = false;
+                window.audioEngine.seekPercent(scrubPercent);
+            }
+        };
+
+        this.dom.progressBarWrap.addEventListener("touchend", commitTouchSeek, { passive: false });
+        this.dom.progressBarWrap.addEventListener("touchcancel", commitTouchSeek, { passive: false });
+
+        // Tapping mini-player wave bar, cover art, or track info smoothly expands into Fullscreen Now Playing screen
+        const playerBar = document.querySelector(".music-player-bar");
+        if (playerBar) {
+            playerBar.addEventListener("click", (e) => {
+                // Do not expand if clicking control buttons, inputs, sliders, or the progress bar
+                if (e.target.closest("button, input, .progress-bar-wrap, .volume-wrap, .player-actions")) {
+                    return;
+                }
+                this.openFullscreenPlayer();
+            });
+        }
+
+        const mobileWaveWrap = document.getElementById("mobilePlayerWaveWrap");
+        if (mobileWaveWrap) {
+            mobileWaveWrap.addEventListener("click", (e) => {
+                e.stopPropagation();
+                this.openFullscreenPlayer();
+            });
+        }
+
+        const mobileWaveCanvas = document.getElementById("mobileWaveCanvas");
+        if (mobileWaveCanvas) {
+            mobileWaveCanvas.addEventListener("click", (e) => {
+                e.stopPropagation();
+                this.openFullscreenPlayer();
+            });
+        }
+
+        this.dom.playerCoverWrap.addEventListener("click", (e) => {
+            e.stopPropagation();
+            this.openFullscreenPlayer();
+        });
+        this.dom.playerSongTitle.addEventListener("click", (e) => {
+            e.stopPropagation();
+            this.openFullscreenPlayer();
+        });
+        this.dom.playerSongArtist.addEventListener("click", (e) => {
+            e.stopPropagation();
+            this.openFullscreenPlayer();
+        });
 
         // Volume slider & mute
+        this.dom.volumeSlider.addEventListener("click", (e) => e.stopPropagation());
         this.dom.volumeSlider.addEventListener("input", (e) => {
+            e.stopPropagation();
             const val = parseFloat(e.target.value);
             window.audioEngine.setVolume(val);
             this.updateVolumeIcon(val, false);
         });
 
-        this.dom.btnMute.addEventListener("click", () => {
+        this.dom.btnMute.addEventListener("click", (e) => {
+            e.stopPropagation();
             const isMuted = window.audioEngine.toggleMute();
             this.updateVolumeIcon(window.audioEngine.volume, isMuted);
         });
@@ -330,7 +415,8 @@ class UIController {
         // Playback speed
         const speeds = [0.75, 1.0, 1.25, 1.5, 2.0];
         let speedIdx = 1;
-        this.dom.btnPlaybackSpeed.addEventListener("click", () => {
+        this.dom.btnPlaybackSpeed.addEventListener("click", (e) => {
+            e.stopPropagation();
             speedIdx = (speedIdx + 1) % speeds.length;
             const s = speeds[speedIdx];
             window.audioEngine.setPlaybackRate(s);
@@ -338,20 +424,34 @@ class UIController {
             this.showToast("Playback Speed: " + s + "x");
         });
 
-        // Like button in player
-        this.dom.playerLikeBtn.addEventListener("click", async () => {
+        // Like button in player (with reactive sync to Liked page)
+        this.dom.playerLikeBtn.addEventListener("click", async (e) => {
+            e.stopPropagation();
             const current = window.audioEngine.currentSong;
             if (current && current.id) {
                 const isLiked = await window.musicDB.toggleLike(current.id);
                 current.isLiked = isLiked;
                 this.dom.playerLikeBtn.classList.toggle("liked", isLiked);
-                this.updateCounters();
+                
+                // Update all matching like buttons in current view
+                document.querySelectorAll(`[data-like-id="${current.id}"]`).forEach(btn => {
+                    btn.classList.toggle("liked", isLiked);
+                });
+
+                await this.updateCounters();
                 this.showToast(isLiked ? "Added to Liked Songs ♥" : "Removed from Liked Songs");
+
+                // If currently viewing Liked Songs, reactively re-render
+                if (this.currentView === "liked") {
+                    const allSongs = await window.musicDB.getAllSongs();
+                    this.renderLikedView(allSongs);
+                }
             }
         });
 
         // Lyrics button in player
-        this.dom.playerLyricsBtn.addEventListener("click", () => {
+        this.dom.playerLyricsBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
             this.openFullscreenPlayer();
         });
 
@@ -707,6 +807,64 @@ class UIController {
         });
     }
 
+    // Clean and normalize song metadata (stripping paths, .mp3/.flac extensions, underscores, track prefixes)
+    cleanMetadata(rawTitle, rawArtist, rawUrl = "") {
+        let title = (rawTitle || "").trim();
+        let artist = (rawArtist || "").trim();
+        let filename = (rawUrl || "").trim();
+
+        if (filename.includes("/")) {
+            filename = filename.substring(filename.lastIndexOf("/") + 1);
+        }
+        if (filename.includes("\\")) {
+            filename = filename.substring(filename.lastIndexOf("\\") + 1);
+        }
+        if (filename.includes("?")) {
+            filename = filename.substring(0, filename.indexOf("?"));
+        }
+
+        if (!title && filename) {
+            title = filename;
+        }
+
+        // Remove path if title itself contains one
+        if (title.includes("/") || title.includes("\\")) {
+            title = title.split(/[/\\]/).pop();
+        }
+
+        // Strip file extensions (.mp3, .flac, .wav, .m4a, .ogg, etc.)
+        title = title.replace(/\.(mp3|wav|flac|m4a|ogg|aac|webm|opus)$/i, "").trim();
+
+        // Strip track number prefixes like "01 - ", "01. ", "01 "
+        title = title.replace(/^\d+[\s\.\-_]+/, "").trim();
+
+        // If title looks like "Artist - Title", split and use artist
+        if (title.includes(" - ") || title.includes(" – ")) {
+            const parts = title.split(/\s*[-–]\s*/);
+            if (parts.length >= 2) {
+                const candidateArtist = parts[0].trim();
+                const candidateTitle = parts.slice(1).join(" - ").trim();
+                if (candidateArtist && candidateTitle) {
+                    if (!artist || /^(unknown|local artist|sangeet|sangeet local|artist)$/i.test(artist)) {
+                        artist = candidateArtist;
+                        title = candidateTitle;
+                    }
+                }
+            }
+        }
+
+        // Clean underscores and normalize spaces
+        title = title.replace(/_/g, " ").replace(/\s+/g, " ").trim();
+        if (!title) title = "Unknown Title";
+
+        if (!artist || /^(unknown|unknown artist)$/i.test(artist)) {
+            artist = "Local Artist";
+        }
+        artist = artist.replace(/_/g, " ").replace(/\s+/g, " ").trim();
+
+        return { title, artist };
+    }
+
     initAudioEngineSync() {
         const engine = window.audioEngine;
 
@@ -730,21 +888,29 @@ class UIController {
         engine.on("trackChange", (song) => {
             if (!song) {
                 this.dom.playerSongTitle.textContent = "No song playing";
+                this.dom.playerSongTitle.title = "No song playing";
                 this.dom.playerSongArtist.textContent = "Select a song from library";
+                this.dom.playerSongArtist.title = "Select a song from library";
                 this.dom.playerLikeBtn.classList.remove("liked");
                 return;
             }
 
-            this.dom.playerSongTitle.textContent = song.title;
-            this.dom.playerSongArtist.textContent = song.artist;
+            const meta = this.cleanMetadata(song.title, song.artist, song.audioUrl);
+
+            this.dom.playerSongTitle.textContent = meta.title;
+            this.dom.playerSongTitle.title = meta.title;
+            this.dom.playerSongArtist.textContent = meta.artist;
+            this.dom.playerSongArtist.title = meta.artist;
             this.dom.playerLikeBtn.classList.toggle("liked", !!song.isLiked);
 
             const coverUrl = this.getSongCoverUrl(song);
             this.dom.playerCoverImg.src = coverUrl;
 
             // Fullscreen player updates
-            this.dom.fsSongTitle.textContent = song.title;
-            this.dom.fsSongArtist.textContent = song.artist;
+            this.dom.fsSongTitle.textContent = meta.title;
+            this.dom.fsSongTitle.title = meta.title;
+            this.dom.fsSongArtist.textContent = meta.artist;
+            this.dom.fsSongArtist.title = meta.artist;
             this.dom.fsCoverArt.src = coverUrl;
             this.dom.fsBgBlur.style.backgroundImage = `url(${coverUrl})`;
             this.dom.fsLyricsText.textContent = song.lyrics || "No lyrics available for this song.\nYou can add lyrics by editing the song details.";
@@ -753,6 +919,10 @@ class UIController {
         });
 
         engine.on("timeUpdate", ({ currentTime, duration }) => {
+            if (this.isScrubbing) {
+                // Keep scrub preview while user drags seek bar on touch screen
+                return;
+            }
             this.dom.currentTimeText.textContent = this.formatTime(currentTime);
             this.dom.totalDurationText.textContent = this.formatTime(duration);
 
@@ -998,12 +1168,13 @@ class UIController {
             spotlight = songs[0] || null;
         }
 
-        const bannerTitle = (currentBanner && currentBanner.title) ? currentBanner.title : (spotlight ? spotlight.title : "Sangeet Local");
+        const cleanSpotlight = spotlight ? this.cleanMetadata(spotlight.title, spotlight.artist, spotlight.audioUrl) : null;
+        const bannerTitle = (currentBanner && currentBanner.title) ? currentBanner.title : (cleanSpotlight ? cleanSpotlight.title : "Sangeet Local");
         const bannerTag = (currentBanner && currentBanner.tag) ? currentBanner.tag : (spotlight && spotlight.genre ? `🎵 ${spotlight.genre}` : "🎵 Sangeet Local");
         const bannerDesc = (currentBanner && currentBanner.subtitle)
             ? currentBanner.subtitle
-            : (spotlight
-                ? `By ${spotlight.artist} • ${spotlight.album || 'Single'} • Regional Music`
+            : (cleanSpotlight
+                ? `By ${cleanSpotlight.artist} • ${spotlight.album || 'Single'} • Regional Music`
                 : "Your personal regional music streaming player.");
         let bannerCover = (currentBanner && currentBanner.coverUrl)
             ? (currentBanner.coverUrl.startsWith("/") ? currentBanner.coverUrl.substring(1) : currentBanner.coverUrl)
@@ -1064,14 +1235,15 @@ class UIController {
 
             filteredSongs.slice(0, 8).forEach(song => {
                 const cover = this.getSongCoverUrl(song);
+                const meta = this.cleanMetadata(song.title, song.artist, song.audioUrl);
                 html += `
                     <div class="song-card" data-song-id="${song.id}">
                         <div class="card-art-wrap">
-                            <img src="${cover}" alt="${this.escapeHtml(song.title)}" class="card-art" onerror="this.onerror=null; this.src='icons/icon-192.png';">
+                            <img src="${cover}" alt="${this.escapeHtml(meta.title)}" class="card-art" onerror="this.onerror=null; this.src='icons/icon-192.png';">
                             <div class="card-play-overlay" data-play-id="${song.id}">▶</div>
                         </div>
-                        <div class="card-title" title="${this.escapeHtml(song.title)}">${this.escapeHtml(song.title)}</div>
-                        <div class="card-artist" title="${this.escapeHtml(song.artist)}">${this.escapeHtml(song.artist)}</div>
+                        <div class="card-title" title="${this.escapeHtml(meta.title)}">${this.escapeHtml(meta.title)}</div>
+                        <div class="card-artist" title="${this.escapeHtml(meta.artist)}">${this.escapeHtml(meta.artist)}</div>
                         <div class="card-meta">
                             <span>${this.escapeHtml(song.genre || 'Music')}</span>
                         </div>
@@ -1384,6 +1556,7 @@ class UIController {
         songs.forEach((song, idx) => {
             const isPlaying = currentSong && currentSong.id === song.id;
             const coverUrl = this.getSongCoverUrl(song);
+            const meta = this.cleanMetadata(song.title, song.artist, song.audioUrl);
 
             html += `
                 <tr data-song-id="${song.id}" class="${isPlaying ? 'playing' : ''}">
@@ -1400,8 +1573,8 @@ class UIController {
                         <img src="${coverUrl}" alt="Art" class="row-art" onerror="this.onerror=null; this.src='icons/icon-192.png';">
                     </td>
                     <td class="col-title">
-                        <div class="song-title-text">${this.escapeHtml(song.title)}</div>
-                        <div class="song-artist-sub">${this.escapeHtml(song.artist)}</div>
+                        <div class="song-title-text" title="${this.escapeHtml(meta.title)}">${this.escapeHtml(meta.title)}</div>
+                        <div class="song-artist-sub" title="${this.escapeHtml(meta.artist)}">${this.escapeHtml(meta.artist)}</div>
                     </td>
                     <td class="col-album">${this.escapeHtml(song.album || '-')}</td>
                     <td style="color: var(--text-dim); font-size: 13px;">${this.escapeHtml(song.genre || 'Music')}</td>
@@ -1460,20 +1633,31 @@ class UIController {
             });
         });
 
-        // Like button click
+        // Like button click (with reactive update for Liked page and persistent state)
         document.querySelectorAll("[data-like-id]").forEach(btn => {
             btn.addEventListener("click", async (e) => {
                 e.stopPropagation();
                 const id = btn.getAttribute("data-like-id");
                 const isLiked = await window.musicDB.toggleLike(id);
-                btn.classList.toggle("liked", isLiked);
-                this.updateCounters();
-                this.showToast(isLiked ? "Saved to Liked Songs ♥" : "Removed from Liked Songs");
+                
+                // Update all buttons matching this ID across the DOM
+                document.querySelectorAll(`[data-like-id="${id}"]`).forEach(b => {
+                    b.classList.toggle("liked", isLiked);
+                });
 
-                // Update song in current playback if same
-                if (window.audioEngine.currentSong && window.audioEngine.currentSong.id === id) {
+                // Update song in current playback if it's the one playing
+                if (window.audioEngine.currentSong && (window.audioEngine.currentSong.id === id || (window.musicDB.getSongIdentifier && window.musicDB.getSongIdentifier(window.audioEngine.currentSong) === id))) {
                     window.audioEngine.currentSong.isLiked = isLiked;
                     this.dom.playerLikeBtn.classList.toggle("liked", isLiked);
+                }
+
+                await this.updateCounters();
+                this.showToast(isLiked ? "Saved to Liked Songs ♥" : "Removed from Liked Songs");
+
+                // If currently viewing the Liked page, reactively re-render so it immediately updates
+                if (this.currentView === "liked") {
+                    const allSongs = await window.musicDB.getAllSongs();
+                    this.renderLikedView(allSongs);
                 }
             });
         });

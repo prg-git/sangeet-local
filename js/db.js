@@ -53,20 +53,69 @@ class MusicDB {
         return this.db;
     }
 
+    // --- LIKED / FAVORITES STATE MANAGEMENT (PERSISTENT & REACTIVE) ---
+    getLikedIds() {
+        try {
+            const raw = localStorage.getItem("sangeet_liked_song_ids_v2");
+            if (raw) {
+                const arr = JSON.parse(raw);
+                if (Array.isArray(arr)) return new Set(arr);
+            }
+        } catch (e) {}
+        return new Set();
+    }
+
+    saveLikedIds(set) {
+        try {
+            localStorage.setItem("sangeet_liked_song_ids_v2", JSON.stringify(Array.from(set)));
+        } catch (e) {}
+    }
+
+    getSongIdentifier(song) {
+        if (!song) return "";
+        if (song.id) return String(song.id);
+        if (song.audioUrl) return String(song.audioUrl);
+        return `${song.title || ''}_${song.artist || ''}`.trim();
+    }
+
+    isSongLiked(song) {
+        if (!song) return false;
+        const likedSet = this.getLikedIds();
+        if (song.id && likedSet.has(String(song.id))) return true;
+        if (song.audioUrl && likedSet.has(String(song.audioUrl))) return true;
+        const key = this.getSongIdentifier(song);
+        return key ? likedSet.has(key) : false;
+    }
+
+    applyLikedState(songs) {
+        if (!Array.isArray(songs)) return songs;
+        const likedSet = this.getLikedIds();
+        songs.forEach(song => {
+            const idKey = song.id ? String(song.id) : null;
+            const urlKey = song.audioUrl ? String(song.audioUrl) : null;
+            const sigKey = this.getSongIdentifier(song);
+            song.isLiked = (idKey && likedSet.has(idKey)) ||
+                           (urlKey && likedSet.has(urlKey)) ||
+                           (sigKey && likedSet.has(sigKey));
+        });
+        return songs;
+    }
+
     // --- SONG OPERATIONS ---
 
     async getAllSongs() {
         await this.init();
+
+        let songs = [];
 
         if (this.isServerConnected) {
             try {
                 const res = await fetch("/api/songs?_t=" + Date.now(), { cache: "no-store" });
                 if (res.ok) {
                     const data = await res.json();
-                    const songs = data.songs || [];
-                    // Cache to IndexedDB in background
+                    songs = data.songs || [];
                     this.cacheSongsToIndexedDB(songs);
-                    return songs;
+                    return this.applyLikedState(songs);
                 }
             } catch (e) {
                 console.warn("Server fetch failed, falling back to local cache:", e);
@@ -74,14 +123,13 @@ class MusicDB {
         }
 
         // Network-First for static hosting (GitHub Pages / remote web host):
-        // Always try to fetch fresh data/library.json with cache-busting so cover/metadata updates show immediately!
         try {
             const staticRes = await fetch("data/library.json?_t=" + Date.now(), { cache: "no-store" });
             if (staticRes.ok) {
                 const bundledSongs = await staticRes.json();
                 if (Array.isArray(bundledSongs) && bundledSongs.length > 0) {
                     await this.cacheSongsToIndexedDB(bundledSongs);
-                    return bundledSongs;
+                    return this.applyLikedState(bundledSongs);
                 }
             }
         } catch (e) {
@@ -91,7 +139,7 @@ class MusicDB {
         // Fallback to IndexedDB (e.g. offline)
         const localSongs = await this.getLocalIndexedDBSongs();
         if (localSongs && localSongs.length > 0) {
-            return localSongs;
+            return this.applyLikedState(localSongs);
         }
 
         return [];
@@ -201,21 +249,45 @@ class MusicDB {
     async toggleLike(id) {
         await this.init();
 
+        const songs = await this.getAllSongs();
+        const song = songs.find(s => String(s.id) === String(id) || String(s.audioUrl) === String(id));
+        
+        const likedSet = this.getLikedIds();
+        const idKey = String(id);
+        const urlKey = song && song.audioUrl ? String(song.audioUrl) : null;
+        const sigKey = song ? this.getSongIdentifier(song) : null;
+
+        const isCurrentlyLiked = likedSet.has(idKey) || (urlKey && likedSet.has(urlKey)) || (sigKey && likedSet.has(sigKey));
+        const newLiked = !isCurrentlyLiked;
+
+        if (newLiked) {
+            likedSet.add(idKey);
+            if (urlKey) likedSet.add(urlKey);
+            if (sigKey) likedSet.add(sigKey);
+        } else {
+            likedSet.delete(idKey);
+            if (urlKey) likedSet.delete(urlKey);
+            if (sigKey) likedSet.delete(sigKey);
+        }
+        this.saveLikedIds(likedSet);
+
+        if (song) {
+            song.isLiked = newLiked;
+            if (this.db) {
+                try {
+                    const tx = this.db.transaction(["songs"], "readwrite");
+                    tx.objectStore("songs").put(song);
+                } catch (e) {}
+            }
+        }
+
         if (this.isServerConnected) {
             try {
-                const res = await fetch(`/api/songs/like?id=${encodeURIComponent(id)}`, { method: "POST" });
-                if (res.ok) {
-                    const data = await res.json();
-                    return data.isLiked;
-                }
+                await fetch(`/api/songs/like?id=${encodeURIComponent(id)}`, { method: "POST" });
             } catch (e) {}
         }
 
-        const song = await this.getSong(id);
-        if (!song) return null;
-        song.isLiked = !song.isLiked;
-        await this.updateSong(song);
-        return song.isLiked;
+        return newLiked;
     }
 
     async updateSong(song, coverBlobOrBase64 = null, removeCover = false) {

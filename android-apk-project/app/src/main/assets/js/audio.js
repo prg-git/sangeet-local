@@ -163,7 +163,12 @@ class AudioEngine {
 
         let audioSrc = "";
         if (song.audioBlob) {
-            this.currentBlobUrl = URL.createObjectURL(song.audioBlob);
+            // Android WebView requires an explicit audio/mpeg MIME type to enable seeking on Blobs
+            let blob = song.audioBlob;
+            if (!blob.type || blob.type === "" || blob.type === "audio/mp3") {
+                blob = new Blob([blob], { type: "audio/mpeg" });
+            }
+            this.currentBlobUrl = URL.createObjectURL(blob);
             audioSrc = this.currentBlobUrl;
         } else if (song.audioUrl) {
             audioSrc = (song.audioUrl.startsWith("/") && !song.audioUrl.startsWith("//")) ? song.audioUrl.substring(1) : song.audioUrl;
@@ -208,15 +213,51 @@ class AudioEngine {
         }
     }
 
+    getDuration() {
+        if (Number.isFinite(this.audio.duration) && this.audio.duration > 0) {
+            return this.audio.duration;
+        }
+        if (this.currentSong && Number.isFinite(this.currentSong.duration) && this.currentSong.duration > 0) {
+            return this.currentSong.duration;
+        }
+        return 0;
+    }
+
     seek(seconds) {
-        if (this.audio.duration) {
-            this.audio.currentTime = Math.max(0, Math.min(seconds, this.audio.duration));
+        const dur = this.getDuration();
+        if (dur > 0 && Number.isFinite(dur)) {
+            const target = Math.max(0, Math.min(seconds, dur));
+            try {
+                if (typeof this.audio.fastSeek === "function") {
+                    this.audio.fastSeek(target);
+                } else {
+                    this.audio.currentTime = target;
+                }
+            } catch (e) {
+                console.warn("Seek error:", e);
+                try {
+                    this.audio.currentTime = target;
+                } catch (e2) {}
+            }
         }
     }
 
     seekPercent(percent) {
-        if (this.audio.duration) {
-            this.audio.currentTime = (percent / 100) * this.audio.duration;
+        const dur = this.getDuration();
+        if (dur > 0 && Number.isFinite(dur)) {
+            const target = Math.max(0, Math.min((percent / 100) * dur, dur));
+            try {
+                if (typeof this.audio.fastSeek === "function") {
+                    this.audio.fastSeek(target);
+                } else {
+                    this.audio.currentTime = target;
+                }
+            } catch (e) {
+                console.warn("Seek percent error:", e);
+                try {
+                    this.audio.currentTime = target;
+                } catch (e2) {}
+            }
         }
     }
 
