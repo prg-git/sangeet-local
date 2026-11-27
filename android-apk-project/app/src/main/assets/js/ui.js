@@ -250,7 +250,10 @@ class UIController {
         if (btnAddMusic) {
             btnAddMusic.addEventListener("click", () => this.openModal(this.dom.addMusicModal));
         }
-        document.getElementById("btnOpenEqualizer").addEventListener("click", () => this.openModal(this.dom.equalizerModal));
+        const btnOpenEqualizer = document.getElementById("btnOpenEqualizer");
+        if (btnOpenEqualizer) {
+            btnOpenEqualizer.addEventListener("click", () => this.openModal(this.dom.equalizerModal));
+        }
 
         // Mobile Connect modal trigger
         const btnMobileConnect = document.getElementById("btnMobileConnect");
@@ -273,9 +276,9 @@ class UIController {
                 }
             });
         }
-        this.dom.btnQueueToggle.addEventListener("click", () => this.toggleQueueDrawer());
-        this.dom.btnFullscreenPlayer.addEventListener("click", () => this.openFullscreenPlayer());
-        this.dom.btnCloseFullscreen.addEventListener("click", () => this.closeFullscreenPlayer());
+        if (this.dom.btnQueueToggle) this.dom.btnQueueToggle.addEventListener("click", () => this.toggleQueueDrawer());
+        if (this.dom.btnFullscreenPlayer) this.dom.btnFullscreenPlayer.addEventListener("click", () => this.openFullscreenPlayer());
+        if (this.dom.btnCloseFullscreen) this.dom.btnCloseFullscreen.addEventListener("click", () => this.closeFullscreenPlayer());
 
         // Close modal buttons
         document.querySelectorAll("[data-close-modal]").forEach(btn => {
@@ -454,7 +457,7 @@ class UIController {
                 const isLiked = await window.musicDB.toggleLike(current.id);
                 current.isLiked = isLiked;
                 this.dom.playerLikeBtn.classList.toggle("liked", isLiked);
-                
+
                 // Update all matching like buttons in current view
                 document.querySelectorAll(`[data-like-id="${current.id}"]`).forEach(btn => {
                     btn.classList.toggle("liked", isLiked);
@@ -472,10 +475,12 @@ class UIController {
         });
 
         // Lyrics button in player
-        this.dom.playerLyricsBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            this.openFullscreenPlayer();
-        });
+        if (this.dom.playerLyricsBtn) {
+            this.dom.playerLyricsBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                this.openFullscreenPlayer();
+            });
+        }
 
         // Fullscreen Now Playing Studio Controls (v2.0.0)
         if (this.dom.fsBtnPlayPause) {
@@ -1266,7 +1271,7 @@ class UIController {
             try {
                 const bRes = await fetch("data/banners.json?_t=" + Date.now(), { cache: "no-store" });
                 if (bRes.ok) this.bannersData = await bRes.json();
-            } catch (e) {}
+            } catch (e) { }
         }
 
         // Highlight sidebar & mobile bottom nav
@@ -1890,7 +1895,7 @@ class UIController {
                 e.stopPropagation();
                 const id = btn.getAttribute("data-like-id");
                 const isLiked = await window.musicDB.toggleLike(id);
-                
+
                 // Update all buttons matching this ID across the DOM
                 document.querySelectorAll(`[data-like-id="${id}"]`).forEach(b => {
                     b.classList.toggle("liked", isLiked);
@@ -2604,7 +2609,7 @@ class UIController {
                 try {
                     const bRes = await fetch("data/banners.json?_t=" + Date.now(), { cache: "no-store" });
                     if (bRes.ok) banners = await bRes.json();
-                } catch (e) {}
+                } catch (e) { }
 
                 const songsSig = (songs || []).map(s => `${s.id}:${s.title}:${s.coverUrl || ''}:${s.updatedAt || ''}`).join("|");
                 const bannersSig = banners ? JSON.stringify(banners) : "";

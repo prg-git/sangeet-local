@@ -181,11 +181,11 @@ class AudioEngine {
 
         this.audio.src = audioSrc;
         this.audio.playbackRate = this.playbackRate;
+        this.emit("trackChange", song);
+        this.setupMediaSession(song);
 
         try {
             await this.audio.play();
-            this.emit("trackChange", song);
-            this.setupMediaSession(song);
 
             // Record play in DB
             if (window.musicDB && song.id) {
