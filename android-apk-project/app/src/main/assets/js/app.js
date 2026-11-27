@@ -24,11 +24,33 @@ class SangeetApp {
                 }
             }
 
-            // Sync: Check if there are any songs in local IndexedDB not yet on server
-            await this.syncLocalSongsToServer();
+            // Non-blocking background sync (does not delay home screen rendering)
+            this.syncLocalSongsToServer();
+
+            // Load songs and playlists in parallel for lightning-fast startup
+            const [existingSongs] = await Promise.all([
+                window.musicDB.getAllSongs(),
+                window.ui.loadPlaylists()
+            ]);
+
+            // Restore last played song as default so player bar is NEVER blank!
+            try {
+                const lastSongId = localStorage.getItem("sangeet_last_played_song_id");
+                let defaultSong = null;
+                if (lastSongId && existingSongs.length > 0) {
+                    defaultSong = existingSongs.find(s => String(s.id) === String(lastSongId));
+                }
+                if (!defaultSong && existingSongs.length > 0) {
+                    defaultSong = existingSongs[0];
+                }
+                if (defaultSong) {
+                    window.audioEngine.loadDefaultTrack(defaultSong, existingSongs);
+                }
+            } catch (restoreErr) {
+                console.warn("Restore default song note:", restoreErr);
+            }
 
             // Check if server or library is empty. If so, seed showcase tracks to server
-            const existingSongs = await window.musicDB.getAllSongs();
             if (existingSongs.length === 0) {
                 console.log("Empty library: Generating starter showcase tracks to shared server...");
                 window.ui.showToast("Preparing your shared music library...");
@@ -52,10 +74,7 @@ class SangeetApp {
                 }
             }
 
-            // Load playlists in sidebar
-            await window.ui.loadPlaylists();
-
-            // Initial view
+            // Initial view: Instant Home screen display
             await window.ui.switchView("home");
 
             // Update stats
@@ -83,9 +102,9 @@ class SangeetApp {
         const splash = document.getElementById("appSplashScreen");
         if (!splash) return;
 
-        // Ensure minimum 2.2s display time for the visual music beats animation
+        // Ultra-fast startup: dismiss smoothly without artificial stalling
         const elapsed = Date.now() - startTime;
-        const minDuration = 2200;
+        const minDuration = 200;
         const remaining = Math.max(0, minDuration - elapsed);
 
         setTimeout(() => {
@@ -93,7 +112,7 @@ class SangeetApp {
             setTimeout(() => {
                 splash.style.display = "none";
                 if (splash.parentNode) splash.parentNode.removeChild(splash);
-            }, 650);
+            }, 300);
         }, remaining);
     }
 

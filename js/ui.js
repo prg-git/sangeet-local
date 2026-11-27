@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Sangeet UI Controller
  * Manages views, DOM rendering, user interactions, modals,
  * drag-and-drop music uploading, deletion, playlists, and visualizer rendering.
@@ -1266,12 +1266,12 @@ class UIController {
     async switchView(viewName, params = {}) {
         this.currentView = viewName;
 
-        // Ensure 3-language banners are loaded
+        // Ensure 3-language banners are loaded in background without blocking screen render
         if (!this.bannersData) {
-            try {
-                const bRes = await fetch("data/banners.json?_t=" + Date.now(), { cache: "no-store" });
-                if (bRes.ok) this.bannersData = await bRes.json();
-            } catch (e) { }
+            fetch("data/banners.json?_t=" + Date.now(), { cache: "no-store" })
+                .then(bRes => bRes.ok ? bRes.json() : null)
+                .then(bData => { if (bData) this.bannersData = bData; })
+                .catch(() => { });
         }
 
         // Highlight sidebar & mobile bottom nav
@@ -2615,7 +2615,13 @@ class UIController {
                 const bannersSig = banners ? JSON.stringify(banners) : "";
                 const currentSignature = `${(songs || []).length}_${songsSig}_${bannersSig}`;
 
-                if (lastSyncSignature !== null && lastSyncSignature !== currentSignature) {
+                if (lastSyncSignature === null) {
+                    // Record initial baseline signature silently on launch without re-rendering or toasts
+                    lastSyncSignature = currentSignature;
+                    return;
+                }
+
+                if (lastSyncSignature !== currentSignature) {
                     console.log("[LiveSync] Change detected from PC Admin Studio! Updating mobile view smoothly...");
                     if (banners) {
                         this.bannersData = banners;
@@ -2632,11 +2638,11 @@ class UIController {
             }
         };
 
-        // Initial check after start
-        setTimeout(checkSync, 1500);
+        // Initial check after start to establish baseline silently
+        setTimeout(checkSync, 3000);
 
-        // Continuous polling every 6 seconds
-        this.liveSyncTimer = setInterval(checkSync, 6000);
+        // Continuous polling every 7 seconds
+        this.liveSyncTimer = setInterval(checkSync, 7000);
 
         // Instant refresh on mobile screen wakeup or window focus
         document.addEventListener("visibilitychange", () => {

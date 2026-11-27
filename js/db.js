@@ -10,12 +10,17 @@ class MusicDB {
         this.dbVersion = 1;
         this.db = null;
         this.isServerConnected = true;
+        this._songsCache = null;
+        this._playlistsCache = null;
     }
 
     async init() {
-        // Test server connection
+        // Fast test of server connection with 800ms timeout
         try {
-            const res = await fetch("/api/songs", { cache: "no-store" });
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 800);
+            const res = await fetch("/api/songs", { cache: "no-store", signal: controller.signal });
+            clearTimeout(timer);
             if (res.ok) {
                 this.isServerConnected = true;
             }
@@ -103,17 +108,25 @@ class MusicDB {
 
     // --- SONG OPERATIONS ---
 
-    async getAllSongs() {
+    async getAllSongs(force = false) {
+        if (!force && this._songsCache && this._songsCache.length > 0) {
+            return this.applyLikedState(this._songsCache);
+        }
+
         await this.init();
 
         let songs = [];
 
         if (this.isServerConnected) {
             try {
-                const res = await fetch("/api/songs?_t=" + Date.now(), { cache: "no-store" });
+                const controller = new AbortController();
+                const timer = setTimeout(() => controller.abort(), 1200);
+                const res = await fetch("/api/songs?_t=" + Date.now(), { cache: "no-store", signal: controller.signal });
+                clearTimeout(timer);
                 if (res.ok) {
                     const data = await res.json();
                     songs = data.songs || [];
+                    this._songsCache = songs;
                     this.cacheSongsToIndexedDB(songs);
                     return this.applyLikedState(songs);
                 }
@@ -124,10 +137,14 @@ class MusicDB {
 
         // Network-First for static hosting (GitHub Pages / remote web host):
         try {
-            const staticRes = await fetch("data/library.json?_t=" + Date.now(), { cache: "no-store" });
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 1200);
+            const staticRes = await fetch("data/library.json?_t=" + Date.now(), { cache: "no-store", signal: controller.signal });
+            clearTimeout(timer);
             if (staticRes.ok) {
                 const bundledSongs = await staticRes.json();
                 if (Array.isArray(bundledSongs) && bundledSongs.length > 0) {
+                    this._songsCache = bundledSongs;
                     await this.cacheSongsToIndexedDB(bundledSongs);
                     return this.applyLikedState(bundledSongs);
                 }
@@ -139,6 +156,7 @@ class MusicDB {
         // Fallback to IndexedDB (e.g. offline)
         const localSongs = await this.getLocalIndexedDBSongs();
         if (localSongs && localSongs.length > 0) {
+            this._songsCache = localSongs;
             return this.applyLikedState(localSongs);
         }
 
@@ -151,6 +169,7 @@ class MusicDB {
     }
 
     async addSong(songData, audioBlobOrFile, coverBlob = null) {
+        this._songsCache = null;
         await this.init();
 
         // Convert coverBlob to Base64 if present
@@ -227,6 +246,7 @@ class MusicDB {
     }
 
     async deleteSong(id) {
+        this._songsCache = null;
         await this.init();
 
         if (this.isServerConnected) {
@@ -291,6 +311,7 @@ class MusicDB {
     }
 
     async updateSong(song, coverBlobOrBase64 = null, removeCover = false) {
+        this._songsCache = null;
         await this.init();
 
         const payload = Object.assign({}, song);
@@ -345,15 +366,23 @@ class MusicDB {
 
     // --- PLAYLIST OPERATIONS ---
 
-    async getAllPlaylists() {
+    async getAllPlaylists(force = false) {
+        if (!force && this._playlistsCache && this._playlistsCache.length > 0) {
+            return this._playlistsCache;
+        }
+
         await this.init();
 
         if (this.isServerConnected) {
             try {
-                const res = await fetch("/api/playlists?_t=" + Date.now(), { cache: "no-store" });
+                const controller = new AbortController();
+                const timer = setTimeout(() => controller.abort(), 800);
+                const res = await fetch("/api/playlists?_t=" + Date.now(), { cache: "no-store", signal: controller.signal });
+                clearTimeout(timer);
                 if (res.ok) {
                     const data = await res.json();
-                    return data.playlists || [];
+                    this._playlistsCache = data.playlists || [];
+                    return this._playlistsCache;
                 }
             } catch (e) { }
         }
@@ -367,15 +396,20 @@ class MusicDB {
         });
 
         if (localPlaylists && localPlaylists.length > 0) {
+            this._playlistsCache = localPlaylists;
             return localPlaylists;
         }
 
         // Fallback to static data/playlists.json
         try {
-            const staticPl = await fetch("data/playlists.json");
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 800);
+            const staticPl = await fetch("data/playlists.json", { signal: controller.signal });
+            clearTimeout(timer);
             if (staticPl.ok) {
                 const plData = await staticPl.json();
-                return Array.isArray(plData) ? plData : [];
+                this._playlistsCache = Array.isArray(plData) ? plData : [];
+                return this._playlistsCache;
             }
         } catch (e) { }
 

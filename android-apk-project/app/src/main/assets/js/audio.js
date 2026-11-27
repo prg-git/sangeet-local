@@ -184,6 +184,13 @@ class AudioEngine {
         this.emit("trackChange", song);
         this.setupMediaSession(song);
 
+        // Save last played song ID for default restore on next launch
+        try {
+            if (song && song.id) {
+                localStorage.setItem("sangeet_last_played_song_id", String(song.id));
+            }
+        } catch (e) { }
+
         try {
             await this.audio.play();
 
@@ -194,6 +201,44 @@ class AudioEngine {
         } catch (err) {
             console.warn("Playback autoplay prevented or error:", err);
         }
+    }
+
+    /**
+     * Preloads the default / last played track into the player bar on app startup
+     * without autoplaying, so the UI is NEVER blank!
+     */
+    loadDefaultTrack(song, newQueue = null) {
+        if (!song) return;
+        this.currentSong = song;
+
+        if (newQueue && newQueue.length > 0) {
+            const idx = newQueue.findIndex(s => String(s.id) === String(song.id));
+            this.setQueue(newQueue, idx !== -1 ? idx : 0);
+        } else {
+            this.setQueue([song], 0);
+        }
+
+        let audioSrc = "";
+        if (song.audioBlob) {
+            try {
+                let blob = song.audioBlob;
+                if (!blob.type || blob.type === "" || blob.type === "audio/mp3") {
+                    blob = new Blob([blob], { type: "audio/mpeg" });
+                }
+                this.currentBlobUrl = URL.createObjectURL(blob);
+                audioSrc = this.currentBlobUrl;
+            } catch (e) { }
+        } else if (song.audioUrl) {
+            audioSrc = (song.audioUrl.startsWith("/") && !song.audioUrl.startsWith("//")) ? song.audioUrl.substring(1) : song.audioUrl;
+        }
+
+        if (audioSrc) {
+            this.audio.src = audioSrc;
+            this.audio.playbackRate = this.playbackRate;
+        }
+
+        this.emit("trackChange", song);
+        this.setupMediaSession(song);
     }
 
     async togglePlay() {
