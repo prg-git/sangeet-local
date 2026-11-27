@@ -107,7 +107,7 @@ class UIController {
             // Equalizer
             eqPresetSelect: document.getElementById("eqPresetSelect"),
 
-            // Fullscreen Now Playing (v2.0.00 Mobile Studio)
+            // Fullscreen Now Playing (v2.0.0 Mobile Studio)
             fsCoverArt: document.getElementById("fsCoverArt"),
             fsSongTitle: document.getElementById("fsSongTitle"),
             fsSongArtist: document.getElementById("fsSongArtist"),
@@ -475,7 +475,7 @@ class UIController {
             this.openFullscreenPlayer();
         });
 
-        // Fullscreen Now Playing Studio Controls (v2.0.00)
+        // Fullscreen Now Playing Studio Controls (v2.0.0)
         if (this.dom.fsBtnPlayPause) {
             this.dom.fsBtnPlayPause.addEventListener("click", (e) => {
                 e.stopPropagation();
@@ -1091,7 +1091,7 @@ class UIController {
             const coverUrl = this.getSongCoverUrl(song);
             this.dom.playerCoverImg.src = coverUrl;
 
-            // Fullscreen player updates (v2.0.00)
+            // Fullscreen player updates (v2.0.0)
             if (this.dom.fsSongTitle) {
                 this.dom.fsSongTitle.textContent = meta.title;
                 this.dom.fsSongTitle.title = meta.title;
@@ -1106,7 +1106,7 @@ class UIController {
                 this.dom.fsLyricsText.textContent = song.lyrics || "No lyrics available for this song.\nYou can add lyrics by editing the song details in PC Studio.";
             }
             if (this.dom.fsGenreBadge) {
-                this.dom.fsGenreBadge.textContent = song && song.genre ? "🎵 " + song.genre + " • v2.0.00" : "🎵 SANGEET v2.0.00";
+                this.dom.fsGenreBadge.textContent = song && song.genre ? "🎵 " + song.genre + " • v2.0.0" : "🎵 SANGEET v2.0.0";
             }
 
             this.highlightPlayingRow(song.id);
@@ -1617,6 +1617,46 @@ class UIController {
 
     renderSearchView(query, allSongs) {
         const container = this.dom.viewContainer;
+
+        if (!query) {
+            let html = `
+                <div class="search-hub-header">
+                    <h2 style="font-size: 26px; font-weight: 800; margin-bottom: 6px;">Search & Explore</h2>
+                    <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 18px;">Tap a regional genre or search songs, artists & albums</p>
+                </div>
+
+                <div class="search-category-chips">
+                    <button class="search-chip" data-search-tag="Bodo">🌿 Bodo</button>
+                    <button class="search-chip" data-search-tag="Assamese">🌸 Assamese</button>
+                    <button class="search-chip" data-search-tag="Koch Rajbongshi">🌾 Koch Rajbongshi</button>
+                    <button class="search-chip" data-search-tag="Melodies">🎵 Melodies</button>
+                    <button class="search-chip" data-search-tag="Uploads">📂 All Songs</button>
+                </div>
+
+                <div class="section-header" style="margin-top: 24px;">
+                    <h3 class="section-title">All Songs in Collection (${allSongs.length})</h3>
+                </div>
+                <div class="songs-table-wrap">
+                    ${this.buildSongsTableHtml(allSongs)}
+                </div>
+            `;
+            container.innerHTML = html;
+            this.bindViewEvents(allSongs);
+
+            // Hook category chips for instant search
+            container.querySelectorAll("[data-search-tag]").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const tag = btn.getAttribute("data-search-tag");
+                    if (this.dom.globalSearchInput) {
+                        this.dom.globalSearchInput.value = tag === "Uploads" ? "" : tag;
+                        if (tag !== "Uploads") this.dom.btnSearchClear.classList.add("visible");
+                    }
+                    this.renderSearchView(tag === "Uploads" ? "" : tag, allSongs);
+                });
+            });
+            return;
+        }
+
         const q = query.toLowerCase();
 
         const results = allSongs.filter(s => {
@@ -1644,7 +1684,7 @@ class UIController {
                 <div class="empty-state">
                     <div class="empty-icon">🔍</div>
                     <h3>No Matches Found</h3>
-                    <p>We couldn't find any songs matching "${this.escapeHtml(query)}". Try searching for another keyword or add new songs.</p>
+                    <p>We couldn't find any songs matching "${this.escapeHtml(query)}". Try another keyword or explore the categories above.</p>
                 </div>
             `;
         }
@@ -1775,13 +1815,20 @@ class UIController {
                     </td>
                     <td class="col-title">
                         <div class="song-title-text" title="${this.escapeHtml(meta.title)}">${this.escapeHtml(meta.title)}</div>
-                        <div class="song-artist-sub" title="${this.escapeHtml(meta.artist)}">${this.escapeHtml(meta.artist)}</div>
+                        <div class="song-meta-line">
+                            <span class="song-artist-sub" title="${this.escapeHtml(meta.artist)}">${this.escapeHtml(meta.artist)}</span>
+                            <span class="song-meta-dot">•</span>
+                            <span class="song-genre-sub">${this.escapeHtml(song.genre || 'Music')}</span>
+                            <span class="song-meta-dot">•</span>
+                            <span class="song-duration-sub">${this.formatTime(song.duration)}</span>
+                        </div>
                     </td>
                     <td class="col-album">${this.escapeHtml(song.album || '-')}</td>
                     <td style="color: var(--text-dim); font-size: 13px;">${this.escapeHtml(song.genre || 'Music')}</td>
                     <td class="col-duration">${this.formatTime(song.duration)}</td>
                     <td class="col-actions">
                         <button class="row-btn ${song.isLiked ? 'liked' : ''}" data-like-id="${song.id}" title="Like">♥</button>
+                        <button class="row-btn btn-info-dot" data-info-id="${song.id}" title="See Details">ℹ</button>
                         ${fromPlaylistId ? `
                             <button class="row-btn" data-remove-pl-id="${song.id}" title="Remove from Playlist" style="color: #ef4444;">✕</button>
                         ` : ''}
@@ -1899,6 +1946,15 @@ class UIController {
             });
         });
 
+        // See song details bottom sheet click (v2.0.0 Mobile Feature)
+        document.querySelectorAll("[data-info-id]").forEach(btn => {
+            btn.addEventListener("click", async (e) => {
+                e.stopPropagation();
+                const id = btn.getAttribute("data-info-id");
+                await this.openSongDetailsSheet(id, songsList);
+            });
+        });
+
         // Filter pills click
         document.querySelectorAll(".filter-pills .pill").forEach(pill => {
             pill.addEventListener("click", () => {
@@ -1956,6 +2012,91 @@ class UIController {
             });
             list.appendChild(li);
         });
+    }
+
+    // --- SONG DETAILS BOTTOM SHEET (v2.0.0 MOBILE FEATURE) ---
+
+    async openSongDetailsSheet(songId, songsList = null) {
+        let song = songsList ? songsList.find(s => s.id === songId) : null;
+        if (!song && window.musicDB) {
+            song = await window.musicDB.getSong(songId);
+        }
+        if (!song) return;
+
+        const modal = document.getElementById("songDetailsModal");
+        if (!modal) return;
+
+        const meta = this.cleanMetadata(song.title, song.artist, song.audioUrl);
+        const cover = this.getSongCoverUrl(song);
+
+        const img = document.getElementById("detailsCoverImg");
+        if (img) img.src = cover;
+
+        const titleEl = document.getElementById("detailsSongTitle");
+        if (titleEl) titleEl.textContent = meta.title;
+
+        const artistEl = document.getElementById("detailsSongArtist");
+        if (artistEl) artistEl.textContent = meta.artist;
+
+        const genreEl = document.getElementById("detailsGenreBadge");
+        if (genreEl) genreEl.textContent = "🎵 " + (song.genre || "Regional Music");
+
+        const durEl = document.getElementById("detailsDurationBadge");
+        if (durEl) durEl.textContent = "⏱ " + this.formatTime(song.duration);
+
+        const albumEl = document.getElementById("detailsAlbumText");
+        if (albumEl) albumEl.textContent = song.album || "Single";
+
+        const yearEl = document.getElementById("detailsYearText");
+        if (yearEl) yearEl.textContent = song.year || "2024";
+
+        const formatEl = document.getElementById("detailsFormatText");
+        if (formatEl) formatEl.textContent = song.format || "Audio (MP3)";
+
+        const sizeEl = document.getElementById("detailsSizeText");
+        if (sizeEl) {
+            const bytes = song.fileSize || 0;
+            sizeEl.textContent = bytes > 0 ? (bytes / (1024 * 1024)).toFixed(2) + " MB" : "Standard Audio Quality";
+        }
+
+        // Like button in sheet
+        const likeBtn = document.getElementById("btnDetailsLike");
+        const likeHeart = document.getElementById("detailsLikeHeart");
+        const likeLabel = document.getElementById("detailsLikeLabel");
+        if (likeBtn) {
+            likeBtn.onclick = async () => {
+                const isLiked = await window.musicDB.toggleLike(song.id);
+                song.isLiked = isLiked;
+                if (likeHeart) likeHeart.style.color = isLiked ? "#ef4444" : "";
+                if (likeLabel) likeLabel.textContent = isLiked ? "Liked" : "Like";
+                document.querySelectorAll(`[data-like-id="${song.id}"]`).forEach(b => b.classList.toggle("liked", isLiked));
+                this.showToast(isLiked ? "Saved to Liked Songs ♥" : "Removed from Liked Songs");
+            };
+            if (likeHeart) likeHeart.style.color = song.isLiked ? "#ef4444" : "";
+            if (likeLabel) likeLabel.textContent = song.isLiked ? "Liked" : "Like";
+        }
+
+        // Play Now button in sheet
+        const playBtn = document.getElementById("btnDetailsPlayNow");
+        const playFab = document.getElementById("btnDetailsPlayFab");
+        const doPlay = () => {
+            this.closeModal(modal);
+            window.audioEngine.playSong(song, songsList || [song]);
+        };
+        if (playBtn) playBtn.onclick = doPlay;
+        if (playFab) playFab.onclick = doPlay;
+
+        // Add to Queue button in sheet
+        const queueBtn = document.getElementById("btnDetailsAddToQueue");
+        if (queueBtn) {
+            queueBtn.onclick = () => {
+                window.audioEngine.addToQueue(song);
+                this.showToast(`Added "${meta.title}" to Queue`);
+                this.closeModal(modal);
+            };
+        }
+
+        this.openModal(modal);
     }
 
     // --- EDIT METADATA MODAL ---
@@ -2243,7 +2384,7 @@ class UIController {
         });
     }
 
-    // --- 5. ABOUT VIEW (CREATOR / IDEA BY PARAG (PINKU) BASUGAON - v2.0.00) ---
+    // --- 5. ABOUT VIEW (CREATOR / IDEA BY PARAG (PINKU) BASUGAON - v2.0.0) ---
 
     renderAboutView() {
         const container = this.dom.viewContainer;
@@ -2258,8 +2399,8 @@ class UIController {
                     </div>
                     <h2 class="about-title">Sangeet Local</h2>
                     <div class="about-lead">Create or Idea By: <span class="about-highlight">Parag (Pinku)</span></div>
-                    <div class="about-version-badge" style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; background: rgba(139, 92, 246, 0.2); border: 1px solid rgba(139, 92, 246, 0.5); border-radius: 20px; font-size: 12px; font-weight: 700; color: #c4b5fd; margin-top: 6px;">
-                        <span>✨ Version 2.0.00</span>
+                    <div class="about-version-badge" style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; background: rgba(6, 182, 212, 0.2); border: 1px solid rgba(6, 182, 212, 0.5); border-radius: 20px; font-size: 12px; font-weight: 700; color: #67e8f9; margin-top: 6px;">
+                        <span>✨ Version 2.0.0</span>
                     </div>
                     <div class="about-location-pill" style="margin-top: 6px;">📍 Made in Basugaon</div>
                 </div>
@@ -2274,8 +2415,8 @@ class UIController {
 
                     <div class="about-card">
                         <div class="about-card-icon">🚀</div>
-                        <h3>Version 2.0.00 Music UI</h3>
-                        <p>Engineered with the new <strong>Version 2.0.00 Mobile Music Player Interface</strong>: Fullscreen Now Playing studio, real-time flowing sound wave visualizers, touch scrubbing, and beat equalizers.</p>
+                        <h3>Version 2.0.0 Modern Theme</h3>
+                        <p>Engineered with the new <strong>Version 2.0.0 OLED Cyber Obsidian Theme</strong>: Ambient gradients, Song Details bottom sheet, high-res app icon, and touch scrubber.</p>
                     </div>
 
                     <div class="about-card">
@@ -2293,7 +2434,7 @@ class UIController {
 
                 <!-- Footer Note -->
                 <div class="about-footer-note">
-                    <p>Sangeet Local v2.0.00 • Create or Idea By: Parag (Pinku) • Made in Basugaon</p>
+                    <p>Sangeet Local v2.0.0 • Create or Idea By: Parag (Pinku) • Made in Basugaon</p>
                 </div>
             </div>
         `;

@@ -120,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Customize User-Agent so web app knows it is running as native Android APK
         String defaultUA = settings.getUserAgentString();
-        settings.setUserAgentString(defaultUA + " SangeetLocalApp/1.0.0 Mobile");
+        settings.setUserAgentString(defaultUA + " SangeetLocalApp/2.0.0 Mobile");
 
         // Long press anywhere to open source switch menu (GitHub Live, Bundled Offline, Local Wi-Fi)
         webView.setOnLongClickListener(v -> {

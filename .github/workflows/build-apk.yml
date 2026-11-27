@@ -45,33 +45,31 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          tag_name: v2.0.00
-          name: "Sangeet Local v2.0.00 (Android APK)"
+          tag_name: v2.0.0
+          name: "Sangeet Local v2.0.0 (Android APK)"
           body: |
-            ## 🎵 Sangeet Local - Android App (APK) v2.0.00
-            **Version:** 2.0.00  
+            ## 🎵 Sangeet Local - Android App (APK) v2.0.0
+            **Version:** 2.0.0  
             **Developed at Basugaon by Parag**
 
-            ### 📱 What's New in Version 2.0.00:
-            - **Modern Redesigned Fullscreen Now Playing Studio**:
-              - Expanded view with ambient glow, glowing album art halo, and real-time audio visualizer sound waves.
-              - Full playback deck: Play/Pause hero button, Skip Forward/Backward, Shuffle, and Repeat.
-              - Live seek timeline scrubber with thumb indicator and millisecond tracking.
-              - Pull-up frosted glass Lyrics sheet with real-time word view.
-              - Quick audio Equalizer shortcut.
-            - **Upgraded Floating Mini-Player Island**:
-              - Glowing glassmorphic container with 7-band live soundwave equalizer.
-              - Instant expand gesture into the full Now Playing screen.
-            - **Enhanced APK Performance & Seeking**:
-              - Smooth touch seeking & scrubbing for local Bodo & regional songs.
-              - Reliable Liked/Favorites persistence across app launches.
-              - Automatic background audio focus handling.
+            ### 📱 What's New in Version 2.0.0:
+            - **Modern Redesigned Theme & Elements**:
+              - Deep OLED Obsidian glassmorphic theme with radiant Cyber Cyan & Aurora Violet accents.
+              - High-resolution luxury 3D music app icon with glowing neon sound waves.
+              - Floating mini-player island with live equalizer bars and fluid expand animation.
+              - Mobile-optimized song details row displaying Title, Artist, Album, Genre, and Duration cleanly fitted.
+              - Interactive Song Details Bottom Sheet with full metadata and quick play/like actions.
+            - **Mobile Experience & Bug Fixes**:
+              - Fixed Queue Drawer on mobile devices to slide smoothly as a responsive bottom sheet.
+              - Interactive Mobile Search & Discovery hub with instant genre explorer chips.
+              - High performance 60fps animations and hardware acceleration.
+              - Audio seek scrubbing and persistent favorites/liked sync.
 
             ### 📥 How to Install / Update on your Phone:
             1. Tap **`Sangeet-Local.apk`** below to download the updated APK.
             2. When the download completes, tap the notification or open your **Files / Downloads** folder.
             3. Tap **Install** / **Update**.
-            4. Open **Sangeet Local** and enjoy the new Version 2.0.00 experience!
+            4. Open **Sangeet Local** and enjoy the new Version 2.0.0 experience!
           files: Sangeet-Local.apk
           draft: false
           prerelease: false
