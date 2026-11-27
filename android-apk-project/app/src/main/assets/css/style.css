@@ -2343,7 +2343,10 @@ body.theme-violet .songs-table tr.playing {
         white-space: nowrap;
     }
 
-    /* HIDE PC ADMIN CONTROLS & ALL EDITING ON MOBILE */
+    /* HIDE PC ADMIN CONTROLS & HEADER ACTIONS ON MOBILE (Theme & Tools moved to Menu) */
+    .header-actions,
+    .theme-dropdown,
+    #themeSelect,
     #btnToggleMobilePreview,
     #btnMobileConnect,
     #btnOpenAddMusic,
@@ -4552,3 +4555,273 @@ body.public-client-mode .col-actions {
     font-weight: 700;
     border-radius: 12px;
 }
+
+/* ==========================================================================
+   MENU & THEME SETTINGS PAGE (v2.0.0 MOBILE VIEW)
+   ========================================================================== */
+.menu-page-wrap {
+    max-width: 600px;
+    margin: 0 auto;
+    padding-bottom: 40px;
+}
+
+.menu-page-header {
+    margin-bottom: 20px;
+}
+
+.menu-page-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--text-main);
+    margin-bottom: 4px;
+    letter-spacing: -0.3px;
+}
+
+.menu-page-subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.menu-section-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 18px 16px;
+    margin-bottom: 18px;
+    box-shadow: var(--card-shadow);
+    backdrop-filter: blur(20px);
+}
+
+.menu-section-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.menu-section-icon {
+    font-size: 20px;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.menu-section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0;
+}
+
+.menu-section-desc {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 2px;
+}
+
+/* Theme Cards Grid */
+.theme-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+@media (max-width: 420px) {
+    .theme-cards-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+    }
+}
+
+.theme-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1.5px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 12px 8px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    user-select: none;
+}
+
+.theme-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.18);
+}
+
+.theme-card.active {
+    border-color: var(--primary) !important;
+    background: rgba(6, 182, 212, 0.1) !important;
+    box-shadow: 0 0 16px var(--primary-glow) !important;
+}
+
+body.theme-violet .theme-card.active {
+    background: rgba(168, 85, 247, 0.12) !important;
+}
+
+body.theme-white .theme-card.active {
+    background: rgba(2, 132, 199, 0.1) !important;
+    border-color: #0284c7 !important;
+}
+
+.theme-preview-box {
+    width: 100%;
+    height: 48px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.preview-dark {
+    background: radial-gradient(circle at center, #111827 0%, #07090e 100%);
+    border: 1px solid rgba(6, 182, 212, 0.35);
+}
+
+.preview-violet {
+    background: radial-gradient(circle at center, #1e1136 0%, #0a0714 100%);
+    border: 1px solid rgba(168, 85, 247, 0.35);
+}
+
+.preview-white {
+    background: radial-gradient(circle at center, #ffffff 0%, #f1f5f9 100%);
+    border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.theme-active-check {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #07090e;
+    font-size: 10px;
+    font-weight: 900;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.theme-card.active .theme-active-check {
+    display: flex;
+}
+
+.theme-preview-bars {
+    display: flex;
+    gap: 3px;
+    align-items: flex-end;
+    height: 22px;
+}
+
+.theme-preview-bars span {
+    width: 4px;
+    border-radius: 2px;
+    height: 14px;
+}
+
+.theme-card-info {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 2px;
+}
+
+.theme-card-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.theme-card-badge {
+    font-size: 9px;
+    padding: 1px 4px;
+    border-radius: 6px;
+    background: rgba(6, 182, 212, 0.2);
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.theme-card-detail {
+    font-size: 10px;
+    color: var(--text-dim);
+    line-height: 1.25;
+}
+
+/* Studio Tools List */
+.menu-tools-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.menu-tool-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    color: var(--text-main);
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.menu-tool-item:active {
+    transform: scale(0.98);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.tool-item-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.tool-item-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.tool-item-title {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.tool-item-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tool-item-arrow {
+    font-size: 20px;
+    color: var(--text-dim);
+    line-height: 1;
+    flex-shrink: 0;
+}
+

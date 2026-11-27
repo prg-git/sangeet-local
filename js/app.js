@@ -19,7 +19,9 @@ class SangeetApp {
             }
             if (savedTheme) {
                 window.ui.setTheme(savedTheme);
-                window.ui.dom.themeSelect.value = savedTheme;
+                if (window.ui.dom.themeSelect) {
+                    window.ui.dom.themeSelect.value = savedTheme;
+                }
             }
 
             // Sync: Check if there are any songs in local IndexedDB not yet on server

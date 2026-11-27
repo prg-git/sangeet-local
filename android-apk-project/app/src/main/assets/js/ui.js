@@ -238,10 +238,12 @@ class UIController {
             this.switchView("home");
         });
 
-        // Theme Switcher
-        this.dom.themeSelect.addEventListener("change", (e) => {
-            this.setTheme(e.target.value);
-        });
+        // Theme Switcher (if present)
+        if (this.dom.themeSelect) {
+            this.dom.themeSelect.addEventListener("change", (e) => {
+                this.setTheme(e.target.value);
+            });
+        }
 
         // Modal triggers
         const btnAddMusic = document.getElementById("btnOpenAddMusic");
@@ -1293,7 +1295,8 @@ class UIController {
                 this.renderPlaylistDetailView(params.playlistId, allSongs);
                 break;
             case "about":
-                this.renderAboutView();
+            case "menu":
+                this.renderMenuView();
                 break;
             default:
                 this.renderHomeView(allSongs, playlists);
@@ -2384,63 +2387,205 @@ class UIController {
         });
     }
 
-    // --- 5. ABOUT VIEW (CREATOR / IDEA BY PARAG (PINKU) BASUGAON - v2.0.0) ---
+    // --- 5. MENU & ABOUT VIEW (v2.0.0 MOBILE MENU) ---
 
-    renderAboutView() {
+    renderMenuView() {
         const container = this.dom.viewContainer;
+        const currentTheme = this.currentTheme || (document.body.classList.contains("theme-white") ? "white" : (document.body.classList.contains("theme-violet") ? "violet" : "dark"));
 
         let html = `
-            <div class="about-page-wrap">
-                <!-- Creator Hero Banner Card -->
-                <div class="about-hero-card">
-                    <div class="about-creator-badge">⭐ CREATOR & FOUNDER</div>
-                    <div class="about-avatar-circle">
-                        <span>🎵</span>
-                    </div>
-                    <h2 class="about-title">Sangeet Local</h2>
-                    <div class="about-lead">Create or Idea By: <span class="about-highlight">Parag (Pinku)</span></div>
-                    <div class="about-version-badge" style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; background: rgba(6, 182, 212, 0.2); border: 1px solid rgba(6, 182, 212, 0.5); border-radius: 20px; font-size: 12px; font-weight: 700; color: #67e8f9; margin-top: 6px;">
-                        <span>✨ Version 2.0.0</span>
-                    </div>
-                    <div class="about-location-pill" style="margin-top: 6px;">📍 Made in Basugaon</div>
+            <div class="menu-page-wrap">
+                <!-- Page Header -->
+                <div class="menu-page-header">
+                    <h2 class="menu-page-title">App Menu & Settings</h2>
+                    <p class="menu-page-subtitle">Personalize theme colors, sound effects & creator info</p>
                 </div>
 
-                <!-- Info Cards Grid -->
-                <div class="about-grid">
-                    <div class="about-card">
-                        <div class="about-card-icon">💡</div>
-                        <h3>Create or Idea By</h3>
-                        <p>Conceptualized and designed by <strong>Parag (Pinku)</strong> for personal, fast, ad-free music listening anytime on PC and mobile phones.</p>
+                <!-- 1. Theme Color Selection Deck -->
+                <div class="menu-section-card">
+                    <div class="menu-section-head">
+                        <span class="menu-section-icon">🎨</span>
+                        <div>
+                            <h3 class="menu-section-title">App Theme & Colors</h3>
+                            <p class="menu-section-desc">Select your preferred color scheme</p>
+                        </div>
                     </div>
 
-                    <div class="about-card">
-                        <div class="about-card-icon">🚀</div>
-                        <h3>Version 2.0.0 Modern Theme</h3>
-                        <p>Engineered with the new <strong>Version 2.0.0 OLED Cyber Obsidian Theme</strong>: Ambient gradients, Song Details bottom sheet, high-res app icon, and touch scrubber.</p>
-                    </div>
+                    <div class="theme-cards-grid">
+                        <!-- Theme 1: Cyber Dark -->
+                        <div class="theme-card ${currentTheme === 'dark' ? 'active' : ''}" data-theme-choice="dark">
+                            <div class="theme-preview-box preview-dark">
+                                <span class="theme-active-check">✓</span>
+                                <div class="theme-preview-bars">
+                                    <span style="background: #06b6d4;"></span>
+                                    <span style="background: #8b5cf6;"></span>
+                                    <span style="background: #10b981;"></span>
+                                </div>
+                            </div>
+                            <div class="theme-card-info">
+                                <span class="theme-card-name">Cyber Dark</span>
+                                <span class="theme-card-badge">Default</span>
+                            </div>
+                            <span class="theme-card-detail">OLED obsidian with cyan & purple aura</span>
+                        </div>
 
-                    <div class="about-card">
-                        <div class="about-card-icon">🏡</div>
-                        <h3>Made in Basugaon</h3>
-                        <p>Proudly created and hosted locally in <strong>Basugaon, Assam</strong>. Built to celebrate regional music: Koch Rajbongshi, Assamese, and Bodo songs.</p>
-                    </div>
+                        <!-- Theme 2: Midnight Violet -->
+                        <div class="theme-card ${currentTheme === 'violet' ? 'active' : ''}" data-theme-choice="violet">
+                            <div class="theme-preview-box preview-violet">
+                                <span class="theme-active-check">✓</span>
+                                <div class="theme-preview-bars">
+                                    <span style="background: #a855f7;"></span>
+                                    <span style="background: #ec4899;"></span>
+                                    <span style="background: #3b82f6;"></span>
+                                </div>
+                            </div>
+                            <div class="theme-card-info">
+                                <span class="theme-card-name">Midnight Violet</span>
+                            </div>
+                            <span class="theme-card-detail">Neon synthwave purple & hot pink</span>
+                        </div>
 
-                    <div class="about-card">
-                        <div class="about-card-icon">⚡</div>
-                        <h3>Audio Engineering</h3>
-                        <p>High-resolution HTML5 audio engine, live 5-band equalizer, byte-range streaming, touch scrubber, repeat modes, and offline sync.</p>
+                        <!-- Theme 3: Frost White -->
+                        <div class="theme-card ${currentTheme === 'white' ? 'active' : ''}" data-theme-choice="white">
+                            <div class="theme-preview-box preview-white">
+                                <span class="theme-active-check">✓</span>
+                                <div class="theme-preview-bars">
+                                    <span style="background: #0284c7;"></span>
+                                    <span style="background: #059669;"></span>
+                                    <span style="background: #64748b;"></span>
+                                </div>
+                            </div>
+                            <div class="theme-card-info">
+                                <span class="theme-card-name">Frost White</span>
+                            </div>
+                            <span class="theme-card-detail">Clean, minimalist light aesthetic</span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Footer Note -->
-                <div class="about-footer-note">
-                    <p>Sangeet Local v2.0.0 • Create or Idea By: Parag (Pinku) • Made in Basugaon</p>
+                <!-- 2. Audio & Studio Tools -->
+                <div class="menu-section-card">
+                    <div class="menu-section-head">
+                        <span class="menu-section-icon">🎛️</span>
+                        <div>
+                            <h3 class="menu-section-title">Studio Tools</h3>
+                            <p class="menu-section-desc">Audio equalizer and connectivity</p>
+                        </div>
+                    </div>
+
+                    <div class="menu-tools-list">
+                        <button class="menu-tool-item" id="btnMenuOpenEq">
+                            <div class="tool-item-icon">🎚️</div>
+                            <div class="tool-item-text">
+                                <span class="tool-item-title">5-Band Equalizer & Bass FX</span>
+                                <span class="tool-item-sub">Customize frequency bands, bass boost & vocal presets</span>
+                            </div>
+                            <span class="tool-item-arrow">›</span>
+                        </button>
+
+                        <button class="menu-tool-item" id="btnMenuOpenQueue">
+                            <div class="tool-item-icon">📑</div>
+                            <div class="tool-item-text">
+                                <span class="tool-item-title">Current Play Queue</span>
+                                <span class="tool-item-sub">View upcoming tracks and reorder playlist</span>
+                            </div>
+                            <span class="tool-item-arrow">›</span>
+                        </button>
+
+                        <button class="menu-tool-item" id="btnMenuOpenConnect">
+                            <div class="tool-item-icon">📱</div>
+                            <div class="tool-item-text">
+                                <span class="tool-item-title">PC & Mobile Wi-Fi Sync</span>
+                                <span class="tool-item-sub">Connect phone to home PC studio over local Wi-Fi</span>
+                            </div>
+                            <span class="tool-item-arrow">›</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3. Creator & About Section -->
+                <div class="menu-section-card">
+                    <div class="menu-section-head">
+                        <span class="menu-section-icon">ℹ️</span>
+                        <div>
+                            <h3 class="menu-section-title">About Sangeet Local</h3>
+                            <p class="menu-section-desc">Creator and app information</p>
+                        </div>
+                    </div>
+
+                    <div class="about-hero-card">
+                        <div class="about-creator-badge">⭐ CREATOR & FOUNDER</div>
+                        <div class="about-avatar-circle">
+                            <span>🎵</span>
+                        </div>
+                        <h2 class="about-title">Sangeet Local</h2>
+                        <div class="about-lead">Create or Idea By: <span class="about-highlight">Parag (Pinku)</span></div>
+                        <div class="about-version-badge" style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; background: rgba(6, 182, 212, 0.2); border: 1px solid rgba(6, 182, 212, 0.5); border-radius: 20px; font-size: 12px; font-weight: 700; color: #67e8f9; margin-top: 6px;">
+                            <span>✨ Version 2.0.0</span>
+                        </div>
+                        <div class="about-location-pill" style="margin-top: 6px;">📍 Made in Basugaon</div>
+                    </div>
+
+                    <div class="about-grid" style="margin-top: 16px;">
+                        <div class="about-card">
+                            <div class="about-card-icon">💡</div>
+                            <h3>Create or Idea By</h3>
+                            <p>Conceptualized and designed by <strong>Parag (Pinku)</strong> for personal, fast, ad-free music listening anytime on PC and mobile phones.</p>
+                        </div>
+
+                        <div class="about-card">
+                            <div class="about-card-icon">🏡</div>
+                            <h3>Made in Basugaon</h3>
+                            <p>Proudly created and hosted locally in <strong>Basugaon, Assam</strong>. Built to celebrate regional music: Koch Rajbongshi, Assamese, and Bodo songs.</p>
+                        </div>
+
+                        <div class="about-card">
+                            <div class="about-card-icon">🚀</div>
+                            <h3>Version 2.0.0 Architecture</h3>
+                            <p>Engineered with Cyber OLED Obsidian themes, real-time audio visualizers, touch scrubbing, song details sheet, and offline APK playback.</p>
+                        </div>
+
+                        <div class="about-card">
+                            <div class="about-card-icon">⚡</div>
+                            <h3>Audio Engineering</h3>
+                            <p>High-resolution HTML5 audio engine, live 5-band equalizer, byte-range streaming, touch scrubber, repeat modes, and offline sync.</p>
+                        </div>
+                    </div>
+
+                    <div class="about-footer-note" style="margin-top: 20px;">
+                        <p>Sangeet Local v2.0.0 • Create or Idea By: Parag (Pinku) • Made in Basugaon</p>
+                    </div>
                 </div>
             </div>
         `;
 
         container.innerHTML = html;
+
+        // Theme card selection click handlers
+        container.querySelectorAll("[data-theme-choice]").forEach(card => {
+            card.addEventListener("click", () => {
+                const choice = card.getAttribute("data-theme-choice");
+                this.setTheme(choice);
+                const themeNames = { dark: "Cyber Dark", violet: "Midnight Violet", white: "Frost White" };
+                this.showToast(`Switched to ${themeNames[choice] || choice} theme`);
+            });
+        });
+
+        // Studio tools triggers
+        const btnOpenEq = document.getElementById("btnMenuOpenEq");
+        if (btnOpenEq) btnOpenEq.addEventListener("click", () => this.openModal(this.dom.equalizerModal));
+
+        const btnOpenQueue = document.getElementById("btnMenuOpenQueue");
+        if (btnOpenQueue) btnOpenQueue.addEventListener("click", () => this.toggleQueueDrawer());
+
+        const btnOpenConnect = document.getElementById("btnMenuOpenConnect");
+        if (btnOpenConnect) btnOpenConnect.addEventListener("click", () => this.openMobileConnectModal());
+
         this.bindViewEvents([]);
+    }
+
+    renderAboutView() {
+        return this.renderMenuView();
     }
 
     // --- UTILITIES & HELPERS ---
@@ -2553,6 +2698,14 @@ class UIController {
         } else {
             document.body.classList.add("theme-dark");
         }
+        this.currentTheme = themeName;
+        if (this.dom.themeSelect) {
+            this.dom.themeSelect.value = themeName;
+        }
+        document.querySelectorAll("[data-theme-choice]").forEach(card => {
+            const t = card.getAttribute("data-theme-choice");
+            card.classList.toggle("active", t === themeName);
+        });
         if (window.musicDB) {
             window.musicDB.setSetting("theme", themeName);
         }
