@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Sangeet UI Controller
  * Manages views, DOM rendering, user interactions, modals,
  * drag-and-drop music uploading, deletion, playlists, and visualizer rendering.
@@ -312,14 +312,13 @@ class UIController {
         this.dom.btnShuffle.addEventListener("click", (e) => {
             e.stopPropagation();
             const isShuffled = window.audioEngine.toggleShuffle();
-            this.dom.btnShuffle.classList.toggle("active", isShuffled);
+            this.updateShuffleUI(isShuffled);
             this.showToast(isShuffled ? "Shuffle Enabled" : "Shuffle Disabled");
         });
         this.dom.btnRepeat.addEventListener("click", (e) => {
             e.stopPropagation();
             const mode = window.audioEngine.cycleRepeat();
-            this.dom.btnRepeat.classList.toggle("active", mode !== "off");
-            this.dom.btnRepeat.innerHTML = mode === "one" ? "🔂" : "🔁";
+            this.updateRepeatUI(mode);
             this.showToast("Repeat: " + mode.toUpperCase());
         });
 
@@ -505,8 +504,7 @@ class UIController {
             this.dom.fsBtnShuffle.addEventListener("click", (e) => {
                 e.stopPropagation();
                 const isShuffled = window.audioEngine.toggleShuffle();
-                this.dom.btnShuffle.classList.toggle("active", isShuffled);
-                this.dom.fsBtnShuffle.classList.toggle("active", isShuffled);
+                this.updateShuffleUI(isShuffled);
                 this.showToast(isShuffled ? "Shuffle Enabled" : "Shuffle Disabled");
             });
         }
@@ -514,9 +512,7 @@ class UIController {
             this.dom.fsBtnRepeat.addEventListener("click", (e) => {
                 e.stopPropagation();
                 const mode = window.audioEngine.cycleRepeat();
-                this.dom.btnRepeat.classList.toggle("active", mode !== "off");
-                this.dom.fsBtnRepeat.classList.toggle("active", mode !== "off");
-                this.dom.btnRepeat.innerHTML = mode === "one" ? "🔂" : "🔁";
+                this.updateRepeatUI(mode);
                 this.showToast("Repeat: " + mode.toUpperCase());
             });
         }
@@ -1144,6 +1140,39 @@ class UIController {
             this.dom.queueBadge.textContent = queue.length > 0 ? queue.length : "";
             this.renderQueueItems();
         });
+
+        engine.on("modeChange", ({ shuffle, repeat }) => {
+            this.updateRepeatUI(repeat);
+            this.updateShuffleUI(shuffle);
+        });
+
+        // Initialize repeat and shuffle UI from engine state
+        this.updateRepeatUI(engine.repeatMode);
+        this.updateShuffleUI(engine.isShuffled);
+    }
+
+    updateRepeatUI(mode) {
+        if (!mode) mode = window.audioEngine ? window.audioEngine.repeatMode : "all";
+        const isActive = mode !== "off";
+        if (this.dom.btnRepeat) {
+            this.dom.btnRepeat.classList.toggle("active", isActive);
+            this.dom.btnRepeat.innerHTML = mode === "one" ? "🔂" : "🔁";
+            this.dom.btnRepeat.title = `Repeat: ${mode.toUpperCase()}`;
+        }
+        if (this.dom.fsBtnRepeat) {
+            this.dom.fsBtnRepeat.classList.toggle("active", isActive);
+            this.dom.fsBtnRepeat.title = `Repeat: ${mode.toUpperCase()}`;
+            if (mode === "one") {
+                this.dom.fsBtnRepeat.innerHTML = `<svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/><text x="12" y="14" font-size="9" font-weight="900" fill="currentColor" text-anchor="middle">1</text></svg>`;
+            } else {
+                this.dom.fsBtnRepeat.innerHTML = `<svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>`;
+            }
+        }
+    }
+
+    updateShuffleUI(isShuffled) {
+        if (this.dom.btnShuffle) this.dom.btnShuffle.classList.toggle("active", !!isShuffled);
+        if (this.dom.fsBtnShuffle) this.dom.fsBtnShuffle.classList.toggle("active", !!isShuffled);
     }
 
     // --- FILE UPLOADING & ID3 TAG EXTRACTION ---
@@ -1320,9 +1349,15 @@ class UIController {
     renderHomeView(songs, playlists) {
         const container = this.dom.viewContainer;
 
-        // Filter songs based on category chip (All Music, Koch Rajbongshi, Assamese, Bodo)
+        // Dynamic time greeting (matching inspiration Image 1)
+        const hour = new Date().getHours();
+        const greeting = hour < 12 ? "GOOD MORNING" : (hour < 17 ? "GOOD AFTERNOON" : "GOOD EVENING");
+
+        // Filter songs based on category chip
         let filteredSongs = songs;
-        if (this.selectedFilter !== "all") {
+        if (this.selectedFilter === "liked") {
+            filteredSongs = songs.filter(s => !!s.isLiked);
+        } else if (this.selectedFilter !== "all") {
             const filter = (this.selectedFilter || "").toLowerCase().trim();
             filteredSongs = songs.filter(s => {
                 const genre = (s.genre || "").toLowerCase();
@@ -1368,7 +1403,7 @@ class UIController {
 
         let spotlight = null;
         if (currentBanner && currentBanner.songId) {
-            spotlight = songs.find(s => s.id === currentBanner.songId);
+            spotlight = songs.find(s => String(s.id) === String(currentBanner.songId));
         }
         if (!spotlight && filteredSongs.length > 0) {
             spotlight = filteredSongs[0];
@@ -1378,13 +1413,13 @@ class UIController {
         }
 
         const cleanSpotlight = spotlight ? this.cleanMetadata(spotlight.title, spotlight.artist, spotlight.audioUrl) : null;
-        const bannerTitle = (currentBanner && currentBanner.title) ? currentBanner.title : (cleanSpotlight ? cleanSpotlight.title : "Sangeet Local");
-        const bannerTag = (currentBanner && currentBanner.tag) ? currentBanner.tag : (spotlight && spotlight.genre ? `🎵 ${spotlight.genre}` : "🎵 Sangeet Local");
+        const bannerTitle = (currentBanner && currentBanner.title) ? currentBanner.title : (cleanSpotlight ? cleanSpotlight.title : "Discover weekly");
+        const bannerTag = (currentBanner && currentBanner.tag) ? currentBanner.tag : "MADE FOR YOUR MOOD";
         const bannerDesc = (currentBanner && currentBanner.subtitle)
             ? currentBanner.subtitle
             : (cleanSpotlight
-                ? `By ${cleanSpotlight.artist} • ${spotlight.album || 'Single'} • Regional Music`
-                : "Your personal regional music streaming player.");
+                ? `Fresh finds • ${cleanSpotlight.artist} • On repeat all week.`
+                : "Fresh finds. On repeat all week.");
         let bannerCover = (currentBanner && currentBanner.coverUrl)
             ? (currentBanner.coverUrl.startsWith("/") ? currentBanner.coverUrl.substring(1) : currentBanner.coverUrl)
             : (spotlight ? this.getSongCoverUrl(spotlight) : "icons/icon-192.png");
@@ -1392,70 +1427,80 @@ class UIController {
             const sep = bannerCover.includes("?") ? "&" : "?";
             bannerCover = `${bannerCover}${sep}_t=${(currentBanner && currentBanner.updatedAt) || Date.now()}`;
         }
-        let bannerBg = (currentBanner && currentBanner.bgUrl)
-            ? (currentBanner.bgUrl.startsWith("/") ? currentBanner.bgUrl.substring(1) : currentBanner.bgUrl)
-            : "";
-        if (bannerBg && !bannerBg.startsWith("data:") && !bannerBg.startsWith("http")) {
-            const sep = bannerBg.includes("?") ? "&" : "?";
-            bannerBg = `${bannerBg}${sep}_t=${(currentBanner && currentBanner.updatedAt) || Date.now()}`;
-        }
-        const bannerBgStyle = bannerBg
-            ? `style="background: linear-gradient(135deg, rgba(11, 15, 23, 0.82) 0%, rgba(15, 23, 42, 0.88) 100%), url('${this.escapeHtml(bannerBg)}') center/cover no-repeat;"`
-            : "";
+
         const playSongId = spotlight ? spotlight.id : (filteredSongs[0] ? filteredSongs[0].id : (songs[0] ? songs[0].id : ""));
 
         let html = `
-            <!-- Filter Pills (All Music, Koch Rajbongshi, Assamese, Bodo) -->
-            <div class="filter-pills">
-                <button class="pill ${this.selectedFilter === 'all' ? 'active' : ''}" data-filter="all">All Music</button>
-                <button class="pill ${this.selectedFilter === 'koch rajbongshi' ? 'active' : ''}" data-filter="koch rajbongshi">Koch Rajbongshi</button>
-                <button class="pill ${this.selectedFilter === 'assamese' ? 'active' : ''}" data-filter="assamese">Assamese</button>
-                <button class="pill ${this.selectedFilter === 'bodo' ? 'active' : ''}" data-filter="bodo">Bodo</button>
+            <!-- Top Header (Inspired by Image 1) -->
+            <div class="home-inspiration-header">
+                <div class="home-header-left">
+                    <span class="home-greeting-tag">${greeting}</span>
+                    <h1 class="home-headline">Find your rhythm.</h1>
+                </div>
+                <div class="home-header-right">
+                    <button class="home-header-circle-btn" id="btnHomeNotify" title="Audio Equalizer">
+                        <svg viewBox="0 0 24 24" width="20" height="20">
+                            <path fill="currentColor" d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
 
-            <!-- Hero Spotlight Banner (Dynamically updates with each of the 3 languages!) -->
-            <div class="hero-banner" ${bannerBgStyle}>
-                <div class="hero-content">
-                    <div class="hero-tag">${this.escapeHtml(bannerTag)}</div>
-                    <h2 class="hero-title">${this.escapeHtml(bannerTitle)}</h2>
-                    <p class="hero-desc">${this.escapeHtml(bannerDesc)}</p>
-                    <div class="hero-actions">
-                        ${playSongId ? `
-                        <button class="btn-primary" id="btnPlaySpotlight" data-song-id="${playSongId}">
-                            <span>▶ Play Now</span>
-                        </button>` : ''}
-                    </div>
+            <!-- Sleek Rounded Dark Capsule Search Bar (Inspired by Image 1) -->
+            <div class="home-search-pill-wrap">
+                <svg class="home-search-pill-icon" viewBox="0 0 24 24" width="20" height="20">
+                    <path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                </svg>
+                <input type="text" class="home-search-pill-input" id="homeSearchInput" placeholder="Songs, artists, or a feeling" autocomplete="off">
+            </div>
+
+            <!-- Horizontal Filter Chips Row (Inspired by Image 1) -->
+            <div class="home-filter-pills-scroll">
+                <button class="home-chip ${this.selectedFilter === 'all' ? 'active' : ''}" data-filter="all">For you</button>
+                <button class="home-chip ${this.selectedFilter === 'bodo' ? 'active' : ''}" data-filter="bodo">Bodo</button>
+                <button class="home-chip ${this.selectedFilter === 'koch rajbongshi' ? 'active' : ''}" data-filter="koch rajbongshi">Koch Rajbongshi</button>
+                <button class="home-chip ${this.selectedFilter === 'assamese' ? 'active' : ''}" data-filter="assamese">Assamese</button>
+                <button class="home-chip ${this.selectedFilter === 'liked' ? 'active' : ''}" data-filter="liked">Liked</button>
+            </div>
+
+            <!-- Hero Mood Card (Directly inspired by Image 1: Split Lime Card + Album Art + Coral Play Button) -->
+            <div class="home-hero-mood-card" id="homeHeroCard" data-song-id="${playSongId}">
+                <div class="hero-mood-left">
+                    <span class="hero-mood-pill">${this.escapeHtml(bannerTag)}</span>
+                    <h2 class="hero-mood-title">${this.escapeHtml(bannerTitle)}</h2>
+                    <p class="hero-mood-desc">${this.escapeHtml(bannerDesc)}</p>
                 </div>
-                <div class="hero-art-stack">
-                    <img src="${bannerCover}" alt="${this.escapeHtml(bannerTitle)}" class="hero-art-img" onerror="this.onerror=null; this.src='icons/icon-192.png';">
+                <div class="hero-mood-right">
+                    <img src="${bannerCover}" alt="${this.escapeHtml(bannerTitle)}" class="hero-mood-img" onerror="this.onerror=null; this.src='icons/icon-192.png';">
+                    <div class="hero-mood-play-btn" id="btnPlaySpotlight" data-song-id="${playSongId}">
+                        <svg viewBox="0 0 24 24" width="22" height="22"><path fill="#ffffff" d="M8 5v14l11-7z"/></svg>
+                    </div>
                 </div>
             </div>
         `;
 
-        // Trending Cards Row
+        // Section: "Your rotation" (Image 1 "Your late-night rotation")
         if (filteredSongs.length > 0) {
             html += `
-                <div class="section-header">
-                    <h3 class="section-title">Trending in Your Collection</h3>
-                    <span class="section-more-link" data-view="library">View All (${songs.length})</span>
+                <div class="home-section-header">
+                    <h3 class="home-section-title">Your rotation</h3>
+                    <span class="home-section-more" data-view="library">View all</span>
                 </div>
-                <div class="cards-grid">
+                <div class="home-rotation-cards-row">
             `;
 
             filteredSongs.slice(0, 8).forEach(song => {
                 const cover = this.getSongCoverUrl(song);
                 const meta = this.cleanMetadata(song.title, song.artist, song.audioUrl);
+                const subGenre = song.genre ? `${song.genre} · Mix` : 'Mix';
                 html += `
-                    <div class="song-card" data-song-id="${song.id}">
-                        <div class="card-art-wrap">
-                            <img src="${cover}" alt="${this.escapeHtml(meta.title)}" class="card-art" onerror="this.onerror=null; this.src='icons/icon-192.png';">
-                            <div class="card-play-overlay" data-play-id="${song.id}">▶</div>
+                    <div class="rotation-card" data-song-id="${song.id}">
+                        <div class="rotation-art-wrap">
+                            <img src="${cover}" alt="${this.escapeHtml(meta.title)}" class="rotation-art" onerror="this.onerror=null; this.src='icons/icon-192.png';">
+                            <div class="rotation-play-fab" data-play-id="${song.id}">▶</div>
                         </div>
-                        <div class="card-title" title="${this.escapeHtml(meta.title)}">${this.escapeHtml(meta.title)}</div>
-                        <div class="card-artist" title="${this.escapeHtml(meta.artist)}">${this.escapeHtml(meta.artist)}</div>
-                        <div class="card-meta">
-                            <span>${this.escapeHtml(song.genre || 'Music')}</span>
-                        </div>
+                        <div class="rotation-title" title="${this.escapeHtml(meta.title)}">${this.escapeHtml(meta.title)}</div>
+                        <div class="rotation-subtitle" title="${this.escapeHtml(meta.artist)}">${this.escapeHtml(meta.artist)} · ${this.escapeHtml(subGenre)}</div>
                     </div>
                 `;
             });
@@ -1463,11 +1508,12 @@ class UIController {
             html += `</div>`;
         }
 
-        // Recent Tracks Table
+        // Section: "Recently Added" Table List
         if (filteredSongs.length > 0) {
             html += `
-                <div class="section-header">
-                    <h3 class="section-title">Recently Added Songs</h3>
+                <div class="home-section-header" style="margin-top: 26px;">
+                    <h3 class="home-section-title">Recently Added</h3>
+                    <span class="home-section-more" data-view="library">All (${songs.length})</span>
                 </div>
                 <div class="songs-table-wrap">
                     ${this.buildSongsTableHtml(filteredSongs.slice(0, 15))}
@@ -1859,30 +1905,30 @@ class UIController {
             tr.addEventListener("click", (e) => {
                 if (e.target.closest("button")) return; // Don't trigger if clicked action button
                 const id = tr.getAttribute("data-song-id");
-                const song = songsList.find(s => s.id === id);
+                const song = songsList.find(s => String(s.id) === String(id));
                 if (song) {
                     window.audioEngine.playSong(song, songsList);
                 }
             });
         });
 
-        // Card play overlay & card click to play (essential for mobile touch)
-        document.querySelectorAll(".song-card[data-song-id]").forEach(card => {
+        // Rotation & Song card click to play
+        document.querySelectorAll(".song-card[data-song-id], .rotation-card[data-song-id]").forEach(card => {
             card.addEventListener("click", (e) => {
                 if (e.target.closest("button")) return;
                 const id = card.getAttribute("data-song-id");
-                const song = songsList.find(s => s.id === id);
+                const song = songsList.find(s => String(s.id) === String(id));
                 if (song) {
                     window.audioEngine.playSong(song, songsList);
                 }
             });
         });
 
-        document.querySelectorAll(".card-play-overlay[data-play-id]").forEach(btn => {
+        document.querySelectorAll(".card-play-overlay[data-play-id], .rotation-play-fab[data-play-id]").forEach(btn => {
             btn.addEventListener("click", (e) => {
                 e.stopPropagation();
                 const id = btn.getAttribute("data-play-id");
-                const song = songsList.find(s => s.id === id);
+                const song = songsList.find(s => String(s.id) === String(id));
                 if (song) {
                     window.audioEngine.playSong(song, songsList);
                 }
@@ -1902,7 +1948,7 @@ class UIController {
                 });
 
                 // Update song in current playback if it's the one playing
-                if (window.audioEngine.currentSong && (window.audioEngine.currentSong.id === id || (window.musicDB.getSongIdentifier && window.musicDB.getSongIdentifier(window.audioEngine.currentSong) === id))) {
+                if (window.audioEngine.currentSong && (String(window.audioEngine.currentSong.id) === String(id) || (window.musicDB.getSongIdentifier && window.musicDB.getSongIdentifier(window.audioEngine.currentSong) === id))) {
                     window.audioEngine.currentSong.isLiked = isLiked;
                     this.dom.playerLikeBtn.classList.toggle("liked", isLiked);
                 }
@@ -1923,7 +1969,7 @@ class UIController {
             btn.addEventListener("click", async (e) => {
                 e.stopPropagation();
                 const id = btn.getAttribute("data-delete-id");
-                const song = songsList.find(s => s.id === id);
+                const song = songsList.find(s => String(s.id) === String(id));
                 const title = song ? song.title : "this song";
 
                 if (confirm(`Delete "${title}" from your personal library?`)) {
@@ -1963,20 +2009,61 @@ class UIController {
             });
         });
 
-        // Filter pills click
-        document.querySelectorAll(".filter-pills .pill").forEach(pill => {
-            pill.addEventListener("click", () => {
-                this.selectedFilter = pill.getAttribute("data-filter");
+        // Filter pills click (both .home-chip and .filter-pills .pill)
+        document.querySelectorAll(".home-chip[data-filter], .filter-pills .pill").forEach(chip => {
+            chip.addEventListener("click", () => {
+                this.selectedFilter = chip.getAttribute("data-filter");
                 this.switchView("home");
             });
         });
 
-        // Spotlight Play button
+        // Home search pill input (transitions into search view smoothly)
+        const homeSearchInput = document.getElementById("homeSearchInput");
+        if (homeSearchInput) {
+            homeSearchInput.addEventListener("input", (e) => {
+                const query = e.target.value.trim();
+                if (query.length > 0) {
+                    this.switchView("search", { query });
+                    if (this.dom.globalSearchInput) {
+                        this.dom.globalSearchInput.value = query;
+                    }
+                }
+            });
+            homeSearchInput.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") {
+                    const query = homeSearchInput.value.trim();
+                    this.switchView("search", { query });
+                }
+            });
+        }
+
+        // Header notify / EQ button
+        const btnHomeNotify = document.getElementById("btnHomeNotify");
+        if (btnHomeNotify) {
+            btnHomeNotify.addEventListener("click", () => {
+                this.openModal(this.dom.equalizerModal);
+            });
+        }
+
+        // Spotlight & Hero Mood Card Play
         const btnSpotlight = document.getElementById("btnPlaySpotlight");
         if (btnSpotlight) {
-            btnSpotlight.addEventListener("click", () => {
+            btnSpotlight.addEventListener("click", (e) => {
+                e.stopPropagation();
                 const id = btnSpotlight.getAttribute("data-song-id");
-                const song = songsList.find(s => s.id === id);
+                const song = songsList.find(s => String(s.id) === String(id));
+                if (song) {
+                    window.audioEngine.playSong(song, songsList);
+                }
+            });
+        }
+
+        const homeHeroCard = document.getElementById("homeHeroCard");
+        if (homeHeroCard) {
+            homeHeroCard.addEventListener("click", (e) => {
+                if (e.target.closest("button") || e.target.closest(".hero-mood-play-btn")) return;
+                const id = homeHeroCard.getAttribute("data-song-id");
+                const song = songsList.find(s => String(s.id) === String(id));
                 if (song) {
                     window.audioEngine.playSong(song, songsList);
                 }
@@ -1990,8 +2077,8 @@ class UIController {
         const btnEmptyAdd = document.getElementById("btnEmptyAdd");
         if (btnEmptyAdd) btnEmptyAdd.addEventListener("click", () => this.openModal(this.dom.addMusicModal));
 
-        // Links with data-view
-        document.querySelectorAll(".section-more-link[data-view]").forEach(link => {
+        // Links with data-view (section more links)
+        document.querySelectorAll(".section-more-link[data-view], .home-section-more[data-view]").forEach(link => {
             link.addEventListener("click", () => {
                 const v = link.getAttribute("data-view");
                 this.switchView(v);
@@ -2542,18 +2629,6 @@ class UIController {
                             <div class="about-card-icon">🏡</div>
                             <h3>Made in Basugaon</h3>
                             <p>Proudly created and hosted locally in <strong>Basugaon, Assam</strong>. Built to celebrate regional music: Koch Rajbongshi, Assamese, and Bodo songs.</p>
-                        </div>
-
-                        <div class="about-card">
-                            <div class="about-card-icon">🚀</div>
-                            <h3>Version 2.0.0 Architecture</h3>
-                            <p>Engineered with Cyber OLED Obsidian themes, real-time audio visualizers, touch scrubbing, song details sheet, and offline APK playback.</p>
-                        </div>
-
-                        <div class="about-card">
-                            <div class="about-card-icon">⚡</div>
-                            <h3>Audio Engineering</h3>
-                            <p>High-resolution HTML5 audio engine, live 5-band equalizer, byte-range streaming, touch scrubber, repeat modes, and offline sync.</p>
                         </div>
                     </div>
 

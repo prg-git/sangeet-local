@@ -37,7 +37,12 @@ class AudioEngine {
         this.currentIndex = -1;
 
         this.isShuffled = false;
-        this.repeatMode = "all"; // "off", "all", "one"
+        // Persistent repeat mode: "off", "all", "one" (default "all")
+        try {
+            this.repeatMode = localStorage.getItem("sangeet_repeat_mode") || "all";
+        } catch (e) {
+            this.repeatMode = "all";
+        }
         this.volume = 0.8;
         this.isMuted = false;
         this.playbackRate = 1.0;
@@ -148,9 +153,13 @@ class AudioEngine {
         }
 
         if (newQueue) {
-            this.setQueue(newQueue, index !== null ? index : newQueue.findIndex(s => s.id === song.id));
+            const foundIdx = newQueue.findIndex(s => String(s.id) === String(song.id));
+            this.setQueue(newQueue, index !== null ? index : (foundIdx !== -1 ? foundIdx : 0));
         } else if (index !== null) {
             this.currentIndex = index;
+        } else if (this.queue.length > 0) {
+            const foundIdx = this.queue.findIndex(s => String(s.id) === String(song.id));
+            if (foundIdx !== -1) this.currentIndex = foundIdx;
         }
 
         this.currentSong = song;
@@ -391,9 +400,15 @@ class AudioEngine {
         if (this.currentIndex < this.queue.length - 1) {
             this.currentIndex++;
             this.playSong(this.queue[this.currentIndex], null, this.currentIndex);
-        } else if (this.repeatMode === "all") {
+        } else if (this.repeatMode === "all" || this.repeatMode === "one") {
+            // In Repeat All, or when user clicks next on Repeat One, wrap back to the first song
             this.currentIndex = 0;
             this.playSong(this.queue[0], null, 0);
+        } else {
+            // Repeat Off: at end of queue, stop
+            this.audio.pause();
+            this.audio.currentTime = 0;
+            this.emit("pause", this.currentSong);
         }
     }
 
@@ -409,18 +424,40 @@ class AudioEngine {
         if (this.currentIndex > 0) {
             this.currentIndex--;
             this.playSong(this.queue[this.currentIndex], null, this.currentIndex);
-        } else if (this.repeatMode === "all") {
+        } else if (this.repeatMode === "all" || this.repeatMode === "one") {
             this.currentIndex = this.queue.length - 1;
             this.playSong(this.queue[this.currentIndex], null, this.currentIndex);
+        } else {
+            this.audio.currentTime = 0;
         }
     }
 
     handleTrackEnded() {
         if (this.repeatMode === "one") {
-            this.audio.currentTime = 0;
-            this.audio.play();
+            // Repeat One: restart the exact same track cleanly (works on both Android APK and browser)
+            if (this.currentSong) {
+                this.playSong(this.currentSong, null, this.currentIndex);
+            } else {
+                this.audio.currentTime = 0;
+                this.audio.play().catch(() => {});
+            }
+        } else if (this.repeatMode === "all") {
+            // Repeat All: advance to next track, or wrap to first track if at end of queue
+            if (this.currentIndex < this.queue.length - 1) {
+                this.playNext();
+            } else if (this.queue.length > 0) {
+                this.currentIndex = 0;
+                this.playSong(this.queue[0], null, 0);
+            }
         } else {
-            this.playNext();
+            // Repeat Off: advance if next exists, otherwise stop at end
+            if (this.currentIndex < this.queue.length - 1) {
+                this.playNext();
+            } else {
+                this.audio.pause();
+                this.audio.currentTime = 0;
+                this.emit("pause", this.currentSong);
+            }
         }
     }
 
@@ -430,14 +467,15 @@ class AudioEngine {
             const current = this.currentSong;
             this.queue = this.shuffleArray([...this.originalQueue]);
             if (current) {
-                this.queue = [current, ...this.queue.filter(s => s.id !== current.id)];
+                this.queue = [current, ...this.queue.filter(s => String(s.id) !== String(current.id))];
                 this.currentIndex = 0;
             }
         } else {
             const current = this.currentSong;
             this.queue = [...this.originalQueue];
             if (current) {
-                this.currentIndex = this.queue.findIndex(s => s.id === current.id);
+                this.currentIndex = this.queue.findIndex(s => String(s.id) === String(current.id));
+                if (this.currentIndex === -1) this.currentIndex = 0;
             }
         }
         this.emit("modeChange", { shuffle: this.isShuffled, repeat: this.repeatMode });
@@ -449,6 +487,9 @@ class AudioEngine {
         const modes = ["off", "all", "one"];
         const nextIndex = (modes.indexOf(this.repeatMode) + 1) % modes.length;
         this.repeatMode = modes[nextIndex];
+        try {
+            localStorage.setItem("sangeet_repeat_mode", this.repeatMode);
+        } catch (e) {}
         this.emit("modeChange", { shuffle: this.isShuffled, repeat: this.repeatMode });
         return this.repeatMode;
     }

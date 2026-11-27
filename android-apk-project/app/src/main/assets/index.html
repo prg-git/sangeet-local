@@ -36,90 +36,40 @@
 
 <body class="theme-dark">
 
-    <!-- ================= MODERN ANIMATED SPLASH SCREEN (SANGEET LOCAL v2.0.0) ================= -->
+    <!-- ================= MODERN MINIMALIST SPLASH SCREEN ================= -->
     <div id="appSplashScreen" class="app-splash-screen" role="dialog" aria-modal="true"
         aria-label="Loading Sangeet Local">
-        <!-- Ambient Background Lights & Music Waves -->
-        <div class="splash-ambient-glow glow-top"></div>
-        <div class="splash-ambient-glow glow-bottom"></div>
-        <div class="splash-grid-pattern"></div>
+        <div class="splash-ambient-glow glow-center"></div>
 
         <div class="splash-content">
-            <!-- Animated Soundwave & Music Disc Icon -->
+            <!-- Sleek App Icon with Radiant Aura -->
             <div class="splash-logo-wrap">
                 <div class="splash-logo-halo"></div>
-                <div class="splash-logo-ring">
-                    <svg class="splash-logo-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <defs>
-                            <linearGradient id="splashGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#06b6d4" />
-                                <stop offset="50%" stop-color="#8b5cf6" />
-                                <stop offset="100%" stop-color="#ec4899" />
-                            </linearGradient>
-                            <linearGradient id="waveGrad" x1="0%" y1="100%" x2="0%" y2="0%">
-                                <stop offset="0%" stop-color="#3b82f6" />
-                                <stop offset="50%" stop-color="#8b5cf6" />
-                                <stop offset="100%" stop-color="#06b6d4" />
-                            </linearGradient>
-                        </defs>
-                        <!-- Stylized Vinyl/Sound Wave Disc -->
-                        <circle cx="50" cy="50" r="44" stroke="url(#splashGrad)" stroke-width="2.5"
-                            stroke-dasharray="8 4" class="splash-spin-ring" />
-                        <circle cx="50" cy="50" r="36" stroke="rgba(255, 255, 255, 0.12)" stroke-width="1.5" />
-                        <circle cx="50" cy="50" r="28" fill="rgba(15, 23, 42, 0.85)" stroke="url(#splashGrad)"
-                            stroke-width="2" />
-                        <!-- Sound wave bars inside logo -->
-                        <g class="splash-core-wave">
-                            <rect x="36" y="44" width="3.5" height="12" rx="1.75" fill="url(#waveGrad)"
-                                class="wave-bar wb-1" />
-                            <rect x="43" y="38" width="3.5" height="24" rx="1.75" fill="url(#waveGrad)"
-                                class="wave-bar wb-2" />
-                            <rect x="50" y="32" width="3.5" height="36" rx="1.75" fill="url(#waveGrad)"
-                                class="wave-bar wb-3" />
-                            <rect x="57" y="40" width="3.5" height="20" rx="1.75" fill="url(#waveGrad)"
-                                class="wave-bar wb-4" />
-                            <rect x="64" y="46" width="3.5" height="8" rx="1.75" fill="url(#waveGrad)"
-                                class="wave-bar wb-5" />
-                        </g>
-                    </svg>
+                <div class="splash-logo-card">
+                    <img src="icons/icon-192.png" alt="Sangeet Local" class="splash-app-icon" onerror="this.onerror=null; this.src='icons/icon-192.png';">
                 </div>
             </div>
 
-            <!-- App Title & Branding -->
+            <!-- App Title & Modern Subtitle -->
             <div class="splash-brand-group">
                 <h1 class="splash-app-title">
                     <span class="splash-title-text">Sangeet Local</span>
                 </h1>
-                <div class="splash-version-tag">
-                    <span class="version-dot"></span>
-                    <span>Version 2.0.0</span>
-                </div>
-                <p class="splash-tagline">Personal & Regional Music Studio • v2.0.0</p>
+                <p class="splash-tagline">Find your rhythm.</p>
             </div>
 
-            <!-- Animated Music Beat Equalizer Loading Indicator -->
+            <!-- Minimalist Pulse Loader -->
             <div class="splash-loader-area">
-                <div class="splash-equalizer" aria-label="Audio Beat Loading Indicator">
-                    <span class="eq-bar eq-b1"></span>
-                    <span class="eq-bar eq-b2"></span>
-                    <span class="eq-bar eq-b3"></span>
-                    <span class="eq-bar eq-b4"></span>
-                    <span class="eq-bar eq-b5"></span>
-                    <span class="eq-bar eq-b6"></span>
-                    <span class="eq-bar eq-b7"></span>
-                </div>
-                <div class="splash-loading-label">
-                    <span>Loading</span>
-                    <span class="loading-dots">
-                        <span class="dot d1">.</span><span class="dot d2">.</span><span class="dot d3">.</span>
-                    </span>
+                <div class="splash-pulse-dots" aria-label="Loading Indicator">
+                    <span class="p-dot p1"></span>
+                    <span class="p-dot p2"></span>
+                    <span class="p-dot p3"></span>
                 </div>
             </div>
 
-            <!-- Footer: Developed by Parag • Basugaon -->
+            <!-- Footer Location -->
             <div class="splash-footer">
-                <div class="splash-developer">Developed by <strong>Parag</strong></div>
-                <div class="splash-location">Made with <span class="heart-pulse">❤️</span> in Basugaon</div>
+                <div class="splash-location">Basugaon • Music Studio</div>
             </div>
         </div>
     </div>
@@ -200,13 +150,6 @@
                     d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
             </svg>
             <span>Liked</span>
-        </div>
-        <div class="mobile-nav-item" data-view="menu">
-            <svg viewBox="0 0 24 24" width="22" height="22">
-                <path fill="currentColor"
-                    d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z" />
-            </svg>
-            <span>Menu</span>
         </div>
     </nav>
 

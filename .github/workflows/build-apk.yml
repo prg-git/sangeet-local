@@ -53,20 +53,22 @@ jobs:
             **Developed at Basugaon by Parag**
 
             ### 📱 What's New in Version 2.0.0:
-            - **Modern Redesigned Theme & Elements**:
-              - Deep OLED Obsidian glassmorphic theme with radiant Cyber Cyan & Aurora Violet accents.
-              - High-resolution luxury 3D music app icon with glowing neon sound waves.
-              - Floating mini-player island with live equalizer bars and fluid expand animation.
-              - Mobile-optimized song details row displaying Title, Artist, Album, Genre, and Duration cleanly fitted.
-              - Interactive Song Details Bottom Sheet with full metadata and quick play/like actions.
+            - **Modern Redesigned Home UI & Aesthetic**:
+              - Sleek Modern Home UI: Dynamic greeting ("Good Morning/Evening"), "Find your rhythm." headline.
+              - Rounded dark capsule search bar with "Songs, artists, or a feeling" placeholder.
+              - Electric Lime active filter pills ("For you", "Bodo", "Koch Rajbongshi", "Assamese", "Liked").
+              - Split Hero Mood Card ("MADE FOR YOUR MOOD", "Discover weekly") with glowing circular play button.
+              - "Your rotation" section cards with smooth rounded artwork and metadata subtitles.
+              - Streamlined 4-tab bottom navigation (Home, Search, Library, Liked) with Menu section removed.
+              - Modern minimalist glowing splash screen with pulsing dots and fast 200ms dismiss.
             - **Mobile Experience & Bug Fixes**:
+              - Repeat feature completely fixed: Repeat All, Repeat One, and Repeat Off now cycle properly with synchronized icons (🔁 and 🔂).
+              - Deleted outdated architecture and engineering cards from About.
               - Ultra-fast startup (<250ms) with zero flicker or glitch.
               - Auto-restores default or last played track on launch so the player is never blank.
               - 100% circular vinyl album disc animation with center spindle hole when playing ("square run fixed to round").
               - High-performance IndexedDB memory caching for instant 0ms catalog loads.
               - Fixed Queue Drawer on mobile devices to slide smoothly as a responsive bottom sheet.
-              - Interactive Mobile Search & Discovery hub with instant genre explorer chips.
-              - High performance 60fps animations and hardware acceleration.
               - Audio seek scrubbing and persistent favorites/liked sync.
 
             ### 📥 How to Install / Update on your Phone:
