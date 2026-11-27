@@ -96,19 +96,27 @@ class SangeetApp {
     }
 
     /**
-     * Smoothly transitions out the splash screen after the music engine & view have loaded
+     * Shows splash screen for 6 seconds on initial launch; never shows again in the current session
      */
     static dismissSplashScreen(startTime = 0) {
         const splash = document.getElementById("appSplashScreen");
         if (!splash) return;
 
-        // Ultra-fast startup: dismiss smoothly without artificial stalling
+        // If already shown once in this session, immediately remove it
+        if (sessionStorage.getItem("sangeet_splash_shown") === "true") {
+            splash.style.display = "none";
+            if (splash.parentNode) splash.parentNode.removeChild(splash);
+            return;
+        }
+
+        // Show for 6 seconds (6000ms) on fresh launch
         const elapsed = Date.now() - startTime;
-        const minDuration = 200;
+        const minDuration = 6000;
         const remaining = Math.max(0, minDuration - elapsed);
 
         setTimeout(() => {
             splash.classList.add("splash-fade-out");
+            sessionStorage.setItem("sangeet_splash_shown", "true");
             setTimeout(() => {
                 splash.style.display = "none";
                 if (splash.parentNode) splash.parentNode.removeChild(splash);

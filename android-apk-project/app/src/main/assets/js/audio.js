@@ -121,11 +121,13 @@ class AudioEngine {
             }
             this.emit("play", this.currentSong);
             this.updateMediaSessionState("playing");
+            this.updateAndroidNotification(true);
         });
 
         this.audio.addEventListener("pause", () => {
             this.emit("pause", this.currentSong);
             this.updateMediaSessionState("paused");
+            this.updateAndroidNotification(false);
         });
 
         this.audio.addEventListener("timeupdate", () => {
@@ -137,6 +139,7 @@ class AudioEngine {
 
         this.audio.addEventListener("ended", () => {
             this.emit("ended", this.currentSong);
+            this.updateAndroidNotification(false);
             this.handleTrackEnded();
         });
 
@@ -248,6 +251,37 @@ class AudioEngine {
 
         this.emit("trackChange", song);
         this.setupMediaSession(song);
+        this.updateAndroidNotification(true);
+    }
+
+    async play() {
+        if (this.audio.paused) {
+            this.initAudioContext();
+            if (this.audioCtx && this.audioCtx.state === "suspended") {
+                await this.audioCtx.resume();
+            }
+            await this.audio.play();
+            this.updateAndroidNotification(true);
+        }
+    }
+
+    pause() {
+        if (!this.audio.paused) {
+            this.audio.pause();
+            this.updateAndroidNotification(false);
+        }
+    }
+
+    updateAndroidNotification(isPlaying) {
+        if (window.AndroidBridge && typeof window.AndroidBridge.updateNotification === "function") {
+            const title = this.currentSong ? (this.currentSong.title || "Sangeet Local") : "Sangeet Local";
+            const artist = this.currentSong ? (this.currentSong.artist || "Regional Artist") : "Basugaon Studio";
+            try {
+                window.AndroidBridge.updateNotification(title, artist, !!isPlaying);
+            } catch (e) {
+                console.warn("AndroidBridge notification sync error:", e);
+            }
+        }
     }
 
     async togglePlay() {

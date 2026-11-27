@@ -1811,32 +1811,40 @@ body.theme-violet .songs-table tr.playing {
     display: block;
 }
 
-/* Floating Sound Wave Bars on Artwork */
+/* Skip splash when already shown in session */
+html.skip-splash #appSplashScreen {
+    display: none !important;
+}
+
+/* Floating Sound Wave Bars on Artwork (Red beat wave moved to tick mark location) */
 .fs-artwork-equalizer {
     position: absolute;
-    bottom: 12px;
-    right: 12px;
-    background: rgba(10, 14, 28, 0.75);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    padding: 6px 10px;
-    border-radius: 14px;
+    bottom: 14px;
+    left: 18px;
+    right: auto;
+    background: rgba(18, 5, 12, 0.85);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 60, 60, 0.45);
+    padding: 6px 12px;
+    border-radius: 16px;
     display: flex;
     align-items: flex-end;
-    gap: 3px;
-    height: 24px;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+    gap: 4px;
+    height: 26px;
+    box-shadow: 0 4px 18px rgba(255, 0, 60, 0.35), 0 2px 8px rgba(0, 0, 0, 0.7);
+    z-index: 10;
 }
 
 .fs-artwork-equalizer .fs-eq-bar {
-    width: 3px;
-    border-radius: 2px;
-    background: linear-gradient(to top, #7c3aed 0%, #3b82f6 50%, #06b6d4 100%);
+    width: 3.5px;
+    border-radius: 3px;
+    background: linear-gradient(to top, #ff0055 0%, #ff3b30 50%, #ff9500 100%) !important;
+    box-shadow: 0 0 8px rgba(255, 50, 50, 0.85);
     height: 18px;
     transform: scaleY(0.25);
     transform-origin: bottom;
     transition: transform 0.2s ease;
-    opacity: 0.5;
+    opacity: 0.6;
 }
 
 .fullscreen-player.is-playing .fs-artwork-equalizer .fs-eq-bar {
@@ -1967,47 +1975,51 @@ body.theme-violet .songs-table tr.playing {
 
 .fs-progress-wrap {
     width: 100%;
-    height: 6px;
-    background: rgba(255, 255, 255, 0.14);
-    border-radius: 10px;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.45) !important;
+    border: 1px solid rgba(255, 255, 255, 0.75) !important;
+    border-radius: 12px;
     position: relative;
     cursor: pointer;
-    padding: 4px 0;
-    background-clip: content-box;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.35);
 }
 
 .fs-progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, #8b5cf6 0%, #3b82f6 50%, #06b6d4 100%);
-    border-radius: 10px;
+    background: #ffffff !important;
+    border-radius: 12px;
     position: relative;
     width: 0%;
+    box-shadow: 0 0 14px rgba(255, 255, 255, 0.95) !important;
     transition: width 0.1s linear;
 }
 
 .fullscreen-player.is-playing .fs-progress-fill {
-    box-shadow: 0 0 10px rgba(6, 182, 212, 0.85);
+    box-shadow: 0 0 16px rgba(255, 255, 255, 1) !important;
 }
 
 .fs-progress-thumb {
     position: absolute;
-    right: -7px;
+    right: -8px;
     top: 50%;
     transform: translateY(-50%);
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
-    background: #ffffff;
-    box-shadow: 0 0 10px rgba(6, 182, 212, 0.9), 0 2px 6px rgba(0, 0, 0, 0.7);
+    background: #ffffff !important;
+    border: 2px solid #000000;
+    box-shadow: 0 0 14px #ffffff, 0 2px 8px rgba(0, 0, 0, 0.8);
 }
 
 .fs-timestamps {
     display: flex;
     justify-content: space-between;
-    font-size: 11px;
+    font-size: 12px;
+    font-weight: 700;
     font-family: monospace;
-    color: #94a3b8;
+    color: #ffffff !important;
     margin-top: 6px;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
 }
 
 /* Master Playback Controls Deck */
@@ -4079,6 +4091,22 @@ body.public-client-mode .col-actions {
     margin: 0;
     letter-spacing: -0.6px;
     line-height: 1.15;
+}
+
+.home-region-subtitle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #94a3b8;
+    letter-spacing: 0.3px;
+}
+
+.home-region-subtitle .region-bullet {
+    color: #d4f82c;
+    font-size: 10px;
 }
 
 .home-header-circle-btn {

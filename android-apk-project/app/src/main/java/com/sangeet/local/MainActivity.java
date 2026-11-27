@@ -2,7 +2,13 @@ package com.sangeet.local;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
@@ -10,6 +16,7 @@ import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -23,6 +30,8 @@ import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.webkit.WebViewAssetLoader;
 
 import java.io.FileInputStream;
@@ -38,6 +47,14 @@ public class MainActivity extends AppCompatActivity {
     private WebViewAssetLoader assetLoader;
     private AudioManager audioManager;
     private AudioManager.OnAudioFocusChangeListener audioFocusListener;
+    private PowerManager.WakeLock wakeLock;
+    private BroadcastReceiver playbackReceiver;
+
+    private static final String CHANNEL_ID = "sangeet_playback_channel";
+    private static final int NOTIFICATION_ID = 1001;
+    public static final String ACTION_PLAY_PAUSE = "com.sangeet.local.ACTION_PLAY_PAUSE";
+    public static final String ACTION_NEXT = "com.sangeet.local.ACTION_NEXT";
+    public static final String ACTION_PREV = "com.sangeet.local.ACTION_PREV";
 
     private static final String PREF_KEY_URL = "server_url";
     private static final String GITHUB_PAGES_URL = "https://prg-git.github.io/sangeet-local/";
@@ -170,10 +187,19 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // Initialize media playback notification channel
+        createNotificationChannel();
+
+        // Setup notification action broadcast receiver (Play/Pause, Next, Prev)
+        setupPlaybackReceiver();
+
+        // Register AndroidBridge so web app can control native notifications & keep background playback
+        webView.addJavascriptInterface(new AndroidBridge(), "AndroidBridge");
+
         // Setup background audio focus management
         setupAudioFocus();
 
-        // Check and request runtime audio permissions
+        // Check and request runtime audio & notification permissions
         checkAudioPermissions();
 
         // Live sync by default: Newly added songs and updates appear automatically!
@@ -341,14 +367,190 @@ public class MainActivity extends AppCompatActivity {
 
     private void checkAudioPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            java.util.List<String> perms = new java.util.ArrayList<>();
             if (checkSelfPermission(android.Manifest.permission.READ_MEDIA_AUDIO) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{android.Manifest.permission.READ_MEDIA_AUDIO}, 101);
+                perms.add(android.Manifest.permission.READ_MEDIA_AUDIO);
+            }
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                perms.add(android.Manifest.permission.POST_NOTIFICATIONS);
+            }
+            if (!perms.isEmpty()) {
+                requestPermissions(perms.toArray(new String[0]), 101);
             }
         } else {
             if (checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE}, 101);
             }
         }
+    }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    CHANNEL_ID,
+                    "Music Playback",
+                    NotificationManager.IMPORTANCE_LOW
+            );
+            channel.setDescription("Shows currently playing song and playback controls");
+            channel.setShowBadge(false);
+            channel.setLockscreenVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+            NotificationManager nm = getSystemService(NotificationManager.class);
+            if (nm != null) {
+                nm.createNotificationChannel(channel);
+            }
+        }
+    }
+
+    private void setupPlaybackReceiver() {
+        playbackReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent == null || intent.getAction() == null) return;
+                String action = intent.getAction();
+                if (ACTION_PLAY_PAUSE.equals(action)) {
+                    if (webView != null) {
+                        webView.evaluateJavascript("if (window.audioEngine) window.audioEngine.togglePlay();", null);
+                    }
+                } else if (ACTION_NEXT.equals(action)) {
+                    if (webView != null) {
+                        webView.evaluateJavascript("if (window.audioEngine) window.audioEngine.playNext();", null);
+                    }
+                } else if (ACTION_PREV.equals(action)) {
+                    if (webView != null) {
+                        webView.evaluateJavascript("if (window.audioEngine) window.audioEngine.playPrevious();", null);
+                    }
+                }
+            }
+        };
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(ACTION_PLAY_PAUSE);
+        filter.addAction(ACTION_NEXT);
+        filter.addAction(ACTION_PREV);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(playbackReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+        } else {
+            registerReceiver(playbackReceiver, filter);
+        }
+    }
+
+    public class AndroidBridge {
+        @android.webkit.JavascriptInterface
+        public void updateNotification(String title, String artist, boolean isPlaying) {
+            runOnUiThread(() -> showMediaNotification(title, artist, isPlaying));
+        }
+
+        @android.webkit.JavascriptInterface
+        public void clearNotification() {
+            runOnUiThread(() -> removeMediaNotification());
+        }
+    }
+
+    private void showMediaNotification(String title, String artist, boolean isPlaying) {
+        if (title == null || title.isEmpty()) title = "Sangeet Local";
+        if (artist == null || artist.isEmpty()) artist = "Regional Music Studio";
+
+        if (isPlaying) {
+            acquireWakeLock();
+        } else {
+            releaseWakeLock();
+        }
+
+        Intent contentIntent = new Intent(this, MainActivity.class);
+        contentIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        int flags = PendingIntent.FLAG_UPDATE_CURRENT;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            flags |= PendingIntent.FLAG_IMMUTABLE;
+        }
+        PendingIntent contentPending = PendingIntent.getActivity(this, 0, contentIntent, flags);
+
+        Intent playPauseIntent = new Intent(ACTION_PLAY_PAUSE);
+        playPauseIntent.setPackage(getPackageName());
+        PendingIntent playPausePending = PendingIntent.getBroadcast(this, 1, playPauseIntent, flags);
+
+        Intent prevIntent = new Intent(ACTION_PREV);
+        prevIntent.setPackage(getPackageName());
+        PendingIntent prevPending = PendingIntent.getBroadcast(this, 2, prevIntent, flags);
+
+        Intent nextIntent = new Intent(ACTION_NEXT);
+        nextIntent.setPackage(getPackageName());
+        PendingIntent nextPending = PendingIntent.getBroadcast(this, 3, nextIntent, flags);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle(title)
+                .setContentText(artist)
+                .setSubText("Sangeet Local")
+                .setContentIntent(contentPending)
+                .setOngoing(isPlaying)
+                .setOnlyAlertOnce(true)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .addAction(android.R.drawable.ic_media_previous, "Previous", prevPending)
+                .addAction(isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play,
+                        isPlaying ? "Pause" : "Play", playPausePending)
+                .addAction(android.R.drawable.ic_media_next, "Next", nextPending);
+
+        NotificationManagerCompat nm = NotificationManagerCompat.from(this);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                return;
+            }
+        }
+        nm.notify(NOTIFICATION_ID, builder.build());
+    }
+
+    private void removeMediaNotification() {
+        releaseWakeLock();
+        NotificationManagerCompat nm = NotificationManagerCompat.from(this);
+        nm.cancel(NOTIFICATION_ID);
+    }
+
+    private void acquireWakeLock() {
+        try {
+            if (wakeLock == null) {
+                PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+                if (pm != null) {
+                    wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "SangeetLocal:PlaybackWakeLock");
+                }
+            }
+            if (wakeLock != null && !wakeLock.isHeld()) {
+                wakeLock.acquire(12 * 60 * 60 * 1000L); // 12h safety
+            }
+        } catch (Exception ignored) {}
+    }
+
+    private void releaseWakeLock() {
+        try {
+            if (wakeLock != null && wakeLock.isHeld()) {
+                wakeLock.release();
+            }
+        } catch (Exception ignored) {}
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+    }
+
+    @Override
+    protected void onDestroy() {
+        releaseWakeLock();
+        if (playbackReceiver != null) {
+            try {
+                unregisterReceiver(playbackReceiver);
+            } catch (Exception ignored) {}
+        }
+        removeMediaNotification();
+        if (audioManager != null && audioFocusListener != null) {
+            audioManager.abandonAudioFocus(audioFocusListener);
+        }
+        if (webView != null) {
+            webView.destroy();
+        }
+        super.onDestroy();
     }
 
     private void loadCurrentServerUrl() {
@@ -404,16 +606,5 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         return super.onKeyDown(keyCode, event);
-    }
-
-    @Override
-    protected void onDestroy() {
-        if (audioManager != null && audioFocusListener != null) {
-            audioManager.abandonAudioFocus(audioFocusListener);
-        }
-        if (webView != null) {
-            webView.destroy();
-        }
-        super.onDestroy();
     }
 }

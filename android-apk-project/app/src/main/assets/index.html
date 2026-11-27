@@ -18,6 +18,10 @@
                 }
             });
         }
+        // If splash was already shown once in this session, skip it completely
+        if (sessionStorage.getItem("sangeet_splash_shown") === "true") {
+            document.documentElement.classList.add("skip-splash");
+        }
         // Immediate detection if running as Android APK
         (function () {
             var ua = navigator.userAgent || "";
@@ -150,6 +154,12 @@
                     d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
             </svg>
             <span>Liked</span>
+        </div>
+        <div class="mobile-nav-item" data-view="menu">
+            <svg viewBox="0 0 24 24">
+                <path fill="currentColor" d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
+            </svg>
+            <span>Menu</span>
         </div>
     </nav>
 
@@ -597,23 +607,29 @@
     <script src="js/app.js?v=10.0"></script>
 
     <script>
-        // Failsafe timer: ensures splash screen gracefully closes and removes itself completely
-        function dismissSplash() {
+        // Splash screen handler: 6 seconds duration on initial launch; never shown again in this session
+        (function () {
             var splash = document.getElementById("appSplashScreen");
-            if (splash && !splash.classList.contains("splash-fade-out")) {
-                splash.classList.add("splash-fade-out");
-                setTimeout(function () {
-                    if (splash && splash.parentNode) {
-                        splash.style.display = "none";
-                        splash.parentNode.removeChild(splash);
-                    }
-                }, 280);
+            if (!splash) return;
+            if (sessionStorage.getItem("sangeet_splash_shown") === "true") {
+                splash.remove();
+                return;
             }
-        }
-        setTimeout(dismissSplash, 600);
-        window.addEventListener("load", function () {
-            setTimeout(dismissSplash, 250);
-        });
+            function dismissSplash() {
+                var s = document.getElementById("appSplashScreen");
+                if (s && !s.classList.contains("splash-fade-out")) {
+                    s.classList.add("splash-fade-out");
+                    sessionStorage.setItem("sangeet_splash_shown", "true");
+                    setTimeout(function () {
+                        if (s && s.parentNode) {
+                            s.style.display = "none";
+                            s.parentNode.removeChild(s);
+                        }
+                    }, 300);
+                }
+            }
+            setTimeout(dismissSplash, 6000);
+        })();
     </script>
 
 </body>
