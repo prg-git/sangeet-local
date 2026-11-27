@@ -1,6 +1,7 @@
 {
   "name": "Sangeet Local",
   "short_name": "Sangeet",
+  "version": "2.0.00",
   "description": "Local & Remote Music Streaming Studio - JioSaavn & Gaana styled personal music streamer",
   "start_url": "./index.html",
   "scope": "./",

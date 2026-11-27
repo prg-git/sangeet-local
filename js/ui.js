@@ -107,7 +107,7 @@ class UIController {
             // Equalizer
             eqPresetSelect: document.getElementById("eqPresetSelect"),
 
-            // Fullscreen
+            // Fullscreen Now Playing (v2.0.00 Mobile Studio)
             fsCoverArt: document.getElementById("fsCoverArt"),
             fsSongTitle: document.getElementById("fsSongTitle"),
             fsSongArtist: document.getElementById("fsSongArtist"),
@@ -115,6 +115,26 @@ class UIController {
             fsBgBlur: document.getElementById("fsBgBlur"),
             fsVisualizerCanvas: document.getElementById("fsVisualizerCanvas"),
             btnCloseFullscreen: document.getElementById("btnCloseFullscreen"),
+            fsBtnPlayPause: document.getElementById("fsBtnPlayPause"),
+            fsBtnPrevious: document.getElementById("fsBtnPrevious"),
+            fsBtnNext: document.getElementById("fsBtnNext"),
+            fsBtnShuffle: document.getElementById("fsBtnShuffle"),
+            fsBtnRepeat: document.getElementById("fsBtnRepeat"),
+            fsLikeBtn: document.getElementById("fsLikeBtn"),
+            fsProgressBarWrap: document.getElementById("fsProgressBarWrap"),
+            fsProgressFill: document.getElementById("fsProgressFill"),
+            fsProgressThumb: document.getElementById("fsProgressThumb"),
+            fsCurrentTimeText: document.getElementById("fsCurrentTimeText"),
+            fsDurationText: document.getElementById("fsDurationText"),
+            fsBtnSpeed: document.getElementById("fsBtnSpeed"),
+            fsSpeedText: document.getElementById("fsSpeedText"),
+            fsBtnOpenEq: document.getElementById("fsBtnOpenEq"),
+            fsBtnQueueToggle: document.getElementById("fsBtnQueueToggle"),
+            fsBtnLyricsToggle: document.getElementById("fsBtnLyricsToggle"),
+            fsLyricsSheet: document.getElementById("fsLyricsSheet"),
+            btnCloseLyricsSheet: document.getElementById("btnCloseLyricsSheet"),
+            fsGenreBadge: document.getElementById("fsGenreBadge"),
+            fsArtworkCard: document.getElementById("fsArtworkCard"),
 
             // Toast
             toastContainer: document.getElementById("toastContainer")
@@ -454,6 +474,165 @@ class UIController {
             e.stopPropagation();
             this.openFullscreenPlayer();
         });
+
+        // Fullscreen Now Playing Studio Controls (v2.0.00)
+        if (this.dom.fsBtnPlayPause) {
+            this.dom.fsBtnPlayPause.addEventListener("click", (e) => {
+                e.stopPropagation();
+                window.audioEngine.togglePlay();
+            });
+        }
+        if (this.dom.fsBtnPrevious) {
+            this.dom.fsBtnPrevious.addEventListener("click", (e) => {
+                e.stopPropagation();
+                window.audioEngine.playPrevious();
+            });
+        }
+        if (this.dom.fsBtnNext) {
+            this.dom.fsBtnNext.addEventListener("click", (e) => {
+                e.stopPropagation();
+                window.audioEngine.playNext();
+            });
+        }
+        if (this.dom.fsBtnShuffle) {
+            this.dom.fsBtnShuffle.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const isShuffled = window.audioEngine.toggleShuffle();
+                this.dom.btnShuffle.classList.toggle("active", isShuffled);
+                this.dom.fsBtnShuffle.classList.toggle("active", isShuffled);
+                this.showToast(isShuffled ? "Shuffle Enabled" : "Shuffle Disabled");
+            });
+        }
+        if (this.dom.fsBtnRepeat) {
+            this.dom.fsBtnRepeat.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const mode = window.audioEngine.cycleRepeat();
+                this.dom.btnRepeat.classList.toggle("active", mode !== "off");
+                this.dom.fsBtnRepeat.classList.toggle("active", mode !== "off");
+                this.dom.btnRepeat.innerHTML = mode === "one" ? "🔂" : "🔁";
+                this.showToast("Repeat: " + mode.toUpperCase());
+            });
+        }
+        if (this.dom.fsLikeBtn) {
+            this.dom.fsLikeBtn.addEventListener("click", async (e) => {
+                e.stopPropagation();
+                const current = window.audioEngine.currentSong;
+                if (current && current.id) {
+                    const isLiked = await window.musicDB.toggleLike(current.id);
+                    current.isLiked = isLiked;
+                    this.dom.fsLikeBtn.classList.toggle("liked", isLiked);
+                    this.dom.playerLikeBtn.classList.toggle("liked", isLiked);
+                    document.querySelectorAll(`[data-like-id="${current.id}"]`).forEach(btn => {
+                        btn.classList.toggle("liked", isLiked);
+                    });
+                    await this.updateCounters();
+                    this.showToast(isLiked ? "Added to Liked Songs ♥" : "Removed from Liked Songs");
+                    if (this.currentView === "liked") {
+                        const allSongs = await window.musicDB.getAllSongs();
+                        this.renderLikedView(allSongs);
+                    }
+                }
+            });
+        }
+        if (this.dom.fsBtnOpenEq) {
+            this.dom.fsBtnOpenEq.addEventListener("click", (e) => {
+                e.stopPropagation();
+                this.openModal(this.dom.equalizerModal);
+            });
+        }
+        if (this.dom.fsBtnQueueToggle) {
+            this.dom.fsBtnQueueToggle.addEventListener("click", (e) => {
+                e.stopPropagation();
+                this.toggleQueueDrawer();
+            });
+        }
+        if (this.dom.fsBtnLyricsToggle) {
+            this.dom.fsBtnLyricsToggle.addEventListener("click", (e) => {
+                e.stopPropagation();
+                if (this.dom.fsLyricsSheet) this.dom.fsLyricsSheet.classList.toggle("active");
+            });
+        }
+        if (this.dom.btnCloseLyricsSheet) {
+            this.dom.btnCloseLyricsSheet.addEventListener("click", (e) => {
+                e.stopPropagation();
+                if (this.dom.fsLyricsSheet) this.dom.fsLyricsSheet.classList.remove("active");
+            });
+        }
+        if (this.dom.fsBtnSpeed) {
+            const speeds = [0.75, 1.0, 1.25, 1.5, 2.0];
+            let fsSpeedIdx = 1;
+            this.dom.fsBtnSpeed.addEventListener("click", (e) => {
+                e.stopPropagation();
+                fsSpeedIdx = (fsSpeedIdx + 1) % speeds.length;
+                const s = speeds[fsSpeedIdx];
+                window.audioEngine.setPlaybackRate(s);
+                if (this.dom.fsSpeedText) this.dom.fsSpeedText.textContent = s + "x";
+                if (this.dom.btnPlaybackSpeed) this.dom.btnPlaybackSpeed.textContent = s + "x";
+                this.showToast("Playback Speed: " + s + "x");
+            });
+        }
+
+        // Touch & Click scrubbing for Fullscreen Player
+        if (this.dom.fsProgressBarWrap) {
+            const getFsPercent = (clientX) => {
+                const rect = this.dom.fsProgressBarWrap.getBoundingClientRect();
+                if (!rect.width || rect.width <= 0) return 0;
+                return Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100));
+            };
+
+            const updateFsScrubVisual = (percent) => {
+                if (this.dom.fsProgressFill) this.dom.fsProgressFill.style.width = percent + "%";
+                if (this.dom.progressFill) this.dom.progressFill.style.width = percent + "%";
+                const duration = window.audioEngine.getDuration ? window.audioEngine.getDuration() : (window.audioEngine.audio ? window.audioEngine.audio.duration : 0);
+                if (Number.isFinite(duration) && duration > 0) {
+                    const previewSecs = (percent / 100) * duration;
+                    const formatted = this.formatTime(previewSecs);
+                    if (this.dom.fsCurrentTimeText) this.dom.fsCurrentTimeText.textContent = formatted;
+                    if (this.dom.currentTimeText) this.dom.currentTimeText.textContent = formatted;
+                }
+            };
+
+            this.dom.fsProgressBarWrap.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const percent = getFsPercent(e.clientX);
+                updateFsScrubVisual(percent);
+                window.audioEngine.seekPercent(percent);
+            });
+
+            this.dom.fsProgressBarWrap.addEventListener("touchstart", (e) => {
+                e.stopPropagation();
+                if (e.touches && e.touches[0]) {
+                    this.isScrubbing = true;
+                    const percent = getFsPercent(e.touches[0].clientX);
+                    updateFsScrubVisual(percent);
+                }
+            }, { passive: false });
+
+            this.dom.fsProgressBarWrap.addEventListener("touchmove", (e) => {
+                e.stopPropagation();
+                if (this.isScrubbing && e.touches && e.touches[0]) {
+                    if (e.cancelable) e.preventDefault();
+                    const percent = getFsPercent(e.touches[0].clientX);
+                    updateFsScrubVisual(percent);
+                }
+            }, { passive: false });
+
+            const commitFsTouchSeek = (e) => {
+                if (this.isScrubbing) {
+                    if (e) e.stopPropagation();
+                    this.isScrubbing = false;
+                    let percent = 0;
+                    if (e && e.changedTouches && e.changedTouches[0]) {
+                        percent = getFsPercent(e.changedTouches[0].clientX);
+                    }
+                    updateFsScrubVisual(percent);
+                    window.audioEngine.seekPercent(percent);
+                }
+            };
+
+            this.dom.fsProgressBarWrap.addEventListener("touchend", commitFsTouchSeek, { passive: false });
+            this.dom.fsProgressBarWrap.addEventListener("touchcancel", commitFsTouchSeek, { passive: false });
+        }
 
         // File upload actions (if present)
         if (this.dom.btnBrowseFiles && this.dom.fileInput) {
@@ -870,18 +1049,22 @@ class UIController {
 
         engine.on("play", (song) => {
             this.dom.btnPlayPause.innerHTML = "❚❚";
+            if (this.dom.fsBtnPlayPause) this.dom.fsBtnPlayPause.innerHTML = "<span class='fs-play-icon'>❚❚</span>";
             this.dom.playerCoverWrap.classList.add("spinning");
             const playerBar = document.querySelector(".music-player-bar");
             if (playerBar) playerBar.classList.add("is-playing");
+            if (this.dom.fullscreenPlayer) this.dom.fullscreenPlayer.classList.add("is-playing");
             document.body.classList.add("audio-playing");
             this.highlightPlayingRow(song ? song.id : null);
         });
 
         engine.on("pause", () => {
             this.dom.btnPlayPause.innerHTML = "▶";
+            if (this.dom.fsBtnPlayPause) this.dom.fsBtnPlayPause.innerHTML = "<span class='fs-play-icon'>▶</span>";
             this.dom.playerCoverWrap.classList.remove("spinning");
             const playerBar = document.querySelector(".music-player-bar");
             if (playerBar) playerBar.classList.remove("is-playing");
+            if (this.dom.fullscreenPlayer) this.dom.fullscreenPlayer.classList.remove("is-playing");
             document.body.classList.remove("audio-playing");
         });
 
@@ -892,6 +1075,7 @@ class UIController {
                 this.dom.playerSongArtist.textContent = "Select a song from library";
                 this.dom.playerSongArtist.title = "Select a song from library";
                 this.dom.playerLikeBtn.classList.remove("liked");
+                if (this.dom.fsLikeBtn) this.dom.fsLikeBtn.classList.remove("liked");
                 return;
             }
 
@@ -902,18 +1086,28 @@ class UIController {
             this.dom.playerSongArtist.textContent = meta.artist;
             this.dom.playerSongArtist.title = meta.artist;
             this.dom.playerLikeBtn.classList.toggle("liked", !!song.isLiked);
+            if (this.dom.fsLikeBtn) this.dom.fsLikeBtn.classList.toggle("liked", !!song.isLiked);
 
             const coverUrl = this.getSongCoverUrl(song);
             this.dom.playerCoverImg.src = coverUrl;
 
-            // Fullscreen player updates
-            this.dom.fsSongTitle.textContent = meta.title;
-            this.dom.fsSongTitle.title = meta.title;
-            this.dom.fsSongArtist.textContent = meta.artist;
-            this.dom.fsSongArtist.title = meta.artist;
-            this.dom.fsCoverArt.src = coverUrl;
-            this.dom.fsBgBlur.style.backgroundImage = `url(${coverUrl})`;
-            this.dom.fsLyricsText.textContent = song.lyrics || "No lyrics available for this song.\nYou can add lyrics by editing the song details.";
+            // Fullscreen player updates (v2.0.00)
+            if (this.dom.fsSongTitle) {
+                this.dom.fsSongTitle.textContent = meta.title;
+                this.dom.fsSongTitle.title = meta.title;
+            }
+            if (this.dom.fsSongArtist) {
+                this.dom.fsSongArtist.textContent = meta.artist;
+                this.dom.fsSongArtist.title = meta.artist;
+            }
+            if (this.dom.fsCoverArt) this.dom.fsCoverArt.src = coverUrl;
+            if (this.dom.fsBgBlur) this.dom.fsBgBlur.style.backgroundImage = `url(${coverUrl})`;
+            if (this.dom.fsLyricsText) {
+                this.dom.fsLyricsText.textContent = song.lyrics || "No lyrics available for this song.\nYou can add lyrics by editing the song details in PC Studio.";
+            }
+            if (this.dom.fsGenreBadge) {
+                this.dom.fsGenreBadge.textContent = song && song.genre ? "🎵 " + song.genre + " • v2.0.00" : "🎵 SANGEET v2.0.00";
+            }
 
             this.highlightPlayingRow(song.id);
         });
@@ -923,12 +1117,19 @@ class UIController {
                 // Keep scrub preview while user drags seek bar on touch screen
                 return;
             }
-            this.dom.currentTimeText.textContent = this.formatTime(currentTime);
-            this.dom.totalDurationText.textContent = this.formatTime(duration);
+            const curTimeFormatted = this.formatTime(currentTime);
+            const durFormatted = this.formatTime(duration);
+
+            this.dom.currentTimeText.textContent = curTimeFormatted;
+            this.dom.totalDurationText.textContent = durFormatted;
+
+            if (this.dom.fsCurrentTimeText) this.dom.fsCurrentTimeText.textContent = curTimeFormatted;
+            if (this.dom.fsDurationText) this.dom.fsDurationText.textContent = durFormatted;
 
             if (duration > 0) {
                 const percent = (currentTime / duration) * 100;
                 this.dom.progressFill.style.width = percent + "%";
+                if (this.dom.fsProgressFill) this.dom.fsProgressFill.style.width = percent + "%";
             }
         });
 
@@ -2042,7 +2243,7 @@ class UIController {
         });
     }
 
-    // --- 5. ABOUT VIEW (CREATOR / IDEA BY PARAG (PINKU) BASUGAON) ---
+    // --- 5. ABOUT VIEW (CREATOR / IDEA BY PARAG (PINKU) BASUGAON - v2.0.00) ---
 
     renderAboutView() {
         const container = this.dom.viewContainer;
@@ -2057,7 +2258,10 @@ class UIController {
                     </div>
                     <h2 class="about-title">Sangeet Local</h2>
                     <div class="about-lead">Create or Idea By: <span class="about-highlight">Parag (Pinku)</span></div>
-                    <div class="about-location-pill">📍 Made in Basugaon</div>
+                    <div class="about-version-badge" style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; background: rgba(139, 92, 246, 0.2); border: 1px solid rgba(139, 92, 246, 0.5); border-radius: 20px; font-size: 12px; font-weight: 700; color: #c4b5fd; margin-top: 6px;">
+                        <span>✨ Version 2.0.00</span>
+                    </div>
+                    <div class="about-location-pill" style="margin-top: 6px;">📍 Made in Basugaon</div>
                 </div>
 
                 <!-- Info Cards Grid -->
@@ -2066,6 +2270,12 @@ class UIController {
                         <div class="about-card-icon">💡</div>
                         <h3>Create or Idea By</h3>
                         <p>Conceptualized and designed by <strong>Parag (Pinku)</strong> for personal, fast, ad-free music listening anytime on PC and mobile phones.</p>
+                    </div>
+
+                    <div class="about-card">
+                        <div class="about-card-icon">🚀</div>
+                        <h3>Version 2.0.00 Music UI</h3>
+                        <p>Engineered with the new <strong>Version 2.0.00 Mobile Music Player Interface</strong>: Fullscreen Now Playing studio, real-time flowing sound wave visualizers, touch scrubbing, and beat equalizers.</p>
                     </div>
 
                     <div class="about-card">
@@ -2083,7 +2293,7 @@ class UIController {
 
                 <!-- Footer Note -->
                 <div class="about-footer-note">
-                    <p>Sangeet Local • Create or Idea By: Parag (Pinku) • Made in Basugaon</p>
+                    <p>Sangeet Local v2.0.00 • Create or Idea By: Parag (Pinku) • Made in Basugaon</p>
                 </div>
             </div>
         `;
