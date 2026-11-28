@@ -109,9 +109,9 @@ class SangeetApp {
             return;
         }
 
-        // Fast & smooth startup: 800ms initial brand showcase, then silky fade out
+        // Fast & smooth startup: 1000ms initial brand showcase, then silky fade out
         const elapsed = Date.now() - startTime;
-        const minDuration = 800;
+        const minDuration = 1000;
         const remaining = Math.max(0, minDuration - elapsed);
 
         setTimeout(() => {

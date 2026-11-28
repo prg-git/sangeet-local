@@ -124,6 +124,10 @@ class AudioEngine {
             this.updateAndroidNotification(true);
         });
 
+        this.audio.addEventListener("playing", () => {
+            this.updateAndroidNotification(true);
+        });
+
         this.audio.addEventListener("pause", () => {
             this.emit("pause", this.currentSong);
             this.updateMediaSessionState("paused");

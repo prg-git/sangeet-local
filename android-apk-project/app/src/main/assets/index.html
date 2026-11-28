@@ -50,10 +50,12 @@
             user-select: none;
             -webkit-user-select: none;
         }
+
         #appSplashScreen.splash-fade-out {
             opacity: 0 !important;
             pointer-events: none !important;
         }
+
         html.skip-splash #appSplashScreen {
             display: none !important;
         }
@@ -88,7 +90,8 @@
             <div class="splash-logo-wrap">
                 <div class="splash-logo-halo"></div>
                 <div class="splash-logo-card">
-                    <img src="icons/icon-192.png" alt="Sangeet Local" class="splash-app-icon" onerror="this.onerror=null; this.src='icons/icon-192.png';">
+                    <img src="icons/icon-192.png" alt="Sangeet Local" class="splash-app-icon"
+                        onerror="this.onerror=null; this.src='icons/icon-192.png';">
                 </div>
             </div>
 
@@ -97,7 +100,9 @@
                 <h1 class="splash-app-title">
                     <span class="splash-title-text">Sangeet Local</span>
                 </h1>
+                <div class="splash-version-badge"><span class="splash-badge-dot">●</span> VERSION 2.0.0</div>
                 <p class="splash-tagline">Refresh with Us</p>
+                <p class="splash-creator">Created with ❤️ by Parag (Pinku)</p>
             </div>
 
             <!-- Minimalist Pulse Loader -->
@@ -111,7 +116,7 @@
 
             <!-- Footer Location -->
             <div class="splash-footer">
-                <div class="splash-location">Basugaon • Music Studio</div>
+                <div class="splash-location">Proudly Made with ❤️ in Basugaon</div>
             </div>
         </div>
     </div>
@@ -368,14 +373,19 @@
         <!-- Top Navigation Header -->
         <div class="fs-header">
             <button class="fs-btn-icon" id="btnCloseFullscreen" title="Close Now Playing">
-                <svg viewBox="0 0 24 24" width="26" height="26"><path fill="currentColor" d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+                <svg viewBox="0 0 24 24" width="26" height="26">
+                    <path fill="currentColor" d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z" />
+                </svg>
             </button>
             <div class="fs-header-center">
                 <span class="fs-header-tag">PLAYING FROM LIBRARY</span>
                 <span class="fs-header-badge" id="fsGenreBadge">🎵 SANGEET v2.0.0</span>
             </div>
             <button class="fs-btn-icon" id="fsBtnOpenEq" title="Audio Equalizer">
-                <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/></svg>
+                <svg viewBox="0 0 24 24" width="22" height="22">
+                    <path fill="currentColor"
+                        d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z" />
+                </svg>
             </button>
         </div>
 
@@ -412,19 +422,28 @@
             <!-- Master Playback Control Deck -->
             <div class="fs-controls-deck">
                 <button class="fs-ctrl-btn fs-btn-subtle" id="fsBtnShuffle" title="Shuffle">
-                    <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>
+                    <svg viewBox="0 0 24 24" width="22" height="22">
+                        <path fill="currentColor"
+                            d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z" />
+                    </svg>
                 </button>
                 <button class="fs-ctrl-btn fs-btn-prev" id="fsBtnPrevious" title="Previous">
-                    <svg viewBox="0 0 24 24" width="28" height="28"><path fill="currentColor" d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+                    <svg viewBox="0 0 24 24" width="28" height="28">
+                        <path fill="currentColor" d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
+                    </svg>
                 </button>
                 <button class="fs-ctrl-btn fs-btn-play-hero" id="fsBtnPlayPause" title="Play/Pause">
                     <span class="fs-play-icon">▶</span>
                 </button>
                 <button class="fs-ctrl-btn fs-btn-next" id="fsBtnNext" title="Next">
-                    <svg viewBox="0 0 24 24" width="28" height="28"><path fill="currentColor" d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                    <svg viewBox="0 0 24 24" width="28" height="28">
+                        <path fill="currentColor" d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
+                    </svg>
                 </button>
                 <button class="fs-ctrl-btn fs-btn-subtle" id="fsBtnRepeat" title="Repeat">
-                    <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>
+                    <svg viewBox="0 0 24 24" width="22" height="22">
+                        <path fill="currentColor" d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z" />
+                    </svg>
                 </button>
             </div>
 
@@ -535,7 +554,7 @@
                 </div>
                 <button class="modal-close-btn" data-close-modal="songDetailsModal">✕</button>
             </div>
-            
+
             <div class="song-details-grid">
                 <div class="detail-item">
                     <span class="detail-label">Album</span>

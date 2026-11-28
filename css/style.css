@@ -4117,15 +4117,46 @@ body.public-client-mode .col-actions {
     }
 }
 
+.splash-version-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 12px;
+    border-radius: 999px;
+    background: rgba(212, 248, 44, 0.12);
+    border: 1px solid rgba(212, 248, 44, 0.32);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    color: #d4f82c;
+    text-transform: uppercase;
+    margin-top: 4px;
+    margin-bottom: 2px;
+}
+
+.splash-badge-dot {
+    color: #10b981;
+    font-size: 9px;
+    line-height: 1;
+}
+
+.splash-creator {
+    font-size: 12px;
+    font-weight: 500;
+    color: #94a3b8;
+    margin: 4px 0 0 0;
+    letter-spacing: 0.3px;
+}
+
 .splash-footer {
     padding-top: 12px;
 }
 
 .splash-location {
     font-size: 12px;
-    color: #5d616d;
-    font-weight: 500;
-    letter-spacing: 0.5px;
+    color: #828799;
+    font-weight: 600;
+    letter-spacing: 0.4px;
 }
 
 /* ==========================================================================

@@ -385,20 +385,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(
-                    CHANNEL_ID,
-                    "Music Playback",
-                    NotificationManager.IMPORTANCE_LOW
-            );
-            channel.setDescription("Shows currently playing song and playback controls");
-            channel.setShowBadge(false);
-            channel.setLockscreenVisibility(NotificationCompat.VISIBILITY_PUBLIC);
-            NotificationManager nm = getSystemService(NotificationManager.class);
-            if (nm != null) {
-                nm.createNotificationChannel(channel);
-            }
-        }
+        MediaPlaybackService.createNotificationChannel(this);
     }
 
     private void setupPlaybackReceiver() {
@@ -457,52 +444,85 @@ public class MainActivity extends AppCompatActivity {
             releaseWakeLock();
         }
 
-        Intent contentIntent = new Intent(this, MainActivity.class);
-        contentIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        int flags = PendingIntent.FLAG_UPDATE_CURRENT;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            flags |= PendingIntent.FLAG_IMMUTABLE;
-        }
-        PendingIntent contentPending = PendingIntent.getActivity(this, 0, contentIntent, flags);
-
-        Intent playPauseIntent = new Intent(ACTION_PLAY_PAUSE);
-        playPauseIntent.setPackage(getPackageName());
-        PendingIntent playPausePending = PendingIntent.getBroadcast(this, 1, playPauseIntent, flags);
-
-        Intent prevIntent = new Intent(ACTION_PREV);
-        prevIntent.setPackage(getPackageName());
-        PendingIntent prevPending = PendingIntent.getBroadcast(this, 2, prevIntent, flags);
-
-        Intent nextIntent = new Intent(ACTION_NEXT);
-        nextIntent.setPackage(getPackageName());
-        PendingIntent nextPending = PendingIntent.getBroadcast(this, 3, nextIntent, flags);
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle(title)
-                .setContentText(artist)
-                .setSubText("Sangeet Local")
-                .setContentIntent(contentPending)
-                .setOngoing(isPlaying)
-                .setOnlyAlertOnce(true)
-                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setPriority(NotificationCompat.PRIORITY_LOW)
-                .addAction(android.R.drawable.ic_media_previous, "Previous", prevPending)
-                .addAction(isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play,
-                        isPlaying ? "Pause" : "Play", playPausePending)
-                .addAction(android.R.drawable.ic_media_next, "Next", nextPending);
-
-        NotificationManagerCompat nm = NotificationManagerCompat.from(this);
+        // On Android 13+ (API 33+), ensure notification permission is requested if not yet granted
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                return;
+                requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 102);
             }
         }
-        nm.notify(NOTIFICATION_ID, builder.build());
+
+        // Route media notification & foreground execution through MediaPlaybackService
+        try {
+            Intent serviceIntent = new Intent(this, MediaPlaybackService.class);
+            serviceIntent.setAction(MediaPlaybackService.ACTION_UPDATE_NOTIFICATION);
+            serviceIntent.putExtra("title", title);
+            serviceIntent.putExtra("artist", artist);
+            serviceIntent.putExtra("isPlaying", isPlaying);
+
+            if (isPlaying) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(serviceIntent);
+                } else {
+                    startService(serviceIntent);
+                }
+            } else {
+                startService(serviceIntent);
+            }
+        } catch (Exception e) {
+            // Direct notification fallback
+            fallbackDirectNotification(title, artist, isPlaying);
+        }
+    }
+
+    private void fallbackDirectNotification(String title, String artist, boolean isPlaying) {
+        try {
+            Intent contentIntent = new Intent(this, MainActivity.class);
+            contentIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            int flags = PendingIntent.FLAG_UPDATE_CURRENT;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                flags |= PendingIntent.FLAG_IMMUTABLE;
+            }
+            PendingIntent contentPending = PendingIntent.getActivity(this, 0, contentIntent, flags);
+
+            Intent playPauseIntent = new Intent(ACTION_PLAY_PAUSE);
+            playPauseIntent.setPackage(getPackageName());
+            PendingIntent playPausePending = PendingIntent.getBroadcast(this, 1, playPauseIntent, flags);
+
+            Intent prevIntent = new Intent(ACTION_PREV);
+            prevIntent.setPackage(getPackageName());
+            PendingIntent prevPending = PendingIntent.getBroadcast(this, 2, prevIntent, flags);
+
+            Intent nextIntent = new Intent(ACTION_NEXT);
+            nextIntent.setPackage(getPackageName());
+            PendingIntent nextPending = PendingIntent.getBroadcast(this, 3, nextIntent, flags);
+
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(this, MediaPlaybackService.CHANNEL_ID)
+                    .setSmallIcon(R.mipmap.ic_launcher)
+                    .setContentTitle(title)
+                    .setContentText(artist)
+                    .setSubText("Sangeet Local")
+                    .setContentIntent(contentPending)
+                    .setOngoing(isPlaying)
+                    .setOnlyAlertOnce(true)
+                    .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                    .setPriority(NotificationCompat.PRIORITY_LOW)
+                    .setCategory(NotificationCompat.CATEGORY_TRANSPORT)
+                    .addAction(android.R.drawable.ic_media_previous, "Previous", prevPending)
+                    .addAction(isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play,
+                            isPlaying ? "Pause" : "Play", playPausePending)
+                    .addAction(android.R.drawable.ic_media_next, "Next", nextPending);
+
+            NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, builder.build());
+        } catch (Exception ignored) {}
     }
 
     private void removeMediaNotification() {
         releaseWakeLock();
+        try {
+            Intent stopIntent = new Intent(this, MediaPlaybackService.class);
+            stopIntent.setAction(MediaPlaybackService.ACTION_STOP_SERVICE);
+            startService(stopIntent);
+        } catch (Exception ignored) {}
         NotificationManagerCompat nm = NotificationManagerCompat.from(this);
         nm.cancel(NOTIFICATION_ID);
     }
@@ -527,6 +547,19 @@ public class MainActivity extends AppCompatActivity {
                 wakeLock.release();
             }
         } catch (Exception ignored) {}
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Crucial: Do NOT call webView.onPause() or webView.pauseTimers()!
+        // Preserves continuous HTML5 audio playback when minimizing app or switching apps.
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // MediaPlaybackService maintains foreground priority so background audio remains continuous.
     }
 
     @Override
@@ -601,10 +634,25 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK && webView != null && webView.canGoBack()) {
-            webView.goBack();
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            if (webView != null && webView.canGoBack()) {
+                webView.goBack();
+                return true;
+            }
+            // Move task to back instead of finishing/killing the activity!
+            // Music keeps playing seamlessly in background and notification drawer remains active.
+            moveTaskToBack(true);
             return true;
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (webView != null && webView.canGoBack()) {
+            webView.goBack();
+            return;
+        }
+        moveTaskToBack(true);
     }
 }
