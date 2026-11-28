@@ -2906,12 +2906,14 @@ html.skip-splash #appSplashScreen {
 
     /* Sound Wave Equalizer Widget beside Song Title */
     .mobile-sound-wave {
-        display: inline-flex;
-        align-items: flex-end;
-        gap: 3px;
-        height: 18px;
-        padding: 0 1px;
-        flex-shrink: 0;
+        display: inline-flex !important;
+        align-items: flex-end !important;
+        gap: 3px !important;
+        height: 18px !important;
+        min-width: 26px !important;
+        padding: 0 1px !important;
+        flex-shrink: 0 !important;
+        vertical-align: middle !important;
     }
 
     .mobile-sound-wave .sw-bar {
@@ -2926,36 +2928,48 @@ html.skip-splash #appSplashScreen {
     }
 
     /* When Song is Playing: Sound Wave Moves Continuously */
-    .music-player-bar.is-playing .mobile-sound-wave .sw-bar {
+    .music-player-bar.is-playing .mobile-sound-wave .sw-bar,
+    .fullscreen-player.is-playing .mobile-sound-wave .sw-bar,
+    body.audio-playing .mobile-sound-wave .sw-bar {
         background: linear-gradient(to top, #ff0055 0%, #ff3b30 50%, #ff9500 100%) !important;
         box-shadow: 0 0 8px rgba(255, 50, 75, 0.9);
-        opacity: 1;
-        animation: soundWaveBeat 0.9s ease-in-out infinite alternate;
+        opacity: 1 !important;
+        animation: soundWaveBeat 0.9s ease-in-out infinite alternate !important;
     }
 
-    .music-player-bar.is-playing .mobile-sound-wave .sw-1 {
-        animation-duration: 0.75s;
-        animation-delay: 0.1s;
+    .music-player-bar.is-playing .mobile-sound-wave .sw-1,
+    .fullscreen-player.is-playing .mobile-sound-wave .sw-1,
+    body.audio-playing .mobile-sound-wave .sw-1 {
+        animation-duration: 0.75s !important;
+        animation-delay: 0.1s !important;
     }
 
-    .music-player-bar.is-playing .mobile-sound-wave .sw-2 {
-        animation-duration: 0.95s;
-        animation-delay: 0.25s;
+    .music-player-bar.is-playing .mobile-sound-wave .sw-2,
+    .fullscreen-player.is-playing .mobile-sound-wave .sw-2,
+    body.audio-playing .mobile-sound-wave .sw-2 {
+        animation-duration: 0.95s !important;
+        animation-delay: 0.25s !important;
     }
 
-    .music-player-bar.is-playing .mobile-sound-wave .sw-3 {
-        animation-duration: 0.8s;
-        animation-delay: 0.05s;
+    .music-player-bar.is-playing .mobile-sound-wave .sw-3,
+    .fullscreen-player.is-playing .mobile-sound-wave .sw-3,
+    body.audio-playing .mobile-sound-wave .sw-3 {
+        animation-duration: 0.8s !important;
+        animation-delay: 0.05s !important;
     }
 
-    .music-player-bar.is-playing .mobile-sound-wave .sw-4 {
-        animation-duration: 1.05s;
-        animation-delay: 0.3s;
+    .music-player-bar.is-playing .mobile-sound-wave .sw-4,
+    .fullscreen-player.is-playing .mobile-sound-wave .sw-4,
+    body.audio-playing .mobile-sound-wave .sw-4 {
+        animation-duration: 1.05s !important;
+        animation-delay: 0.3s !important;
     }
 
-    .music-player-bar.is-playing .mobile-sound-wave .sw-5 {
-        animation-duration: 0.85s;
-        animation-delay: 0.15s;
+    .music-player-bar.is-playing .mobile-sound-wave .sw-5,
+    .fullscreen-player.is-playing .mobile-sound-wave .sw-5,
+    body.audio-playing .mobile-sound-wave .sw-5 {
+        animation-duration: 0.85s !important;
+        animation-delay: 0.15s !important;
     }
 
     @keyframes soundWaveBeat {

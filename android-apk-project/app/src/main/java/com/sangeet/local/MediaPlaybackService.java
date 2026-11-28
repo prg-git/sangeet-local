@@ -203,7 +203,7 @@ public class MediaPlaybackService extends Service {
         PendingIntent nextPending = PendingIntent.getBroadcast(this, 3, nextIntent, flags);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(android.R.drawable.ic_media_play)
+                .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle(title)
                 .setContentText(artist)
                 .setSubText("Sangeet Local")
@@ -217,6 +217,10 @@ public class MediaPlaybackService extends Service {
                 .addAction(isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play,
                         isPlaying ? "Pause" : "Play", playPausePending)
                 .addAction(android.R.drawable.ic_media_next, "Next", nextPending);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            builder.setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE);
+        }
 
         androidx.media.app.NotificationCompat.MediaStyle mediaStyle =
                 new androidx.media.app.NotificationCompat.MediaStyle()

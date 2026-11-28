@@ -60,6 +60,10 @@ public class MainActivity extends AppCompatActivity {
     private static final String GITHUB_PAGES_URL = "https://prg-git.github.io/sangeet-local/";
     private static final String LOCAL_ASSET_URL = "https://appassets.androidplatform.net/assets/index.html";
 
+    private String lastNotificationTitle = "Sangeet Local";
+    private String lastNotificationArtist = "Regional Music Studio";
+    private boolean lastNotificationIsPlaying = false;
+
     // BoundedInputStream to read exactly 'limit' bytes for HTTP 206 Partial Content ranges
     private static class BoundedInputStream extends InputStream {
         private final InputStream in;
@@ -108,6 +112,7 @@ public class MainActivity extends AppCompatActivity {
 
         prefs = getSharedPreferences("SangeetPrefs", Context.MODE_PRIVATE);
         webView = findViewById(R.id.webView);
+        webView.setBackgroundColor(android.graphics.Color.parseColor("#06070b"));
 
         // Configure WebView smooth scrolling & overscroll
         webView.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);
@@ -390,6 +395,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (grantResults != null && grantResults.length > 0 && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            if (lastNotificationIsPlaying) {
+                showMediaNotification(lastNotificationTitle, lastNotificationArtist, true);
+            }
+        }
+    }
+
     private void createNotificationChannel() {
         MediaPlaybackService.createNotificationChannel(this);
     }
@@ -443,6 +458,10 @@ public class MainActivity extends AppCompatActivity {
     private void showMediaNotification(String title, String artist, boolean isPlaying) {
         if (title == null || title.isEmpty()) title = "Sangeet Local";
         if (artist == null || artist.isEmpty()) artist = "Regional Music Studio";
+
+        lastNotificationTitle = title;
+        lastNotificationArtist = artist;
+        lastNotificationIsPlaying = isPlaying;
 
         if (isPlaying) {
             acquireWakeLock();
@@ -503,7 +522,7 @@ public class MainActivity extends AppCompatActivity {
             PendingIntent nextPending = PendingIntent.getBroadcast(this, 3, nextIntent, flags);
 
             NotificationCompat.Builder builder = new NotificationCompat.Builder(this, MediaPlaybackService.CHANNEL_ID)
-                    .setSmallIcon(android.R.drawable.ic_media_play)
+                    .setSmallIcon(R.mipmap.ic_launcher)
                     .setContentTitle(title)
                     .setContentText(artist)
                     .setSubText("Sangeet Local")
@@ -517,6 +536,10 @@ public class MainActivity extends AppCompatActivity {
                     .addAction(isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play,
                             isPlaying ? "Pause" : "Play", playPausePending)
                     .addAction(android.R.drawable.ic_media_next, "Next", nextPending);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                builder.setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE);
+            }
 
             NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, builder.build());
         } catch (Exception ignored) {}
@@ -593,8 +616,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadCurrentServerUrl() {
-        // Defaults to GITHUB_PAGES_URL so updates published from PC automatically appear
-        String currentUrl = prefs.getString(PREF_KEY_URL, GITHUB_PAGES_URL);
+        // Defaults to LOCAL_ASSET_URL for 0ms instant launch with zero white screen
+        String currentUrl = prefs.getString(PREF_KEY_URL, LOCAL_ASSET_URL);
         if (webView != null) {
             webView.loadUrl(currentUrl);
         }

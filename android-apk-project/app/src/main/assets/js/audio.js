@@ -154,9 +154,37 @@ class AudioEngine {
     }
 
     async playSong(song, newQueue = null, index = null) {
+        if (!song) return;
+
+        // If this song is ALREADY loaded (e.g. startup preloaded track) and paused,
+        // do NOT reset audio.src which triggers an AbortError in Chrome/WebView!
+        // Immediately start playback on the very first tap!
+        if (this.currentSong && String(this.currentSong.id) === String(song.id) && this.audio.src) {
+            this.initAudioContext();
+            if (this.audioCtx && this.audioCtx.state === "suspended") {
+                try { await this.audioCtx.resume(); } catch (e) { }
+            }
+            if (newQueue) {
+                const foundIdx = newQueue.findIndex(s => String(s.id) === String(song.id));
+                this.setQueue(newQueue, index !== null ? index : (foundIdx !== -1 ? foundIdx : 0));
+            }
+            try {
+                const p = this.audio.play();
+                if (p !== undefined) await p;
+            } catch (err) {
+                console.warn("Retrying play on current track:", err);
+                try {
+                    this.audio.load();
+                    await this.audio.play();
+                } catch (e2) { }
+            }
+            this.updateAndroidNotification(true);
+            return;
+        }
+
         this.initAudioContext();
         if (this.audioCtx && this.audioCtx.state === "suspended") {
-            await this.audioCtx.resume();
+            try { await this.audioCtx.resume(); } catch (e) { }
         }
 
         if (newQueue) {
@@ -195,7 +223,11 @@ class AudioEngine {
             return;
         }
 
-        this.audio.src = audioSrc;
+        const resolvedSrc = new URL(audioSrc, window.location.href).href;
+        if (this.audio.src !== resolvedSrc) {
+            this.audio.src = audioSrc;
+            this.audio.load();
+        }
         this.audio.playbackRate = this.playbackRate;
         this.emit("trackChange", song);
         this.setupMediaSession(song);
@@ -208,15 +240,22 @@ class AudioEngine {
         } catch (e) { }
 
         try {
-            await this.audio.play();
+            const p = this.audio.play();
+            if (p !== undefined) await p;
 
             // Record play in DB
             if (window.musicDB && song.id) {
                 window.musicDB.incrementPlayCount(song.id);
             }
         } catch (err) {
-            console.warn("Playback autoplay prevented or error:", err);
+            console.warn("Playback autoplay prevented or error, retrying immediately:", err);
+            try {
+                await this.audio.play();
+            } catch (err2) {
+                console.error("Audio playback error:", err2);
+            }
         }
+        this.updateAndroidNotification(true);
     }
 
     /**
@@ -297,11 +336,22 @@ class AudioEngine {
         if (this.audio.paused) {
             this.initAudioContext();
             if (this.audioCtx && this.audioCtx.state === "suspended") {
-                await this.audioCtx.resume();
+                try { await this.audioCtx.resume(); } catch (e) { }
             }
-            await this.audio.play();
+            try {
+                const p = this.audio.play();
+                if (p !== undefined) await p;
+            } catch (err) {
+                console.warn("togglePlay error, reloading source:", err);
+                try {
+                    this.audio.load();
+                    await this.audio.play();
+                } catch (e2) { }
+            }
+            this.updateAndroidNotification(true);
         } else {
             this.audio.pause();
+            this.updateAndroidNotification(false);
         }
     }
 
