@@ -1431,18 +1431,11 @@ class UIController {
         const playSongId = spotlight ? spotlight.id : (filteredSongs[0] ? filteredSongs[0].id : (songs[0] ? songs[0].id : ""));
 
         let html = `
-            <!-- Top Header (User Design: WELCOME / Refresh with Us / Koch Rajbongshi • Assamese • Bodo) -->
+            <!-- Top Header (WELCOME / Refresh with Us) -->
             <div class="home-inspiration-header">
                 <div class="home-header-left">
                     <span class="home-greeting-tag">WELCOME</span>
                     <h1 class="home-headline">Refresh with Us</h1>
-                    <div class="home-region-subtitle">
-                        <span class="region-tag">Koch Rajbongshi</span>
-                        <span class="region-bullet">•</span>
-                        <span class="region-tag">Assamese</span>
-                        <span class="region-bullet">•</span>
-                        <span class="region-tag">Bodo</span>
-                    </div>
                 </div>
                 <div class="home-header-right">
                     <button class="home-header-circle-btn" id="btnHomeNotify" title="Audio Equalizer">
