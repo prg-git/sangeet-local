@@ -2591,6 +2591,15 @@ class UIController {
                             </div>
                             <span class="tool-item-arrow">›</span>
                         </button>
+
+                        <button class="menu-tool-item" id="btnMenuOpenMobileAdmin" style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.22), rgba(6, 182, 212, 0.15)); border: 1px solid rgba(139, 92, 246, 0.45);">
+                            <div class="tool-item-icon" style="font-size: 22px;">👑</div>
+                            <div class="tool-item-text">
+                                <span class="tool-item-title" style="color: #ffffff; font-weight: 800;">Mobile Admin Studio</span>
+                                <span class="tool-item-sub" style="color: #c4b5fd;">Add, edit & delete songs, covers & mood banners in Firebase</span>
+                            </div>
+                            <span class="tool-item-arrow" style="color: #a78bfa;">›</span>
+                        </button>
                     </div>
                 </div>
 
@@ -2665,6 +2674,11 @@ class UIController {
 
         const btnOpenConnect = document.getElementById("btnMenuOpenConnect");
         if (btnOpenConnect) btnOpenConnect.addEventListener("click", () => this.openMobileConnectModal());
+
+        const btnOpenAdmin = document.getElementById("btnMenuOpenMobileAdmin");
+        if (btnOpenAdmin) btnOpenAdmin.addEventListener("click", () => {
+            window.location.href = "mobile-admin.html";
+        });
 
         this.bindViewEvents([]);
     }

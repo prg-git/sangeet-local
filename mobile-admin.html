@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Sangeet Local - Mobile Admin Studio</title>
+    <meta name="theme-color" content="#070512">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👑</text></svg>">
+    <link rel="stylesheet" href="css/mobile-admin.css">
+
+    <!-- Firebase SDK (v10 Compat for ultra-stable zero-build browser compatibility) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+</head>
+
+<body>
+    <!-- Ambient Background Light -->
+    <div class="admin-ambient-glow glow-top-left"></div>
+    <div class="admin-ambient-glow glow-bottom-right"></div>
+
+    <div class="admin-app-container">
+        <!-- Top App Header -->
+        <header class="admin-header">
+            <div class="admin-brand">
+                <div class="admin-brand-icon">👑</div>
+                <div>
+                    <h1 class="admin-brand-title">Sangeet Studio</h1>
+                    <div class="admin-brand-sub">
+                        <span class="cloud-status-dot" id="cloudStatusDot"></span>
+                        <span id="cloudStatusText">Connecting Firestore...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="admin-header-actions">
+                <button class="btn-icon-header" id="btnSyncRefresh" title="Sync Cloud Data">🔄</button>
+                <a href="index.html" class="btn-icon-header" title="Open Music Player">🎵</a>
+            </div>
+        </header>
+
+        <!-- Stats Bar -->
+        <div class="admin-stats-strip">
+            <div class="stat-pill-card">
+                <span class="stat-value" id="statTotalSongs">0</span>
+                <span class="stat-label">Cloud Songs</span>
+            </div>
+            <div class="stat-pill-card">
+                <span class="stat-value">4</span>
+                <span class="stat-label">Genres</span>
+            </div>
+            <div class="stat-pill-card">
+                <span class="stat-value" id="statCloudMode" style="color: var(--admin-accent);">Cloud</span>
+                <span class="stat-label">Realtime DB</span>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- VIEW 1: SONGS CATALOG                      -->
+        <!-- ========================================== -->
+        <section id="viewSongs" class="admin-view-panel active">
+            <!-- Search Input -->
+            <div class="admin-search-wrap">
+                <span class="admin-search-icon">🔍</span>
+                <input type="text" id="songSearchInput" class="admin-search-input" placeholder="Search by title, artist, or genre...">
+            </div>
+
+            <!-- Category Filter Chips -->
+            <div class="admin-filter-scroll" id="categoryChipsBar">
+                <button class="filter-chip active" data-genre="all">All Songs</button>
+                <button class="filter-chip" data-genre="For you">For you</button>
+                <button class="filter-chip" data-genre="Koch Rajbongshi">Koch Rajbongshi</button>
+                <button class="filter-chip" data-genre="Assamese">Assamese</button>
+                <button class="filter-chip" data-genre="Bodo">Bodo</button>
+            </div>
+
+            <!-- Song List -->
+            <div id="songsListContainer">
+                <div style="text-align:center; padding: 40px 10px; color: var(--admin-text-muted);">
+                    <div style="font-size: 32px; margin-bottom: 8px;">⏳</div>
+                    <div style="font-weight: 700;">Loading Songs from Firestore...</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- VIEW 2: ADD SONG (UPLOAD / METADATA)       -->
+        <!-- ========================================== -->
+        <section id="viewAddSong" class="admin-view-panel">
+            <form id="addSongForm" class="admin-form-card" onsubmit="return false;">
+                <div class="form-section-title">
+                    <span>➕</span> Add New Song to Cloud
+                </div>
+
+                <!-- 1. Audio Source Picker -->
+                <div class="form-group">
+                    <label class="form-label">1. Audio File or Audio Stream URL</label>
+                    <div class="upload-dropzone" id="audioDropzone">
+                        <input type="file" id="audioFileInput" accept="audio/*,.mp3,.m4a,.wav,.ogg,.flac" style="display:none;">
+                        <div class="dropzone-icon">🎵</div>
+                        <div class="dropzone-text" id="audioDropzoneText">Tap to select Audio (.mp3, .m4a)</div>
+                        <div class="dropzone-sub">Auto-extracts title, artist, album & cover artwork</div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px; margin-top:8px;">
+                        <span style="font-size:11px; color:var(--admin-text-muted); font-weight:700;">OR URL:</span>
+                        <input type="url" id="audioUrlInput" class="form-input" style="padding:8px 12px; font-size:12px;" placeholder="https://example.com/song.mp3 or /music/song.mp3">
+                    </div>
+                </div>
+
+                <!-- 2. Cover Artwork Picker -->
+                <div class="form-group">
+                    <label class="form-label">2. Cover Artwork (Photo / Camera / URL)</label>
+                    <div class="upload-dropzone" id="coverDropzone">
+                        <input type="file" id="coverFileInput" accept="image/*" style="display:none;">
+                        <div class="dropzone-icon">🖼️</div>
+                        <div class="dropzone-text" id="coverDropzoneText">Choose Cover Image from Gallery</div>
+                        <div class="dropzone-sub">Auto-compressed for mobile data optimization</div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px; margin-top:8px;">
+                        <span style="font-size:11px; color:var(--admin-text-muted); font-weight:700;">OR URL:</span>
+                        <input type="url" id="coverUrlInput" class="form-input" style="padding:8px 12px; font-size:12px;" placeholder="https://example.com/cover.jpg">
+                    </div>
+                    <!-- Cover Art Preview -->
+                    <div class="cover-preview-deck" id="coverPreviewDeck" style="display:none;">
+                        <img id="coverPreviewImg" class="cover-preview-img" src="" alt="Cover preview">
+                        <div class="cover-preview-info">
+                            <strong style="color:#ffffff; display:block; margin-bottom:2px;" id="coverPreviewFilename">Artwork Ready</strong>
+                            <span id="coverPreviewSize">Embedded/Selected image</span>
+                            <div style="margin-top:4px;">
+                                <button type="button" id="btnRemoveCoverPreview" style="background:none; border:none; color:var(--admin-danger); font-size:11px; font-weight:700; cursor:pointer;">❌ Remove Cover</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Metadata Fields -->
+                <div class="form-group">
+                    <label class="form-label" for="inputSongTitle">Song Title *</label>
+                    <input type="text" id="inputSongTitle" class="form-input" placeholder="e.g. Gwswthangni Simang" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="inputSongArtist">Artist Name</label>
+                    <input type="text" id="inputSongArtist" class="form-input" placeholder="e.g. Bodo Regional Artist">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="inputSongAlbum">Album Name</label>
+                    <input type="text" id="inputSongAlbum" class="form-input" placeholder="e.g. Regional Hits 2024">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="selectSongCategory">Category / Regional Language *</label>
+                    <select id="selectSongCategory" class="form-select">
+                        <option value="For you">For you</option>
+                        <option value="Koch Rajbongshi">Koch Rajbongshi</option>
+                        <option value="Assamese">Assamese</option>
+                        <option value="Bodo">Bodo</option>
+                    </select>
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <div class="form-group">
+                        <label class="form-label" for="inputSongYear">Release Year</label>
+                        <input type="text" id="inputSongYear" class="form-input" placeholder="2024">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="inputSongDuration">Duration (Seconds)</label>
+                        <input type="number" id="inputSongDuration" class="form-input" placeholder="240">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="inputSongLyrics">Lyrics (Optional)</label>
+                    <textarea id="inputSongLyrics" class="form-input" rows="3" placeholder="Enter song lyrics here..."></textarea>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="upload-progress-wrap" id="uploadProgressWrap">
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="uploadProgressBar"></div>
+                    </div>
+                    <div class="progress-status-text">
+                        <span id="uploadProgressLabel">Uploading to Firebase...</span>
+                        <span id="uploadProgressPercent">0%</span>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" id="btnSubmitAddSong" class="btn-primary-action" style="margin-top:16px;">
+                    <span>🚀</span> Save Song to Firebase Cloud
+                </button>
+            </form>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- VIEW 3: BANNERS EDITOR                     -->
+        <!-- ========================================== -->
+        <section id="viewBanners" class="admin-view-panel">
+            <div class="admin-form-card">
+                <div class="form-section-title">
+                    <span>🎨</span> Featured Mood Banners
+                </div>
+
+                <!-- Category Subtabs -->
+                <div class="admin-filter-scroll" id="bannerLangTabs">
+                    <button class="filter-chip active" data-banner-key="all">For You (All)</button>
+                    <button class="filter-chip" data-banner-key="koch_rajbongshi">Koch Rajbongshi</button>
+                    <button class="filter-chip" data-banner-key="assamese">Assamese</button>
+                    <button class="filter-chip" data-banner-key="bodo">Bodo</button>
+                </div>
+
+                <!-- Live Banner Preview Card -->
+                <div id="bannerCardPreview" style="background:#0f172a; border-radius:18px; padding:18px; margin-bottom:18px; border:1px solid rgba(255,255,255,0.12); position:relative; overflow:hidden; min-height:150px; display:flex; flex-direction:column; justify-content:space-between; background-size:cover; background-position:center;">
+                    <div style="position:relative; z-index:2;">
+                        <span id="prevBannerTag" style="font-size:10px; font-weight:800; color:#d4f82c; text-transform:uppercase; letter-spacing:0.8px;">MADE FOR YOUR MOOD</span>
+                        <h2 id="prevBannerTitle" style="font-size:22px; font-weight:900; color:#ffffff; line-height:1.2; margin:6px 0 4px;">Discover weekly</h2>
+                        <p id="prevBannerSubtitle" style="font-size:12px; color:#cbd5e1; font-weight:500;">Fresh finds. On repeat all week.</p>
+                    </div>
+                    <div style="position:relative; z-index:2; align-self:flex-end;">
+                        <div style="width:42px; height:42px; border-radius:50%; background:#ef4444; display:flex; align-items:center; justify-content:center; color:#fff; font-size:16px; box-shadow:0 4px 12px rgba(239,68,68,0.5);">▶</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="bannerTagInput">Badge / Tag</label>
+                    <input type="text" id="bannerTagInput" class="form-input" placeholder="e.g. MADE FOR YOUR MOOD">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="bannerTitleInput">Headline Title</label>
+                    <input type="text" id="bannerTitleInput" class="form-input" placeholder="e.g. Discover weekly">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="bannerSubtitleInput">Subtitle / Description</label>
+                    <input type="text" id="bannerSubtitleInput" class="form-input" placeholder="e.g. Fresh regional finds">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="bannerSongSelect">Featured Play Song</label>
+                    <select id="bannerSongSelect" class="form-select">
+                        <option value="">-- No linked song --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="bannerBgUrlInput">Background Image URL</label>
+                    <input type="url" id="bannerBgUrlInput" class="form-input" placeholder="https://example.com/banner-bg.jpg">
+                </div>
+
+                <button type="button" id="btnSaveBanner" class="btn-primary-action">
+                    <span>💾</span> Save Banner to Cloud
+                </button>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- VIEW 4: CLOUD & SETTINGS                   -->
+        <!-- ========================================== -->
+        <section id="viewSettings" class="admin-view-panel">
+            <div class="admin-form-card">
+                <div class="form-section-title">
+                    <span>🔥</span> Firebase Cloud Configuration
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="cfgProjectId">Firebase Project ID</label>
+                    <input type="text" id="cfgProjectId" class="form-input" value="lafa-xaak" placeholder="lafa-xaak">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="cfgApiKey">API Key (Optional / Preconfigured)</label>
+                    <input type="text" id="cfgApiKey" class="form-input" placeholder="AIzaSy...">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="cfgStorageBucket">Storage Bucket</label>
+                    <input type="text" id="cfgStorageBucket" class="form-input" value="lafa-xaak.appspot.com" placeholder="lafa-xaak.appspot.com">
+                </div>
+
+                <button type="button" id="btnSaveFirebaseConfig" class="btn-secondary-action" style="margin-bottom:16px;">
+                    Save Custom Credentials
+                </button>
+
+                <hr style="border:none; border-top:1px solid rgba(255,255,255,0.08); margin: 18px 0;">
+
+                <div class="form-section-title">
+                    <span>📥</span> 1-Click Library Migration
+                </div>
+                <p style="font-size:12px; color:var(--admin-text-muted); margin-bottom:12px;">
+                    Upload existing local songs (Gwswthangni Simang, তুমি মোৰ আকাশ, etc.) from <code>data/library.json</code> directly to your Cloud Firestore database with one tap:
+                </p>
+                <button type="button" id="btnMigrateLocalSongs" class="btn-primary-action">
+                    <span>⚡</span> Sync Local Songs to Firestore
+                </button>
+            </div>
+        </section>
+    </div>
+
+    <!-- Floating Audio Preview Player -->
+    <div class="admin-mini-preview" id="adminMiniPreview">
+        <img id="previewCoverImg" class="preview-thumb" src="icons/icon-192.png" alt="Song thumb">
+        <div class="preview-meta">
+            <div class="preview-title" id="previewTitle">Song Title</div>
+            <div class="preview-artist" id="previewArtist">Artist</div>
+        </div>
+        <button class="btn-preview-toggle" id="btnPreviewToggle" title="Play/Pause">▶</button>
+        <button class="btn-preview-close" id="btnPreviewClose" title="Close Preview">✕</button>
+    </div>
+
+    <!-- Edit Song Bottom Sheet Modal -->
+    <div class="admin-modal-overlay" id="editSongModal">
+        <div class="admin-modal-sheet">
+            <div class="sheet-handle"></div>
+            <div class="sheet-header">
+                <h3 class="sheet-title">✏️ Edit Song Details</h3>
+                <button class="sheet-close-btn" id="btnEditModalClose">✕</button>
+            </div>
+
+            <form id="editSongForm" onsubmit="return false;">
+                <input type="hidden" id="editSongId">
+
+                <div class="form-group">
+                    <label class="form-label" for="editSongTitle">Title</label>
+                    <input type="text" id="editSongTitle" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="editSongArtist">Artist</label>
+                    <input type="text" id="editSongArtist" class="form-input">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="editSongAlbum">Album</label>
+                    <input type="text" id="editSongAlbum" class="form-input">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="editSongCategory">Category / Genre</label>
+                    <select id="editSongCategory" class="form-select">
+                        <option value="For you">For you</option>
+                        <option value="Koch Rajbongshi">Koch Rajbongshi</option>
+                        <option value="Assamese">Assamese</option>
+                        <option value="Bodo">Bodo</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="editSongCoverUrl">Cover Image URL</label>
+                    <input type="url" id="editSongCoverUrl" class="form-input" placeholder="https://example.com/cover.jpg">
+                    <div style="margin-top:6px;">
+                        <input type="file" id="editCoverFileInput" accept="image/*" style="display:none;">
+                        <button type="button" id="btnEditChooseCover" class="btn-secondary-action" style="padding:6px 12px; font-size:12px;">📷 Pick from Phone Gallery</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="editSongAudioUrl">Audio URL</label>
+                    <input type="text" id="editSongAudioUrl" class="form-input" required>
+                </div>
+
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                    <button type="button" id="btnCancelEdit" class="btn-secondary-action">Cancel</button>
+                    <button type="submit" id="btnSaveEdit" class="btn-primary-action">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bottom Sticky Navigation -->
+    <nav class="admin-bottom-nav">
+        <div class="admin-nav-item active" data-tab="viewSongs">
+            <span class="nav-icon">📑</span>
+            <span>Songs</span>
+        </div>
+        <div class="admin-nav-item" data-tab="viewAddSong">
+            <span class="nav-icon">➕</span>
+            <span>Add Song</span>
+        </div>
+        <div class="admin-nav-item" data-tab="viewBanners">
+            <span class="nav-icon">🎨</span>
+            <span>Banners</span>
+        </div>
+        <div class="admin-nav-item" data-tab="viewSettings">
+            <span class="nav-icon">⚙️</span>
+            <span>Cloud</span>
+        </div>
+    </nav>
+
+    <!-- Toast Notification -->
+    <div id="adminToast" class="admin-toast">Operation Successful</div>
+
+    <!-- Hidden HTML5 Audio Element for Preview -->
+    <audio id="adminAudioPreview" preload="none"></audio>
+
+    <!-- Scripts -->
+    <script src="js/id3.js"></script>
+    <script src="js/mobile-admin.js"></script>
+</body>
+
+</html>

@@ -12,6 +12,34 @@ class MusicDB {
         this.isServerConnected = true;
         this._songsCache = null;
         this._playlistsCache = null;
+        this._firestore = null;
+        this._isFirestoreConnected = false;
+    }
+
+    async initFirestore() {
+        if (this._firestore) return this._firestore;
+        if (typeof firebase !== "undefined" && firebase.apps) {
+            try {
+                if (!firebase.apps.length) {
+                    let config = {
+                        projectId: "lafa-xaak",
+                        storageBucket: "lafa-xaak.appspot.com",
+                        apiKey: "AIzaSyDummyKeyForPublicFirestoreRules"
+                    };
+                    try {
+                        const saved = localStorage.getItem("sangeet_firebase_config");
+                        if (saved) config = Object.assign(config, JSON.parse(saved));
+                    } catch (e) { }
+                    firebase.initializeApp(config);
+                }
+                this._firestore = firebase.firestore();
+                this._isFirestoreConnected = true;
+                return this._firestore;
+            } catch (err) {
+                console.warn("Firestore init in db.js error:", err);
+            }
+        }
+        return null;
     }
 
     async init() {
@@ -116,6 +144,30 @@ class MusicDB {
         await this.init();
 
         let songs = [];
+
+        // 1. Try Firebase Cloud Firestore first (Real-time Cloud Sync across all phones & devices)
+        try {
+            const fs = await this.initFirestore();
+            if (fs) {
+                const fsPromise = fs.collection("songs").get();
+                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Firestore timeout")), 1200));
+                const snap = await Promise.race([fsPromise, timeoutPromise]);
+                if (snap && !snap.empty) {
+                    const cloudSongs = [];
+                    snap.forEach(doc => {
+                        const data = doc.data();
+                        data.id = doc.id;
+                        cloudSongs.push(data);
+                    });
+                    cloudSongs.sort((a, b) => (b.dateAdded || 0) - (a.dateAdded || 0));
+                    this._songsCache = cloudSongs;
+                    this.cacheSongsToIndexedDB(cloudSongs);
+                    return this.applyLikedState(cloudSongs);
+                }
+            }
+        } catch (fErr) {
+            // Graceful fallback to server / local cache
+        }
 
         if (this.isServerConnected) {
             try {

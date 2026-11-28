@@ -1,0 +1,298 @@
+rules_version = '2';
+
+// ===============================================================
+// Sangeet Local - Cloud Firestore Security Rules
+// ===============================================================
+// Regional music streaming platform rules architecture.
+// Designed with defense-in-depth: public streaming discovery with
+// strict schema validation, type integrity, and DoS boundary controls.
+// ===============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: songs
+    // Document ID: song document identifier (e.g., "song_1795530737675_998")
+    // Fields:
+    //   - id: string (optional, 1-128 chars) - Unique track ID matching document ID
+    //   - title: string (required, 1-200 chars) - Song / track title
+    //   - artist: string (optional, 0-200 chars) - Artist or band name
+    //   - album: string (optional, 0-200 chars) - Album or collection name
+    //   - language: string (optional, 0-100 chars) - Regional language (Assamese, Bodo, Koch Rajbongshi, etc.)
+    //   - genre: string (optional, 0-100 chars) - Music genre or category
+    //   - duration: number (optional, 0-86400) - Song duration in seconds
+    //   - audioUrl: string (required, 1-2048 chars) - Audio source URL (https://, http://, or /music/...)
+    //   - coverUrl: string (optional, 0-2048 chars) - Album artwork image URL or relative path
+    //   - year: string (optional, 0-10 chars) - Release year
+    //   - lyrics: string (optional, 0-20000 chars) - Song lyrics text
+    //   - playCount: number (optional, 0-1000000000) - Total stream / play count
+    //   - isLiked: bool (optional) - Favorite / liked state flag
+    //   - fileSize: number (optional, 0-524288000) - Audio file size in bytes (max 500MB)
+    //   - format: string (optional, 0-50 chars) - Audio MIME format (e.g., "audio/mp3")
+    //   - dateAdded: number (optional, >= 0) - Added timestamp in milliseconds
+    //   - createdAt: timestamp | number (optional) - Document creation timestamp (immutable on update)
+    //   - updatedAt: timestamp | number (optional) - Document last update timestamp
+    //
+    // Collection: banners
+    // Document ID: banner identifier (e.g., "all", "koch_rajbongshi", "assamese", "bodo")
+    // Fields:
+    //   - id: string (optional, 1-128 chars) - Banner identifier
+    //   - title: string (required, 1-200 chars) - Main banner headline
+    //   - subtitle: string (optional, 0-300 chars) - Banner subtitle or track credits
+    //   - tag: string (optional, 0-100 chars) - Display badge/pill tag (e.g., "🎵 Koch Rajbongshi")
+    //   - coverUrl: string (optional, 0-2048 chars) - Featured album art image URL
+    //   - bgUrl: string (optional, 0-2048 chars) - Custom background image URL
+    //   - songId: string (optional, 0-128 chars) - Linked song ID to trigger on tap
+    //   - language: string (optional, 0-100 chars) - Regional language category
+    //   - active: bool (optional) - Banner visibility toggle
+    //   - order: number (optional, 0-10000) - Carousel ordering priority
+    //   - createdAt: timestamp | number (optional) - Creation timestamp (immutable on update)
+    //   - updatedAt: timestamp | number (optional) - Last update timestamp
+    //
+    // Collection: settings
+    // Document ID: setting key (e.g., "theme", "general", "appConfig")
+    // Fields:
+    //   - id: string (optional, 1-128 chars) - Setting document identifier
+    //   - key: string (optional, 1-100 chars) - Setting key name
+    //   - value: string | number | bool | list | map (optional) - Generic configuration value
+    //   - theme: string (optional, 1-50 chars) - App theme preset ("dark", "violet", "white", etc.)
+    //   - appName: string (optional, 1-100 chars) - App brand name
+    //   - appVersion: string (optional, 1-30 chars) - App release version string
+    //   - defaultLanguage: string (optional, 1-50 chars) - Default UI language
+    //   - maintenanceMode: bool (optional) - Maintenance mode flag
+    //   - noticeBanner: string (optional, 0-500 chars) - System announcement text
+    //   - primaryColor: string (optional, 1-30 chars) - CSS/Hex primary accent color
+    //   - accentColor: string (optional, 1-30 chars) - CSS/Hex secondary accent color
+    //   - maxUploadSizeBytes: number (optional, 0-1073741824) - Max upload size in bytes (max 1GB)
+    //   - audioQuality: string (optional, 1-50 chars) - Audio bitrate / quality setting
+    //   - enableEqualizer: bool (optional) - Equalizer feature toggle
+    //   - updatedBy: string (optional, 0-100 chars) - Editor identifier
+    //   - createdAt: timestamp | number (optional) - Creation timestamp (immutable on update)
+    //   - updatedAt: timestamp | number (optional) - Last update timestamp
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    // Check if the request contains an authenticated user token
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Validate media URL format (must be HTTP/HTTPS URL or root-relative path)
+    function isValidMediaUrl(url) {
+      return url is string &&
+        (url.matches("^https?://.*") || url.matches("^/.*"));
+    }
+
+    // Validate optional string field (omitted, null, or string within length bounds)
+    function isValidOptionalString(data, field, maxLen) {
+      return !(field in data) || data[field] == null ||
+        (data[field] is string && data[field].size() <= maxLen);
+    }
+
+    // Validate optional URL string field (omitted, null, empty string, or valid media URL)
+    function isValidOptionalUrl(data, field, maxLen) {
+      return !(field in data) || data[field] == null ||
+        (data[field] is string && data[field].size() <= maxLen &&
+          (data[field].size() == 0 || isValidMediaUrl(data[field])));
+    }
+
+    // Validate optional numeric field with min and max bounds
+    function isValidOptionalNumber(data, field, minVal, maxVal) {
+      return !(field in data) || data[field] == null ||
+        (data[field] is number && data[field] >= minVal && data[field] <= maxVal);
+    }
+
+    // Validate optional boolean field
+    function isValidOptionalBool(data, field) {
+      return !(field in data) || data[field] == null || data[field] is bool;
+    }
+
+    // Validate optional timestamp (Firestore Timestamp or non-negative epoch milliseconds)
+    function isValidOptionalTimestamp(data, field) {
+      return !(field in data) || data[field] == null ||
+        data[field] is timestamp ||
+        (data[field] is number && data[field] >= 0);
+    }
+
+    // Protect immutable field from being modified on update operations
+    function isFieldUnchanged(field) {
+      return !(field in resource.data) ||
+        (field in request.resource.data && request.resource.data[field] == resource.data[field]);
+    }
+
+    // ===============================================================
+    // Domain Validators (Enforced on BOTH create and update)
+    // ===============================================================
+
+    // Domain validator for 'songs' documents
+    function isValidSong(data) {
+      return data.keys().hasOnly([
+          'id', 'title', 'artist', 'album', 'language', 'genre',
+          'duration', 'audioUrl', 'coverUrl', 'year', 'lyrics',
+          'playCount', 'isLiked', 'fileSize', 'format', 'dateAdded',
+          'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasAll(['title', 'audioUrl']) &&
+        // Required fields
+        data.title is string && data.title.size() > 0 && data.title.size() <= 200 &&
+        data.audioUrl is string && data.audioUrl.size() > 0 && data.audioUrl.size() <= 2048 &&
+        isValidMediaUrl(data.audioUrl) &&
+        // Optional string fields with length bounds
+        isValidOptionalString(data, 'id', 128) &&
+        isValidOptionalString(data, 'artist', 200) &&
+        isValidOptionalString(data, 'album', 200) &&
+        isValidOptionalString(data, 'language', 100) &&
+        isValidOptionalString(data, 'genre', 100) &&
+        isValidOptionalString(data, 'year', 10) &&
+        isValidOptionalString(data, 'format', 50) &&
+        isValidOptionalString(data, 'lyrics', 20000) &&
+        // Optional media URL fields
+        isValidOptionalUrl(data, 'coverUrl', 2048) &&
+        // Optional numeric fields with range limits
+        isValidOptionalNumber(data, 'duration', 0, 86400) &&
+        isValidOptionalNumber(data, 'playCount', 0, 1000000000) &&
+        isValidOptionalNumber(data, 'fileSize', 0, 524288000) &&
+        isValidOptionalNumber(data, 'dateAdded', 0, 9999999999999) &&
+        // Optional boolean fields
+        isValidOptionalBool(data, 'isLiked') &&
+        // Optional timestamp fields
+        isValidOptionalTimestamp(data, 'createdAt') &&
+        isValidOptionalTimestamp(data, 'updatedAt');
+    }
+
+    // Protect immutable song fields on update
+    function isSongImmutableFieldsValid() {
+      return isFieldUnchanged('id') && isFieldUnchanged('createdAt');
+    }
+
+    // Domain validator for 'banners' documents
+    function isValidBanner(data) {
+      return data.keys().hasOnly([
+          'id', 'title', 'subtitle', 'tag', 'coverUrl', 'bgUrl',
+          'songId', 'language', 'active', 'order', 'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasAll(['title']) &&
+        // Required fields
+        data.title is string && data.title.size() > 0 && data.title.size() <= 200 &&
+        // Optional string fields with length bounds
+        isValidOptionalString(data, 'id', 128) &&
+        isValidOptionalString(data, 'subtitle', 300) &&
+        isValidOptionalString(data, 'tag', 100) &&
+        isValidOptionalString(data, 'songId', 128) &&
+        isValidOptionalString(data, 'language', 100) &&
+        // Optional media URL fields
+        isValidOptionalUrl(data, 'coverUrl', 2048) &&
+        isValidOptionalUrl(data, 'bgUrl', 2048) &&
+        // Optional boolean and numeric fields
+        isValidOptionalBool(data, 'active') &&
+        isValidOptionalNumber(data, 'order', 0, 10000) &&
+        // Optional timestamp fields
+        isValidOptionalTimestamp(data, 'createdAt') &&
+        isValidOptionalTimestamp(data, 'updatedAt');
+    }
+
+    // Protect immutable banner fields on update
+    function isBannerImmutableFieldsValid() {
+      return isFieldUnchanged('id') && isFieldUnchanged('createdAt');
+    }
+
+    // Domain validator for setting value payload (string, number, bool, list, or map)
+    function isValidSettingValue(data) {
+      return !('value' in data) || data.value == null ||
+        (data.value is string && data.value.size() <= 2000) ||
+        data.value is number ||
+        data.value is bool ||
+        (data.value is list && data.value.size() <= 50) ||
+        (data.value is map && data.value.keys().size() <= 50);
+    }
+
+    // Domain validator for 'settings' documents
+    function isValidSetting(data) {
+      return data.keys().hasOnly([
+          'id', 'key', 'value', 'theme', 'appName', 'appVersion',
+          'defaultLanguage', 'maintenanceMode', 'noticeBanner',
+          'primaryColor', 'accentColor', 'maxUploadSizeBytes',
+          'audioQuality', 'enableEqualizer', 'updatedBy',
+          'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().size() > 0 &&
+        // Optional string configurations with length bounds
+        isValidOptionalString(data, 'id', 128) &&
+        isValidOptionalString(data, 'key', 100) &&
+        isValidOptionalString(data, 'theme', 50) &&
+        isValidOptionalString(data, 'appName', 100) &&
+        isValidOptionalString(data, 'appVersion', 30) &&
+        isValidOptionalString(data, 'defaultLanguage', 50) &&
+        isValidOptionalString(data, 'noticeBanner', 500) &&
+        isValidOptionalString(data, 'primaryColor', 30) &&
+        isValidOptionalString(data, 'accentColor', 30) &&
+        isValidOptionalString(data, 'audioQuality', 50) &&
+        isValidOptionalString(data, 'updatedBy', 100) &&
+        // Optional boolean flags
+        isValidOptionalBool(data, 'maintenanceMode') &&
+        isValidOptionalBool(data, 'enableEqualizer') &&
+        // Optional numeric constraints
+        isValidOptionalNumber(data, 'maxUploadSizeBytes', 0, 1073741824) &&
+        // Generic setting value validation
+        isValidSettingValue(data) &&
+        // Optional timestamp fields
+        isValidOptionalTimestamp(data, 'createdAt') &&
+        isValidOptionalTimestamp(data, 'updatedAt');
+    }
+
+    // Protect immutable settings fields on update
+    function isSettingImmutableFieldsValid() {
+      return isFieldUnchanged('id') && isFieldUnchanged('key') && isFieldUnchanged('createdAt');
+    }
+
+    // ===============================================================
+    // Collection Access Rules
+    // ===============================================================
+
+    // --- Songs Collection ---
+    // Public read for mobile listeners without mandatory authentication.
+    // Writes validated with strict type checks, length constraints, and required fields.
+    match /songs/{songId} {
+      allow read: if true;
+      allow create: if isValidSong(request.resource.data);
+      allow update: if isValidSong(request.resource.data) && isSongImmutableFieldsValid();
+      allow delete: if true;
+    }
+
+    // --- Banners Collection ---
+    // Public read for mobile hero mood banners and carousel configs.
+    // Writes validated for banner structure and bounded sizes.
+    match /banners/{bannerId} {
+      allow read: if true;
+      allow create: if isValidBanner(request.resource.data);
+      allow update: if isValidBanner(request.resource.data) && isBannerImmutableFieldsValid();
+      allow delete: if true;
+    }
+
+    // --- Settings Collection ---
+    // Public read for application theme, settings, and maintenance state.
+    // Writes validated with schema constraints.
+    match /settings/{settingId} {
+      allow read: if true;
+      allow create: if isValidSetting(request.resource.data);
+      allow update: if isValidSetting(request.resource.data) && isSettingImmutableFieldsValid();
+      allow delete: if true;
+    }
+
+    // ===============================================================
+    // Default Deny Catch-all
+    // ===============================================================
+    // Deny access to any unspecified collection or subcollection by default.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
