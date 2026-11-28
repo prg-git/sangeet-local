@@ -59,7 +59,7 @@
                 <h1 class="splash-app-title">
                     <span class="splash-title-text">Sangeet Local</span>
                 </h1>
-                <p class="splash-tagline">Find your rhythm.</p>
+                <p class="splash-tagline">Refresh with Us</p>
             </div>
 
             <!-- Minimalist Pulse Loader -->
@@ -347,7 +347,7 @@
             <div class="fs-artwork-card" id="fsArtworkCard">
                 <div class="fs-artwork-halo"></div>
                 <img src="icons/icon-192.png" alt="Album Cover" class="fs-cover-art" id="fsCoverArt">
-                <!-- Floating Sound Wave Visualizer on Artwork -->
+                <!-- Floating Sound Wave Visualizer on Artwork (Big, Centered, Glowing Red Beat Wave) -->
                 <div class="fs-artwork-equalizer" id="fsArtworkEqualizer">
                     <span class="fs-eq-bar bar-1"></span>
                     <span class="fs-eq-bar bar-2"></span>
@@ -356,6 +356,10 @@
                     <span class="fs-eq-bar bar-5"></span>
                     <span class="fs-eq-bar bar-6"></span>
                     <span class="fs-eq-bar bar-7"></span>
+                    <span class="fs-eq-bar bar-8"></span>
+                    <span class="fs-eq-bar bar-9"></span>
+                    <span class="fs-eq-bar bar-10"></span>
+                    <span class="fs-eq-bar bar-11"></span>
                 </div>
             </div>
 
@@ -607,7 +611,7 @@
     <script src="js/app.js?v=10.0"></script>
 
     <script>
-        // Splash screen handler: 6 seconds duration on initial launch; never shown again in this session
+        // Splash screen handler: fast & smooth launch (0.8s - 1.0s); never shown again in this session
         (function () {
             var splash = document.getElementById("appSplashScreen");
             if (!splash) return;
@@ -628,7 +632,7 @@
                     }, 300);
                 }
             }
-            setTimeout(dismissSplash, 6000);
+            setTimeout(dismissSplash, 1000);
         })();
     </script>
 

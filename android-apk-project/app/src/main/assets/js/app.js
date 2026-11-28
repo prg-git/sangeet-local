@@ -96,7 +96,7 @@ class SangeetApp {
     }
 
     /**
-     * Shows splash screen for 6 seconds on initial launch; never shows again in the current session
+     * Shows splash screen on initial launch; smoothly dismisses within ~800ms and never shows again in the session
      */
     static dismissSplashScreen(startTime = 0) {
         const splash = document.getElementById("appSplashScreen");
@@ -109,9 +109,9 @@ class SangeetApp {
             return;
         }
 
-        // Show for 6 seconds (6000ms) on fresh launch
+        // Fast & smooth startup: 800ms initial brand showcase, then silky fade out
         const elapsed = Date.now() - startTime;
-        const minDuration = 6000;
+        const minDuration = 800;
         const remaining = Math.max(0, minDuration - elapsed);
 
         setTimeout(() => {

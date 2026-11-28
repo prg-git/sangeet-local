@@ -1816,31 +1816,33 @@ html.skip-splash #appSplashScreen {
     display: none !important;
 }
 
-/* Floating Sound Wave Bars on Artwork (Red beat wave moved to tick mark location) */
+/* Floating Sound Wave Bars on Artwork (Centered, Big, Prominent Glowing Red Beat Wave) */
 .fs-artwork-equalizer {
     position: absolute;
-    bottom: 14px;
-    left: 18px;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
     right: auto;
-    background: rgba(18, 5, 12, 0.85);
-    backdrop-filter: blur(14px);
-    border: 1px solid rgba(255, 60, 60, 0.45);
-    padding: 6px 12px;
-    border-radius: 16px;
+    background: rgba(14, 6, 18, 0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1.5px solid rgba(255, 50, 75, 0.65);
+    padding: 8px 18px;
+    border-radius: 26px;
     display: flex;
     align-items: flex-end;
-    gap: 4px;
-    height: 26px;
-    box-shadow: 0 4px 18px rgba(255, 0, 60, 0.35), 0 2px 8px rgba(0, 0, 0, 0.7);
+    gap: 5px;
+    height: 44px;
+    box-shadow: 0 8px 32px rgba(255, 0, 60, 0.45), 0 0 16px rgba(255, 100, 50, 0.35);
     z-index: 10;
 }
 
 .fs-artwork-equalizer .fs-eq-bar {
-    width: 3.5px;
-    border-radius: 3px;
+    width: 4.5px;
+    border-radius: 4px;
     background: linear-gradient(to top, #ff0055 0%, #ff3b30 50%, #ff9500 100%) !important;
-    box-shadow: 0 0 8px rgba(255, 50, 50, 0.85);
-    height: 18px;
+    box-shadow: 0 0 10px rgba(255, 50, 75, 0.95);
+    height: 32px;
     transform: scaleY(0.25);
     transform-origin: bottom;
     transition: transform 0.2s ease;
@@ -1852,40 +1854,17 @@ html.skip-splash #appSplashScreen {
     animation: fsEqBeat 0.95s ease-in-out infinite alternate;
 }
 
-.fs-artwork-equalizer .bar-1 {
-    animation-delay: 0.1s;
-    animation-duration: 0.75s;
-}
-
-.fs-artwork-equalizer .bar-2 {
-    animation-delay: 0.25s;
-    animation-duration: 1.05s;
-}
-
-.fs-artwork-equalizer .bar-3 {
-    animation-delay: 0.05s;
-    animation-duration: 0.85s;
-}
-
-.fs-artwork-equalizer .bar-4 {
-    animation-delay: 0.35s;
-    animation-duration: 1.15s;
-}
-
-.fs-artwork-equalizer .bar-5 {
-    animation-delay: 0.15s;
-    animation-duration: 0.9s;
-}
-
-.fs-artwork-equalizer .bar-6 {
-    animation-delay: 0.3s;
-    animation-duration: 1.0s;
-}
-
-.fs-artwork-equalizer .bar-7 {
-    animation-delay: 0.2s;
-    animation-duration: 0.8s;
-}
+.fs-artwork-equalizer .bar-1 { animation-delay: 0.1s; animation-duration: 0.75s; }
+.fs-artwork-equalizer .bar-2 { animation-delay: 0.25s; animation-duration: 1.05s; }
+.fs-artwork-equalizer .bar-3 { animation-delay: 0.05s; animation-duration: 0.85s; }
+.fs-artwork-equalizer .bar-4 { animation-delay: 0.35s; animation-duration: 1.15s; }
+.fs-artwork-equalizer .bar-5 { animation-delay: 0.15s; animation-duration: 0.9s; }
+.fs-artwork-equalizer .bar-6 { animation-delay: 0.3s; animation-duration: 1.0s; }
+.fs-artwork-equalizer .bar-7 { animation-delay: 0.2s; animation-duration: 0.8s; }
+.fs-artwork-equalizer .bar-8 { animation-delay: 0.12s; animation-duration: 0.92s; }
+.fs-artwork-equalizer .bar-9 { animation-delay: 0.28s; animation-duration: 1.1s; }
+.fs-artwork-equalizer .bar-10 { animation-delay: 0.08s; animation-duration: 0.82s; }
+.fs-artwork-equalizer .bar-11 { animation-delay: 0.22s; animation-duration: 1.02s; }
 
 @keyframes fsEqBeat {
     0% {
@@ -1893,7 +1872,7 @@ html.skip-splash #appSplashScreen {
     }
 
     50% {
-        transform: scaleY(0.75);
+        transform: scaleY(0.7);
     }
 
     100% {
@@ -1970,28 +1949,42 @@ html.skip-splash #appSplashScreen {
 /* Scrubber Timeline Deck */
 .fs-scrubber-deck {
     width: 100%;
-    margin: 10px 0 6px 0;
+    margin: 14px 0 8px 0;
+    position: relative;
+    z-index: 5;
 }
 
 .fs-progress-wrap {
     width: 100%;
     height: 8px;
-    background: rgba(255, 255, 255, 0.45) !important;
+    background: rgba(255, 255, 255, 0.35) !important;
     border: 1px solid rgba(255, 255, 255, 0.75) !important;
-    border-radius: 12px;
+    border-radius: 999px;
     position: relative;
     cursor: pointer;
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.35);
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.35);
+    touch-action: none;
+}
+
+/* Expanded touch target for effortless scrubbing on phone touchscreens */
+.fs-progress-wrap::before {
+    content: "";
+    position: absolute;
+    top: -14px;
+    bottom: -14px;
+    left: 0;
+    right: 0;
+    z-index: 1;
 }
 
 .fs-progress-fill {
     height: 100%;
     background: #ffffff !important;
-    border-radius: 12px;
+    border-radius: 999px;
     position: relative;
     width: 0%;
-    box-shadow: 0 0 14px rgba(255, 255, 255, 0.95) !important;
-    transition: width 0.1s linear;
+    box-shadow: 0 0 16px rgba(255, 255, 255, 1) !important;
+    transition: width 0.08s linear;
 }
 
 .fullscreen-player.is-playing .fs-progress-fill {
@@ -2000,26 +1993,32 @@ html.skip-splash #appSplashScreen {
 
 .fs-progress-thumb {
     position: absolute;
-    right: -8px;
+    right: -9px;
     top: 50%;
     transform: translateY(-50%);
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
     background: #ffffff !important;
-    border: 2px solid #000000;
-    box-shadow: 0 0 14px #ffffff, 0 2px 8px rgba(0, 0, 0, 0.8);
+    border: 2px solid #090d16;
+    box-shadow: 0 0 16px #ffffff, 0 2px 8px rgba(0, 0, 0, 0.9);
+    z-index: 2;
+    transition: transform 0.15s ease;
+}
+
+.fs-progress-wrap:active .fs-progress-thumb {
+    transform: translateY(-50%) scale(1.25);
 }
 
 .fs-timestamps {
     display: flex;
     justify-content: space-between;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
     font-family: monospace;
     color: #ffffff !important;
-    margin-top: 6px;
-    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+    margin-top: 8px;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
 }
 
 /* Master Playback Controls Deck */
@@ -2881,27 +2880,27 @@ html.skip-splash #appSplashScreen {
     .mobile-sound-wave {
         display: inline-flex;
         align-items: flex-end;
-        gap: 2.5px;
-        height: 14px;
+        gap: 3px;
+        height: 18px;
         padding: 0 1px;
         flex-shrink: 0;
     }
 
     .mobile-sound-wave .sw-bar {
-        width: 2.5px;
+        width: 3px;
         border-radius: 2px;
         background: #64748b;
         transform-origin: bottom;
         transform: scaleY(0.25);
-        height: 14px;
+        height: 18px;
         opacity: 0.4;
         transition: transform 0.3s ease, opacity 0.3s ease, background 0.3s ease;
     }
 
     /* When Song is Playing: Sound Wave Moves Continuously */
     .music-player-bar.is-playing .mobile-sound-wave .sw-bar {
-        background: linear-gradient(to top, #7c3aed 0%, #3b82f6 50%, #06b6d4 100%);
-        box-shadow: 0 0 6px rgba(6, 182, 212, 0.75);
+        background: linear-gradient(to top, #ff0055 0%, #ff3b30 50%, #ff9500 100%) !important;
+        box-shadow: 0 0 8px rgba(255, 50, 75, 0.9);
         opacity: 1;
         animation: soundWaveBeat 0.9s ease-in-out infinite alternate;
     }
@@ -3086,29 +3085,51 @@ html.skip-splash #appSplashScreen {
 
     .progress-bar-wrap {
         flex: 1;
-        height: 5px !important;
-        background: rgba(255, 255, 255, 0.14) !important;
-        border-radius: 10px !important;
+        height: 6px !important;
+        background: rgba(255, 255, 255, 0.35) !important;
+        border: 1px solid rgba(255, 255, 255, 0.6) !important;
+        border-radius: 999px !important;
         position: relative;
+        box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+    }
+
+    .progress-bar-wrap::before {
+        content: "";
+        position: absolute;
+        top: -12px;
+        bottom: -12px;
+        left: 0;
+        right: 0;
     }
 
     .progress-fill {
         height: 100%;
-        background: linear-gradient(90deg, #d4f82c 0%, #a3e635 100%) !important;
-        border-radius: 10px !important;
+        background: #ffffff !important;
+        border-radius: 999px !important;
+        box-shadow: 0 0 12px rgba(255, 255, 255, 0.95) !important;
         transition: width 0.1s linear;
     }
 
     .music-player-bar.is-playing .progress-fill {
-        box-shadow: 0 0 10px rgba(212, 248, 44, 0.8) !important;
+        box-shadow: 0 0 12px rgba(255, 255, 255, 1) !important;
     }
 
     .progress-thumb {
         transform: translateY(-50%) scale(1) !important;
-        width: 13px !important;
-        height: 13px !important;
+        width: 14px !important;
+        height: 14px !important;
         background: #ffffff !important;
-        box-shadow: 0 0 10px rgba(6, 182, 212, 0.9), 0 2px 6px rgba(0, 0, 0, 0.7) !important;
+        border: 2px solid #090d16 !important;
+        box-shadow: 0 0 12px #ffffff, 0 2px 6px rgba(0, 0, 0, 0.8) !important;
+    }
+
+    .time-stamp {
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        color: #ffffff !important;
+        font-family: monospace;
+        width: 32px !important;
+        flex-shrink: 0;
     }
 
     .player-right {
