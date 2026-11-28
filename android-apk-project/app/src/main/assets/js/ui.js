@@ -1454,13 +1454,12 @@ class UIController {
                 <input type="text" class="home-search-pill-input" id="homeSearchInput" placeholder="Songs, artists, or a feeling" autocomplete="off">
             </div>
 
-            <!-- Horizontal Filter Chips Row (Inspired by Image 1) -->
+            <!-- Horizontal Filter Chips Row (Order: For you, Koch Rajbongshi, Assamese, Bodo) -->
             <div class="home-filter-pills-scroll">
                 <button class="home-chip ${this.selectedFilter === 'all' ? 'active' : ''}" data-filter="all">For you</button>
-                <button class="home-chip ${this.selectedFilter === 'bodo' ? 'active' : ''}" data-filter="bodo">Bodo</button>
                 <button class="home-chip ${this.selectedFilter === 'koch rajbongshi' ? 'active' : ''}" data-filter="koch rajbongshi">Koch Rajbongshi</button>
                 <button class="home-chip ${this.selectedFilter === 'assamese' ? 'active' : ''}" data-filter="assamese">Assamese</button>
-                <button class="home-chip ${this.selectedFilter === 'liked' ? 'active' : ''}" data-filter="liked">Liked</button>
+                <button class="home-chip ${this.selectedFilter === 'bodo' ? 'active' : ''}" data-filter="bodo">Bodo</button>
             </div>
 
             <!-- Hero Mood Card (Directly inspired by Image 1: Split Lime Card + Album Art + Coral Play Button) -->
@@ -1680,9 +1679,9 @@ class UIController {
                 </div>
 
                 <div class="search-category-chips">
-                    <button class="search-chip" data-search-tag="Bodo">🌿 Bodo</button>
-                    <button class="search-chip" data-search-tag="Assamese">🌸 Assamese</button>
                     <button class="search-chip" data-search-tag="Koch Rajbongshi">🌾 Koch Rajbongshi</button>
+                    <button class="search-chip" data-search-tag="Assamese">🌸 Assamese</button>
+                    <button class="search-chip" data-search-tag="Bodo">🌿 Bodo</button>
                     <button class="search-chip" data-search-tag="Melodies">🎵 Melodies</button>
                     <button class="search-chip" data-search-tag="Uploads">📂 All Songs</button>
                 </div>
@@ -2860,3 +2859,43 @@ class UIController {
 }
 
 window.ui = new UIController();
+
+// Global Android / Mobile Hardware Back Button handler
+window.handleBackPress = function () {
+    // 1. If Fullscreen Player modal is active, close it
+    const fsModal = document.getElementById("fullScreenPlayerModal");
+    if (fsModal && (fsModal.classList.contains("active") || fsModal.classList.contains("modal-open") || fsModal.style.display === "flex" || fsModal.style.display === "block")) {
+        if (window.ui) {
+            window.ui.closeModal(fsModal);
+        } else {
+            fsModal.classList.remove("active", "modal-open");
+            fsModal.style.display = "none";
+        }
+        return "handled";
+    }
+
+    // 2. If Queue Drawer is open, close it
+    const queueDrawer = document.getElementById("queueDrawer");
+    if (queueDrawer && queueDrawer.classList.contains("active")) {
+        if (window.ui) window.ui.closeQueueDrawer();
+        else queueDrawer.classList.remove("active");
+        return "handled";
+    }
+
+    // 3. If any other modal is active, close it
+    const activeModal = document.querySelector(".modal-overlay.active");
+    if (activeModal && activeModal.id !== "appSplashScreen") {
+        if (window.ui) window.ui.closeModal(activeModal);
+        else activeModal.classList.remove("active");
+        return "handled";
+    }
+
+    // 4. If current view is NOT Home (e.g. user is in Library, Search, Liked, or Menu), first return to Home!
+    if (window.ui && window.ui.currentView && window.ui.currentView !== "home") {
+        window.ui.switchView("home");
+        return "handled";
+    }
+
+    // 5. Already at Home view with no modal open -> signal native Android to exit to phone
+    return "exit";
+};

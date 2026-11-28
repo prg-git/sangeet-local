@@ -10,23 +10,26 @@ import android.content.Intent;
 import android.content.pm.ServiceInfo;
 import android.os.Build;
 import android.os.IBinder;
+import android.support.v4.media.MediaMetadataCompat;
+import android.support.v4.media.session.MediaSessionCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 /**
- * Foreground Service for Sangeet Local media playback.
- * Keeps music playing uninterrupted in the background when the user exits the app,
- * locks the phone, or switches to other apps, and maintains native media controls
- * in the Android notification drawer and lockscreen.
+ * High-performance MediaPlaybackService with native MediaSessionCompat integration.
+ * Ensures the Android SystemUI notification panel, quick settings media carousel,
+ * and lock screen display the full media control card with real-time Play/Pause/Next/Prev controls.
  */
 public class MediaPlaybackService extends Service {
 
     public static final String ACTION_UPDATE_NOTIFICATION = "com.sangeet.local.ACTION_UPDATE_NOTIFICATION";
     public static final String ACTION_STOP_SERVICE = "com.sangeet.local.ACTION_STOP_SERVICE";
-    public static final String CHANNEL_ID = "sangeet_playback_channel_v2";
+    public static final String CHANNEL_ID = "sangeet_playback_channel_v3";
     public static final int NOTIFICATION_ID = 1001;
 
+    private MediaSessionCompat mediaSession;
     private boolean isForeground = false;
     private String lastTitle = "Sangeet Local";
     private String lastArtist = "Regional Music Studio";
@@ -36,6 +39,7 @@ public class MediaPlaybackService extends Service {
     public void onCreate() {
         super.onCreate();
         createNotificationChannel(this);
+        setupMediaSession();
     }
 
     public static void createNotificationChannel(Context context) {
@@ -47,17 +51,52 @@ public class MediaPlaybackService extends Service {
                     NotificationChannel channel = new NotificationChannel(
                             CHANNEL_ID,
                             "Sangeet Playback Controls",
-                            NotificationManager.IMPORTANCE_LOW
+                            NotificationManager.IMPORTANCE_DEFAULT
                     );
-                    channel.setDescription("Shows currently playing song and playback controls");
-                    channel.setShowBadge(false);
+                    channel.setDescription("Shows currently playing song and playback controls in notification panel");
+                    channel.setShowBadge(true);
                     channel.setLockscreenVisibility(NotificationCompat.VISIBILITY_PUBLIC);
-                    channel.setSound(null, null);
+                    channel.setSound(null, null); // Completely silent, prevents beeping on track changes
                     channel.enableVibration(false);
                     nm.createNotificationChannel(channel);
                 }
             }
         }
+    }
+
+    private void setupMediaSession() {
+        try {
+            mediaSession = new MediaSessionCompat(this, "SangeetLocalMediaSession");
+            mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
+            mediaSession.setCallback(new MediaSessionCompat.Callback() {
+                @Override
+                public void onPlay() {
+                    sendBroadcastAction(MainActivity.ACTION_PLAY_PAUSE);
+                }
+
+                @Override
+                public void onPause() {
+                    sendBroadcastAction(MainActivity.ACTION_PLAY_PAUSE);
+                }
+
+                @Override
+                public void onSkipToNext() {
+                    sendBroadcastAction(MainActivity.ACTION_NEXT);
+                }
+
+                @Override
+                public void onSkipToPrevious() {
+                    sendBroadcastAction(MainActivity.ACTION_PREV);
+                }
+            });
+            mediaSession.setActive(true);
+        } catch (Exception ignored) {}
+    }
+
+    private void sendBroadcastAction(String action) {
+        Intent intent = new Intent(action);
+        intent.setPackage(getPackageName());
+        sendBroadcast(intent);
     }
 
     @Override
@@ -76,6 +115,7 @@ public class MediaPlaybackService extends Service {
             if (artist != null && !artist.isEmpty()) lastArtist = artist;
             lastIsPlaying = isPlaying;
 
+            updateMediaSessionState(lastTitle, lastArtist, lastIsPlaying);
             Notification notification = buildNotification(lastTitle, lastArtist, lastIsPlaying);
 
             if (lastIsPlaying) {
@@ -101,6 +141,9 @@ public class MediaPlaybackService extends Service {
                 }
             }
         } else if (ACTION_STOP_SERVICE.equals(action)) {
+            if (mediaSession != null) {
+                mediaSession.setActive(false);
+            }
             if (isForeground) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     stopForeground(STOP_FOREGROUND_REMOVE);
@@ -115,6 +158,27 @@ public class MediaPlaybackService extends Service {
         }
 
         return START_NOT_STICKY;
+    }
+
+    private void updateMediaSessionState(String title, String artist, boolean isPlaying) {
+        if (mediaSession == null) return;
+        try {
+            PlaybackStateCompat.Builder stateBuilder = new PlaybackStateCompat.Builder()
+                    .setActions(PlaybackStateCompat.ACTION_PLAY |
+                            PlaybackStateCompat.ACTION_PAUSE |
+                            PlaybackStateCompat.ACTION_PLAY_PAUSE |
+                            PlaybackStateCompat.ACTION_SKIP_TO_NEXT |
+                            PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS)
+                    .setState(isPlaying ? PlaybackStateCompat.STATE_PLAYING : PlaybackStateCompat.STATE_PAUSED,
+                            PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 1.0f);
+            mediaSession.setPlaybackState(stateBuilder.build());
+
+            MediaMetadataCompat.Builder metaBuilder = new MediaMetadataCompat.Builder()
+                    .putString(MediaMetadataCompat.METADATA_KEY_TITLE, title)
+                    .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, artist)
+                    .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, "Sangeet Local");
+            mediaSession.setMetadata(metaBuilder.build());
+        } catch (Exception ignored) {}
     }
 
     private Notification buildNotification(String title, String artist, boolean isPlaying) {
@@ -139,7 +203,7 @@ public class MediaPlaybackService extends Service {
         PendingIntent nextPending = PendingIntent.getBroadcast(this, 3, nextIntent, flags);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(android.R.drawable.ic_media_play)
                 .setContentTitle(title)
                 .setContentText(artist)
                 .setSubText("Sangeet Local")
@@ -147,19 +211,20 @@ public class MediaPlaybackService extends Service {
                 .setOngoing(isPlaying)
                 .setOnlyAlertOnce(true)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setCategory(NotificationCompat.CATEGORY_TRANSPORT)
                 .addAction(android.R.drawable.ic_media_previous, "Previous", prevPending)
                 .addAction(isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play,
                         isPlaying ? "Pause" : "Play", playPausePending)
                 .addAction(android.R.drawable.ic_media_next, "Next", nextPending);
 
-        try {
-            androidx.media.app.NotificationCompat.MediaStyle mediaStyle =
-                    new androidx.media.app.NotificationCompat.MediaStyle()
-                            .setShowActionsInCompactView(0, 1, 2);
-            builder.setStyle(mediaStyle);
-        } catch (Throwable ignored) {}
+        androidx.media.app.NotificationCompat.MediaStyle mediaStyle =
+                new androidx.media.app.NotificationCompat.MediaStyle()
+                        .setShowActionsInCompactView(0, 1, 2);
+        if (mediaSession != null) {
+            mediaStyle.setMediaSession(mediaSession.getSessionToken());
+        }
+        builder.setStyle(mediaStyle);
 
         return builder.build();
     }
@@ -172,6 +237,12 @@ public class MediaPlaybackService extends Service {
 
     @Override
     public void onDestroy() {
+        if (mediaSession != null) {
+            try {
+                mediaSession.setActive(false);
+                mediaSession.release();
+            } catch (Exception ignored) {}
+        }
         if (isForeground) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 stopForeground(STOP_FOREGROUND_REMOVE);

@@ -497,7 +497,7 @@ public class MainActivity extends AppCompatActivity {
             PendingIntent nextPending = PendingIntent.getBroadcast(this, 3, nextIntent, flags);
 
             NotificationCompat.Builder builder = new NotificationCompat.Builder(this, MediaPlaybackService.CHANNEL_ID)
-                    .setSmallIcon(R.mipmap.ic_launcher)
+                    .setSmallIcon(android.R.drawable.ic_media_play)
                     .setContentTitle(title)
                     .setContentText(artist)
                     .setSubText("Sangeet Local")
@@ -505,7 +505,7 @@ public class MainActivity extends AppCompatActivity {
                     .setOngoing(isPlaying)
                     .setOnlyAlertOnce(true)
                     .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                    .setPriority(NotificationCompat.PRIORITY_LOW)
+                    .setPriority(NotificationCompat.PRIORITY_MAX)
                     .setCategory(NotificationCompat.CATEGORY_TRANSPORT)
                     .addAction(android.R.drawable.ic_media_previous, "Previous", prevPending)
                     .addAction(isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play,
@@ -632,16 +632,34 @@ public class MainActivity extends AppCompatActivity {
         builder.show();
     }
 
+    private long lastBackPressTime = 0;
+
+    private void handleBackPress() {
+        if (webView != null) {
+            webView.evaluateJavascript("(function(){ return window.handleBackPress ? window.handleBackPress() : 'exit'; })();", result -> {
+                String val = result != null ? result.replace("\"", "").trim() : "exit";
+                if ("handled".equalsIgnoreCase(val)) {
+                    // Handled inside web app: returned to Home view or closed modal
+                    return;
+                }
+                // Already at Home view: press back again within 2 seconds to exit to phone
+                long now = System.currentTimeMillis();
+                if (now - lastBackPressTime < 2000) {
+                    moveTaskToBack(true);
+                } else {
+                    lastBackPressTime = now;
+                    Toast.makeText(MainActivity.this, "Press back again to exit", Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else {
+            moveTaskToBack(true);
+        }
+    }
+
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            if (webView != null && webView.canGoBack()) {
-                webView.goBack();
-                return true;
-            }
-            // Move task to back instead of finishing/killing the activity!
-            // Music keeps playing seamlessly in background and notification drawer remains active.
-            moveTaskToBack(true);
+            handleBackPress();
             return true;
         }
         return super.onKeyDown(keyCode, event);
@@ -649,10 +667,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (webView != null && webView.canGoBack()) {
-            webView.goBack();
-            return;
-        }
-        moveTaskToBack(true);
+        handleBackPress();
     }
 }
