@@ -2,6 +2,16 @@
    SANGEET - JioSaavn & Gaana Inspired Personal Music Studio Styles
    ========================================================================== */
 
+html {
+    background-color: #06070b !important;
+    background: #06070b !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+}
+
 :root {
     /* Ultra-Modern Electric Lime & Matte Obsidian Theme (Inspired by Modern Audio Design) */
     --primary: #d4f82c;
@@ -3944,7 +3954,14 @@ body.public-client-mode .col-actions {
 .app-splash-screen {
     position: fixed !important;
     inset: 0 !important;
-    width: 100vw !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
     height: 100vh !important;
     height: 100dvh !important;
     z-index: 99999999 !important;
@@ -3952,8 +3969,8 @@ body.public-client-mode .col-actions {
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
-    background: #05060d !important;
-    background: radial-gradient(ellipse at 50% 20%, rgba(124, 58, 237, 0.38) 0%, rgba(22, 12, 53, 0.96) 45%, #05060d 85%) !important;
+    background-color: #06070b !important;
+    background: #06070b radial-gradient(ellipse at 50% 20%, rgb(40, 16, 80) 0%, rgb(16, 10, 36) 50%, #06070b 85%) !important;
     overflow: hidden !important;
     color: #ffffff;
     user-select: none;

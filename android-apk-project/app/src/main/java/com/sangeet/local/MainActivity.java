@@ -201,9 +201,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
                 super.onReceivedError(view, request, error);
-                // If offline and trying to load remote URL, smoothly fallback to bundled local app
+                // If offline and trying to load remote URL, smoothly fallback to bundled local app without blocking UI
                 if (request.isForMainFrame() && !request.getUrl().toString().startsWith(LOCAL_ASSET_URL)) {
-                    Toast.makeText(MainActivity.this, "Offline: Using cached music library", Toast.LENGTH_SHORT).show();
                     view.loadUrl(LOCAL_ASSET_URL);
                 }
             }

@@ -24,6 +24,11 @@
         }
     </script>
     <style>
+        html {
+            background-color: #06070b !important;
+            background: #06070b !important;
+        }
+
         /* 100% Solid Opaque Fullscreen Splash - Zero Transparency, Zero Glitch */
         #appSplashScreen {
             position: fixed !important;
@@ -32,11 +37,14 @@
             right: 0 !important;
             bottom: 0 !important;
             inset: 0 !important;
-            width: 100vw !important;
+            width: 100% !important;
+            min-width: 100% !important;
+            max-width: 100% !important;
+            height: 100% !important;
             height: 100vh !important;
             height: 100dvh !important;
             background-color: #06070b !important;
-            background: #06070b !important;
+            background: #06070b radial-gradient(ellipse at 50% 20%, rgb(40, 16, 80) 0%, rgb(16, 10, 36) 50%, #06070b 85%) !important;
             z-index: 99999999 !important;
             display: flex !important;
             flex-direction: column !important;
@@ -135,7 +143,7 @@
                 </h1>
                 <div class="splash-version-tag">
                     <span class="version-dot"></span>
-                    <span>Version 1.0.0</span>
+                    <span>Version 2.0.0</span>
                 </div>
                 <p class="splash-tagline">Personal & Regional Music Studio</p>
             </div>
@@ -159,8 +167,8 @@
 
             <!-- Footer Location -->
             <div class="splash-footer">
-                <div class="splash-developer">Create or Idea By: <strong>Parag (Pinku)</strong></div>
-                <div class="splash-location">Made with ❤️ in Basugaon</div>
+                <div class="splash-developer">Created By: <strong>Parag</strong></div>
+                <div class="splash-location">Proudly Made with ❤️ in Basugaon</div>
             </div>
         </div>
     </div>
