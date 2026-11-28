@@ -1816,25 +1816,10 @@ html.skip-splash #appSplashScreen {
     display: none !important;
 }
 
-/* Floating Sound Wave Bars on Artwork (Centered, Big, Prominent Glowing Red Beat Wave) */
-.fs-artwork-equalizer {
-    position: absolute;
-    bottom: 16px;
-    left: 50%;
-    transform: translateX(-50%);
-    right: auto;
-    background: rgba(14, 6, 18, 0.92);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1.5px solid rgba(255, 50, 75, 0.65);
-    padding: 8px 18px;
-    border-radius: 26px;
-    display: flex;
-    align-items: flex-end;
-    gap: 5px;
-    height: 44px;
-    box-shadow: 0 8px 32px rgba(255, 0, 60, 0.45), 0 0 16px rgba(255, 100, 50, 0.35);
-    z-index: 10;
+/* Music wave visualizer removed from Playing from Library screen as requested */
+.fs-artwork-equalizer,
+.fs-visualizer-canvas {
+    display: none !important;
 }
 
 .fs-artwork-equalizer .fs-eq-bar {
@@ -3943,31 +3928,35 @@ body.public-client-mode .col-actions {
    ========================================================================== */
 
 .app-splash-screen {
-    position: fixed;
-    inset: 0;
-    width: 100vw;
-    height: 100vh;
-    height: 100dvh;
-    z-index: 9999999;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: #090a0d;
-    background: radial-gradient(ellipse at 50% 35%, rgba(212, 248, 44, 0.08) 0%, rgba(139, 92, 246, 0.06) 40%, #08090c 85%);
-    overflow: hidden;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    z-index: 99999999 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background-color: #06070b !important;
+    background: #06070b !important;
+    overflow: hidden !important;
     color: #ffffff;
     user-select: none;
     -webkit-user-select: none;
-    opacity: 1;
-    transition: opacity 0.28s cubic-bezier(0.4, 0, 0.2, 1), transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 1 !important;
+    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s ease;
     will-change: opacity, transform;
 }
 
 .app-splash-screen.splash-fade-out {
-    opacity: 0;
-    transform: scale(1.03);
-    pointer-events: none;
+    opacity: 0 !important;
+    transform: scale(1.02);
+    pointer-events: none !important;
 }
 
 .splash-ambient-glow.glow-center {
