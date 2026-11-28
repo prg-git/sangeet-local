@@ -2618,6 +2618,12 @@ class UIController {
                     </div>
 
                     <div class="about-grid" style="margin-top: 16px;">
+                        <div class="about-card" style="grid-column: 1 / -1; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.35);">
+                            <div class="about-card-icon">🛡️</div>
+                            <h3 style="color: #10b981;">100% Privacy & Device Safety Verified</h3>
+                            <p>Sangeet Local is a completely private, ad-free music player with <strong>zero telemetry or tracking</strong>. It has <strong>no access</strong> to your phone's storage, photos, files, contacts, camera, or microphone. The app operates inside a secure, locked sandbox.</p>
+                        </div>
+
                         <div class="about-card">
                             <div class="about-card-icon">💡</div>
                             <h3>Create or Idea By</h3>

@@ -125,8 +125,13 @@ public class MainActivity extends AppCompatActivity {
         settings.setDomStorageEnabled(true);
         settings.setDatabaseEnabled(true);
         settings.setMediaPlaybackRequiresUserGesture(false);
-        settings.setAllowFileAccess(true);
-        settings.setAllowContentAccess(true);
+
+        // Security Hardening: Completely sandbox WebView from user files, location, and device hardware
+        settings.setAllowFileAccess(false);
+        settings.setAllowContentAccess(false);
+        settings.setAllowFileAccessFromFileURLs(false);
+        settings.setAllowUniversalAccessFromFileURLs(false);
+        settings.setGeolocationEnabled(false);
         settings.setLoadsImagesAutomatically(true);
 
         // Do not force desktop 980px viewport! Ensure true mobile viewport is respected
@@ -145,7 +150,19 @@ public class MainActivity extends AppCompatActivity {
             return true;
         });
 
-        webView.setWebChromeClient(new WebChromeClient());
+        webView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public void onPermissionRequest(final android.webkit.PermissionRequest request) {
+                // Security Hardening: Immediately deny any web request for camera, microphone, or hardware sensors
+                request.deny();
+            }
+
+            @Override
+            public void onGeolocationPermissionsShowPrompt(String origin, android.webkit.GeolocationPermissions.Callback callback) {
+                // Security Hardening: Immediately deny any geolocation prompt
+                callback.invoke(origin, false, false);
+            }
+        });
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
@@ -199,8 +216,8 @@ public class MainActivity extends AppCompatActivity {
         // Setup background audio focus management
         setupAudioFocus();
 
-        // Check and request runtime audio & notification permissions
-        checkAudioPermissions();
+        // Check and request runtime notification permissions only (no storage/media access requested)
+        checkNotificationPermission();
 
         // Live sync by default: Newly added songs and updates appear automatically!
         loadCurrentServerUrl();
@@ -365,21 +382,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void checkAudioPermissions() {
+    private void checkNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            java.util.List<String> perms = new java.util.ArrayList<>();
-            if (checkSelfPermission(android.Manifest.permission.READ_MEDIA_AUDIO) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                perms.add(android.Manifest.permission.READ_MEDIA_AUDIO);
-            }
             if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                perms.add(android.Manifest.permission.POST_NOTIFICATIONS);
-            }
-            if (!perms.isEmpty()) {
-                requestPermissions(perms.toArray(new String[0]), 101);
-            }
-        } else {
-            if (checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE}, 101);
+                requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 101);
             }
         }
     }
